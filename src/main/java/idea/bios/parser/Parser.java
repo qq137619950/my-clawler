@@ -38,18 +38,8 @@ public class Parser {
 
     private final Net net;
 
-    @Deprecated
-    public Parser(CrawlConfig config) throws IllegalAccessException, InstantiationException {
-        this(config, new TikaHtmlParser(config, null));
-    }
-
     public Parser(CrawlConfig config, TLDList tldList) throws IllegalAccessException, InstantiationException {
         this(config, new TikaHtmlParser(config, tldList), tldList);
-    }
-
-    @Deprecated
-    public Parser(CrawlConfig config, HtmlParser htmlParser) {
-        this(config, htmlParser, null);
     }
 
     public Parser(CrawlConfig config, HtmlParser htmlParser, TLDList tldList) {

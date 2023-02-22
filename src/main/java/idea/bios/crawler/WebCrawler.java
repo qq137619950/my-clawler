@@ -419,8 +419,8 @@ public class WebCrawler implements Runnable {
             // Finds the status reason for all known statuses
             page.setFetchResponseHeaders(fetchResult.getResponseHeaders());
             page.setStatusCode(statusCode);
-            if (statusCode < 200 ||
-                statusCode > 299) { // Not 2XX: 2XX status codes indicate success
+            if (statusCode < 200 || statusCode > 299) {
+                // Not 2XX: 2XX status codes indicate success
                 if (statusCode == HttpStatus.SC_MOVED_PERMANENTLY ||
                     statusCode == HttpStatus.SC_MOVED_TEMPORARILY ||
                     statusCode == HttpStatus.SC_MULTIPLE_CHOICES ||
@@ -469,8 +469,8 @@ public class WebCrawler implements Runnable {
                 } else { // All other http codes other than 3xx & 200
                     String description =
                         EnglishReasonPhraseCatalog.INSTANCE.getReason(fetchResult.getStatusCode(),
-                                                                      Locale.ENGLISH); // Finds
-                    // the status reason for all known statuses
+                                                                      Locale.ENGLISH);
+                    // Finds the status reason for all known statuses
                     String contentType = fetchResult.getEntity() == null ? "" :
                                          fetchResult.getEntity().getContentType() == null ? "" :
                                          fetchResult.getEntity().getContentType().getValue();

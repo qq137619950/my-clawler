@@ -3,8 +3,6 @@ package idea.bios.crawler.my.sites;
 
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.jobs.com.bh.BaiduBhListCrawler;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author 86153
