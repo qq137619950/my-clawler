@@ -100,7 +100,7 @@ public class WebCrawler implements Runnable {
 
     /**
      * Is the current crawler instance waiting for new URLs? This field is
-     * mainly used by the controller to detect whether all of the crawler
+     * mainly used by the controller to detect whether all the crawler
      * instances are waiting for new URLs and therefore there is no more work
      * and crawling can be stopped.
      */
@@ -399,6 +399,11 @@ public class WebCrawler implements Runnable {
         // Sub-classed should override this to add their custom functionality
     }
 
+    /**
+     * 处理网页
+     * @param curURL            页面URL
+     * @throws ParseException   ParseException
+     */
     private void processPage(WebURL curURL) throws ParseException {
         PageFetchResult fetchResult = null;
         var page = new Page(curURL);
