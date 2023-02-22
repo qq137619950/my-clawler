@@ -27,9 +27,10 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
+import idea.bios.url.WebURL;
+import idea.bios.util.Util;
+import lombok.var;
 
-import edu.uci.ics.crawler4j.url.WebURL;
-import edu.uci.ics.crawler4j.util.Util;
 
 /**
  * @author Yasser Ganjisaffar
@@ -47,7 +48,7 @@ public class WorkQueues {
     public WorkQueues(Environment env, String dbName, boolean resumable) {
         this.env = env;
         this.resumable = resumable;
-        DatabaseConfig dbConfig = new DatabaseConfig();
+        var dbConfig = new DatabaseConfig();
         dbConfig.setAllowCreate(true);
         dbConfig.setTransactional(resumable);
         dbConfig.setDeferredWrite(!resumable);
@@ -69,11 +70,16 @@ public class WorkQueues {
         return urlsDB.openCursor(txn, null);
     }
 
+    /**
+     * 从数据库中获取链接
+     * @param max       100
+     * @return          URL列表
+     */
     public List<WebURL> get(int max) {
         synchronized (mutex) {
-            List<WebURL> results = new ArrayList<>(max);
-            DatabaseEntry key = new DatabaseEntry();
-            DatabaseEntry value = new DatabaseEntry();
+            var results = new ArrayList<WebURL>(max);
+            var key = new DatabaseEntry();
+            var value = new DatabaseEntry();
             Transaction txn = beginTransaction();
             try (Cursor cursor = openCursor(txn)) {
                 OperationStatus result = cursor.getFirst(key, value, null);
@@ -93,8 +99,8 @@ public class WorkQueues {
 
     public void delete(int count) {
         synchronized (mutex) {
-            DatabaseEntry key = new DatabaseEntry();
-            DatabaseEntry value = new DatabaseEntry();
+            var key = new DatabaseEntry();
+            var value = new DatabaseEntry();
             Transaction txn = beginTransaction();
             try (Cursor cursor = openCursor(txn)) {
                 OperationStatus result = cursor.getFirst(key, value, null);
@@ -109,19 +115,19 @@ public class WorkQueues {
         }
     }
 
-    /*
+    /**
      * The key that is used for storing URLs determines the order
      * they are crawled. Lower key values results in earlier crawling.
      * Here our keys are 6 bytes. The first byte comes from the URL priority.
      * The second byte comes from depth of crawl at which this URL is first found.
-     * The rest of the 4 bytes come from the docid of the URL. As a result,
+     * The rest of the 4 bytes come from the docId of the URL. As a result,
      * URLs with lower priority numbers will be crawled earlier. If priority
      * numbers are the same, those found at lower depths will be crawled earlier.
-     * If depth is also equal, those found earlier (therefore, smaller docid) will
+     * If depth is also equal, those found earlier (therefore, smaller docId) will
      * be crawled earlier.
      */
     protected static DatabaseEntry getDatabaseEntryKey(WebURL url) {
-        byte[] keyData = new byte[6];
+        var keyData = new byte[6];
         keyData[0] = url.getPriority();
         keyData[1] = ((url.getDepth() > Byte.MAX_VALUE) ? Byte.MAX_VALUE : (byte) url.getDepth());
         Util.putIntInByteArray(url.getDocid(), keyData, 2);
@@ -129,7 +135,7 @@ public class WorkQueues {
     }
 
     public void put(WebURL url) {
-        DatabaseEntry value = new DatabaseEntry();
+        var value = new DatabaseEntry();
         webURLBinding.objectToEntry(url, value);
         Transaction txn = beginTransaction();
         urlsDB.put(txn, getDatabaseEntryKey(url), value);

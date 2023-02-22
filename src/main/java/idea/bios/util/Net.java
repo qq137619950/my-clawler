@@ -9,27 +9,30 @@ import java.util.stream.Collectors;
 import com.linkedin.urls.Url;
 import com.linkedin.urls.detection.UrlDetector;
 import com.linkedin.urls.detection.UrlDetectorOptions;
+import idea.bios.crawler.CrawlConfig;
+import idea.bios.url.TLDList;
+import idea.bios.url.WebURL;
+import lombok.var;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.url.TLDList;
-import edu.uci.ics.crawler4j.url.WebURL;
 
 /**
- * Created by Avi Hayun on 9/22/2014.
+ *
+ * @author Avi Hayun
+ * @date 9/22/2014
  * Net related Utils
  */
 public class Net {
 
     private TLDList tldList;
 
-    private Function<Url, WebURL> urlMapper = url -> {
+    private final Function<Url, WebURL> urlMapper = url -> {
         WebURL webUrl = new WebURL();
         webUrl.setTldList(tldList);
         webUrl.setURL(url.getFullUrl());
         return webUrl;
     };
 
-    private CrawlConfig config;
+    private final CrawlConfig config;
 
     public Net(CrawlConfig config, TLDList tldList) {
         this.config = config;
@@ -40,7 +43,7 @@ public class Net {
         if (input == null) {
             return Collections.emptySet();
         } else {
-            UrlDetector detector = new UrlDetector(input, getOptions());
+            var detector = new UrlDetector(input, getOptions());
             List<Url> urls = detector.detect();
             return urls.stream().map(urlMapper).collect(Collectors.toSet());
         }

@@ -25,6 +25,7 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,14 +35,14 @@ import org.slf4j.LoggerFactory;
 public class RobotstxtParser {
     private static final Logger logger = LoggerFactory.getLogger(RobotstxtParser.class);
     private static final Pattern RULE_PATTERN = Pattern.compile("(?i)^([A-Za-z\\-]+):(.*)");
-    private static final Set<String> VALID_RULES = new HashSet<String>(
-        Arrays.asList("allow", "disallow", "user-agent", "crawl-delay", "host", "sitemap"));
+    private static final Set<String> VALID_RULES = new HashSet<>(
+            Arrays.asList("allow", "disallow", "user-agent", "crawl-delay", "host", "sitemap"));
 
-    public static HostDirectives parse(String content, RobotstxtConfig config) {
-        HostDirectives directives = new HostDirectives(config);
-        StringTokenizer st = new StringTokenizer(content, "\n\r");
+    public static HostDirectives parse(String content, RobotsTxtConfig config) {
+        var directives = new HostDirectives(config);
+        var st = new StringTokenizer(content, "\n\r");
 
-        Set<String> userAgents = new HashSet<String>();
+        var userAgents = new HashSet<String>();
         UserAgentDirectives uaDirectives = null;
 
         while (st.hasMoreTokens()) {
@@ -65,14 +66,14 @@ public class RobotstxtParser {
                 String value = m.group(2).trim();
 
                 if (VALID_RULES.contains(rule)) {
-                    if (rule.equals("user-agent")) {
+                    if ("user-agent".equals(rule)) {
                         String currentUserAgent = value.toLowerCase();
                         if (uaDirectives != null) {
                             // If uaDirectives is not null, this means that one or
                             // more rules followed the User-agent: definition list
                             // In that case, it's not allowed to add more user-agents,
                             // so this is an entirely new set of directives.
-                            userAgents = new HashSet<String>();
+                            userAgents = new HashSet<>();
                             directives.addDirectives(uaDirectives);
                             uaDirectives = null;
                         }

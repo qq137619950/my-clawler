@@ -5,26 +5,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import idea.bios.crawler.CrawlConfig;
 import com.google.common.net.InternetDomainName;
 
 import de.malkusch.whoisServerList.publicSuffixList.PublicSuffixList;
 import de.malkusch.whoisServerList.publicSuffixList.PublicSuffixListFactory;
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
 
 /**
  * This class obtains a list of eTLDs (from online or a local file) in order to
  * determine private/public components of domain names per definition at
  * <a href="https://publicsuffix.org">publicsuffix.org</a>.
+ * @author 86153
  */
 public class TLDList {
 
-    @SuppressWarnings("unused")
-    private final Logger logger = LoggerFactory.getLogger(TLDList.class);
-
-    private boolean onlineUpdate;
+    private final boolean onlineUpdate;
 
     private PublicSuffixList publicSuffixList;
 

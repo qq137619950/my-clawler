@@ -1,11 +1,16 @@
 package idea.bios.crawler.authentication;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.net.MalformedURLException;
 
 import javax.swing.text.html.FormSubmitEvent.MethodType;
 
 /**
- * Created by Avi Hayun on 11/25/2014.
+ *
+ * @author Avi Hayun
+ * @date 11/25/2014
  *
  * FormAuthInfo contains the authentication information needed for FORM authentication (extending
  * AuthInfo which has
@@ -15,8 +20,9 @@ import javax.swing.text.html.FormSubmitEvent.MethodType;
  * username and password into an HTML form
  */
 public class FormAuthInfo extends AuthInfo {
-
+    @Getter @Setter
     private String usernameFormStr;
+    @Getter @Setter
     private String passwordFormStr;
 
     /**
@@ -39,31 +45,4 @@ public class FormAuthInfo extends AuthInfo {
         this.passwordFormStr = passwordFormStr;
     }
 
-    /**
-     * @return username html "name" form attribute
-     */
-    public String getUsernameFormStr() {
-        return usernameFormStr;
-    }
-
-    /**
-     * @param usernameFormStr username html "name" form attribute
-     */
-    public void setUsernameFormStr(String usernameFormStr) {
-        this.usernameFormStr = usernameFormStr;
-    }
-
-    /**
-     * @return password html "name" form attribute
-     */
-    public String getPasswordFormStr() {
-        return passwordFormStr;
-    }
-
-    /**
-     * @param passwordFormStr password html "name" form attribute
-     */
-    public void setPasswordFormStr(String passwordFormStr) {
-        this.passwordFormStr = passwordFormStr;
-    }
 }

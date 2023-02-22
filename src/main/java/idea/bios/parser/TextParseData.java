@@ -17,11 +17,15 @@
 
 package idea.bios.parser;
 
+import idea.bios.url.WebURL;
+
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.uci.ics.crawler4j.url.WebURL;
 
+/**
+ * @author 86153
+ */
 public class TextParseData implements ParseData {
 
     private String textContent;

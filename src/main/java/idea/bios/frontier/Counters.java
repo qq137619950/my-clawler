@@ -20,6 +20,10 @@ package idea.bios.frontier;
 import java.util.HashMap;
 import java.util.Map;
 
+import idea.bios.crawler.CrawlConfig;
+import idea.bios.util.Util;
+import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,15 +36,11 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.util.Util;
-
 /**
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class Counters {
-    private static final Logger logger = LoggerFactory.getLogger(Counters.class);
-
     public static class ReservedCounterNames {
         public static final String SCHEDULED_PAGES = "Scheduled-Pages";
         public static final String PROCESSED_PAGES = "Processed-Pages";
@@ -49,7 +49,7 @@ public class Counters {
     private static final String DATABASE_NAME = "Statistics";
     protected Database statisticsDB = null;
     protected Environment env;
-    private CrawlConfig config;
+    private final CrawlConfig config;
 
     protected final Object mutex = new Object();
 
@@ -66,22 +66,22 @@ public class Counters {
      * is crashed or terminated unexpectedly.
      */
         if (config.isResumableCrawling()) {
-            DatabaseConfig dbConfig = new DatabaseConfig();
+            var dbConfig = new DatabaseConfig();
             dbConfig.setAllowCreate(true);
             dbConfig.setTransactional(true);
             dbConfig.setDeferredWrite(false);
             statisticsDB = env.openDatabase(null, DATABASE_NAME, dbConfig);
 
             OperationStatus result;
-            DatabaseEntry key = new DatabaseEntry();
-            DatabaseEntry value = new DatabaseEntry();
+            var key = new DatabaseEntry();
+            var value = new DatabaseEntry();
             Transaction tnx = env.beginTransaction(null, null);
             Cursor cursor = statisticsDB.openCursor(tnx, null);
             result = cursor.getFirst(key, value, null);
 
             while (result == OperationStatus.SUCCESS) {
                 if (value.getData().length > 0) {
-                    String name = new String(key.getData());
+                    var name = new String(key.getData());
                     long counterValue = Util.byteArray2Long(value.getData());
                     counterValues.put(name, counterValue);
                 }
@@ -116,7 +116,7 @@ public class Counters {
                 if (config.isHaltOnError()) {
                     throw e;
                 } else {
-                    logger.error("Exception setting value", e);
+                    log.error("Exception setting value", e);
                 }
             }
         }
@@ -139,7 +139,7 @@ public class Counters {
                 statisticsDB.close();
             }
         } catch (DatabaseException e) {
-            logger.error("Exception thrown while trying to close statisticsDB", e);
+            log.error("Exception thrown while trying to close statisticsDB", e);
         }
     }
 }

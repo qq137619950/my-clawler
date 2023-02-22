@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.net.ssl.SSLProtocolException;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpClientConnection;
 import org.apache.http.config.Registry;
 import org.apache.http.conn.DnsResolver;
@@ -27,11 +28,10 @@ import org.slf4j.LoggerFactory;
  *
  * http://stackoverflow.com/questions/7615645/ssl-handshake-alert-unrecognized-name-error-since
  * -upgrade-to-java-1-7-0/28571582#28571582
+ * @author 86153
  */
+@Slf4j
 public class SniPoolingHttpClientConnectionManager extends PoolingHttpClientConnectionManager {
-    public static final Logger logger =
-        LoggerFactory.getLogger(SniPoolingHttpClientConnectionManager.class);
-
     public SniPoolingHttpClientConnectionManager(
         Registry<ConnectionSocketFactory> socketFactoryRegistry) {
         super(socketFactoryRegistry);
@@ -52,8 +52,8 @@ public class SniPoolingHttpClientConnectionManager extends PoolingHttpClientConn
                 (Boolean) context.getAttribute(SniSSLConnectionSocketFactory.ENABLE_SNI);
             boolean enableSni = enableSniValue == null || enableSniValue;
             if (enableSni && e.getMessage() != null &&
-                e.getMessage().equals("handshake alert:  unrecognized_name")) {
-                logger.warn("Server saw wrong SNI host, retrying without SNI");
+                "handshake alert:  unrecognized_name".equals(e.getMessage())) {
+                log.warn("Server saw wrong SNI host, retrying without SNI");
                 context.setAttribute(SniSSLConnectionSocketFactory.ENABLE_SNI, false);
                 super.connect(conn, route, connectTimeout, context);
             } else {

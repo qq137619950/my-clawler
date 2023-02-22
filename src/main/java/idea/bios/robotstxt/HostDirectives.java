@@ -17,6 +17,8 @@
 
 package idea.bios.robotstxt;
 
+import lombok.var;
+
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
@@ -25,8 +27,9 @@ import java.util.concurrent.TimeUnit;
  * @author Yasser Ganjisaffar
  */
 public class HostDirectives {
-    // If we fetched the directives for this host more than
-    // 24 hours, we have to re-fetch it.
+    /**
+     If we fetched the directives for this host more than 24 hours, we have to re-fetch it.
+     */
     private static final long EXPIRATION_DELAY = TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS);
 
     public static final int ALLOWED = 1;
@@ -38,15 +41,15 @@ public class HostDirectives {
 
     private final long timeFetched;
     private long timeLastAccessed;
-    private RobotstxtConfig config;
+    private final RobotsTxtConfig config;
     private String userAgent;
 
-    public HostDirectives(RobotstxtConfig configuration) {
+    public HostDirectives(RobotsTxtConfig configuration) {
         timeFetched = System.currentTimeMillis();
         config = configuration;
         userAgent = config.getUserAgentName().toLowerCase();
-        rules = new TreeSet<UserAgentDirectives>(
-            new UserAgentDirectives.UserAgentComparator(userAgent));
+        rules = new TreeSet<>(
+                new UserAgentDirectives.UserAgentComparator(userAgent));
     }
 
     public boolean needsRefetch() {
@@ -73,8 +76,8 @@ public class HostDirectives {
         this.userAgent = userAgent.toLowerCase();
 
         // Re-order the set
-        Set<UserAgentDirectives> replace = new TreeSet<UserAgentDirectives>(
-            new UserAgentDirectives.UserAgentComparator(this.userAgent));
+        var replace = new TreeSet<>(
+                new UserAgentDirectives.UserAgentComparator(this.userAgent));
         replace.addAll(rules);
         rules = replace;
     }
@@ -99,7 +102,7 @@ public class HostDirectives {
         timeLastAccessed = System.currentTimeMillis();
         int result = UNDEFINED;
         String myUA = config.getUserAgentName();
-        boolean ignoreUADisc = config.getIgnoreUADiscrimination();
+        boolean ignoreUADisc = config.isIgnoreUADiscrimination();
 
         // When checking rules, the list of rules is already ordered based on the
         // match of the user-agent of the clause with the user-agent of the crawler.

@@ -17,14 +17,16 @@
 
 package idea.bios.parser;
 
+import idea.bios.url.URLCanonicalizer;
+import idea.bios.url.WebURL;
+import lombok.var;
+
 import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import edu.uci.ics.crawler4j.url.URLCanonicalizer;
-import edu.uci.ics.crawler4j.url.WebURL;
 
 public class CssParseData extends TextParseData {
 
@@ -37,11 +39,9 @@ public class CssParseData extends TextParseData {
 
         Set<WebURL> outgoingUrls = new HashSet<>();
         for (String url : extractedUrls) {
-
             String relative = getLinkRelativeTo(pagePath, url);
             String absolute = getAbsoluteUrlFrom(URLCanonicalizer.getCanonicalURL(pageUrl), relative);
-
-            WebURL webURL = new WebURL();
+            var webURL = new WebURL();
             webURL.setURL(absolute);
             outgoingUrls.add(webURL);
 
@@ -50,19 +50,17 @@ public class CssParseData extends TextParseData {
     }
 
     public void setOutgoingUrls(WebURL referringPage) throws UnsupportedEncodingException {
-
         Set<WebURL> outgoingUrls = parseOutgoingUrls(referringPage);
         this.setOutgoingUrls(outgoingUrls);
     }
 
     private static Set<String> extractUrlInCssText(String input) {
-
-        Set<String> extractedUrls = new HashSet<>();
+        var extractedUrls = new HashSet<String>();
         if (input == null || input.isEmpty()) {
             return extractedUrls;
         }
 
-        Matcher matcher = pattern.matcher(input);
+        Matcher matcher = PATTERN.matcher(input);
         while (matcher.find()) {
             String url = matcher.group(1);
             if (url == null) {
@@ -79,7 +77,7 @@ public class CssParseData extends TextParseData {
         return extractedUrls;
     }
 
-    private static final Pattern pattern = initializePattern();
+    private static final Pattern PATTERN = initializePattern();
 
     private static Pattern initializePattern() {
         return Pattern.compile("url\\(\\s*'([^\\)]+)'\\s*\\)" +     // url('...')
@@ -108,8 +106,7 @@ public class CssParseData extends TextParseData {
         }
 
         if (linkUrl.startsWith("http")) {
-            String domainUrl = getPathFromUrl(linkUrl);
-            return domainUrl;
+            return getPathFromUrl(linkUrl);
         }
 
         if (linkUrl.startsWith("../")) {
@@ -137,24 +134,21 @@ public class CssParseData extends TextParseData {
     private static String getDirsFromUrl(String urlPath) {
 
         int pos = urlPath.lastIndexOf("/") + 1;
-        String root = urlPath.substring(0, pos);
-        return root;
+        return urlPath.substring(0, pos);
     }
 
     private static String getPathFromUrl(String url) {
-
-        int pos1 = url.indexOf("//") + 2;              // http://subdomain.domain:port/dir/page.ext
+        // http://subdomain.domain:port/dir/page.ext
+        int pos1 = url.indexOf("//") + 2;
         int pos2 = url.indexOf("/", pos1);
-        String path = url.substring(pos2);
-        return path;
+        return url.substring(pos2);
     }
 
     private static String getFullDomainFromUrl(String url) {
-
-        int pos1 = url.indexOf("//") + 2;              // http://subdomain.domain:port/dir/page.ext
+        // http://subdomain.domain:port/dir/page.ext
+        int pos1 = url.indexOf("//") + 2;
         int pos2 = url.indexOf("/", pos1);
-        String path = url.substring(0, pos2);
-        return path;
+        return url.substring(0, pos2);
     }
 
 }

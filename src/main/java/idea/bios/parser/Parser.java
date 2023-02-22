@@ -17,24 +17,21 @@
 
 package idea.bios.parser;
 
+import idea.bios.crawler.CrawlConfig;
+import idea.bios.crawler.Page;
+import idea.bios.crawler.exceptions.ParseException;
+import idea.bios.url.TLDList;
+import idea.bios.util.Net;
+import idea.bios.util.Util;
+import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.apache.tika.language.LanguageIdentifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.crawler.Page;
-import edu.uci.ics.crawler4j.crawler.exceptions.ParseException;
-import edu.uci.ics.crawler4j.url.TLDList;
-import edu.uci.ics.crawler4j.util.Net;
-import edu.uci.ics.crawler4j.util.Util;
 
 /**
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class Parser {
-
-    private static final Logger logger = LoggerFactory.getLogger(Parser.class);
-
     private final CrawlConfig config;
 
     private final HtmlParser htmlContentParser;
@@ -62,8 +59,9 @@ public class Parser {
     }
 
     public void parse(Page page, String contextURL) throws NotAllowedContentException, ParseException {
-        if (Util.hasBinaryContent(page.getContentType())) { // BINARY
-            BinaryParseData parseData = new BinaryParseData();
+        // BINARY
+        if (Util.hasBinaryContent(page.getContentType())) {
+            var parseData = new BinaryParseData();
             if (config.isIncludeBinaryContentInCrawling()) {
                 if (config.isProcessBinaryContentInCrawling()) {
                     try {
@@ -72,7 +70,7 @@ public class Parser {
                         if (config.isHaltOnError()) {
                             throw new ParseException(e);
                         } else {
-                            logger.error("Error parsing file", e);
+                            log.error("Error parsing file", e);
                         }
                     }
                 } else {
@@ -86,24 +84,26 @@ public class Parser {
             } else {
                 throw new NotAllowedContentException();
             }
-        } else if (Util.hasCssTextContent(page.getContentType())) { // text/css
+        } else if (Util.hasCssTextContent(page.getContentType())) {
+            // text/css
             try {
-                CssParseData parseData = new CssParseData();
+                var parseData = new CssParseData();
                 if (page.getContentCharset() == null) {
                     parseData.setTextContent(new String(page.getContentData()));
                 } else {
                     parseData.setTextContent(
                         new String(page.getContentData(), page.getContentCharset()));
                 }
-                parseData.setOutgoingUrls(page.getWebURL());
+                parseData.setOutgoingUrls(page.getUrl());
                 page.setParseData(parseData);
             } catch (Exception e) {
-                logger.error("{}, while parsing css: {}", e.getMessage(), page.getWebURL().getURL());
+                log.error("{}, while parsing css: {}", e.getMessage(), page.getUrl().getURL());
                 throw new ParseException();
             }
-        } else if (Util.hasPlainTextContent(page.getContentType())) { // plain Text
+        } else if (Util.hasPlainTextContent(page.getContentType())) {
+            // plain Text
             try {
-                TextParseData parseData = new TextParseData();
+                var parseData = new TextParseData();
                 if (page.getContentCharset() == null) {
                     parseData.setTextContent(new String(page.getContentData()));
                 } else {
@@ -113,23 +113,19 @@ public class Parser {
                 parseData.setOutgoingUrls(net.extractUrls(parseData.getTextContent()));
                 page.setParseData(parseData);
             } catch (Exception e) {
-                logger.error("{}, while parsing: {}", e.getMessage(), page.getWebURL().getURL());
+                log.error("{}, while parsing: {}", e.getMessage(), page.getUrl().getURL());
                 throw new ParseException(e);
             }
-        } else { // isHTML
-
+        } else {
+            // isHTML
             HtmlParseData parsedData = this.htmlContentParser.parse(page, contextURL);
-
             if (page.getContentCharset() == null) {
                 page.setContentCharset(parsedData.getContentCharset());
             }
-
             // Please note that identifying language takes less than 10 milliseconds
-            LanguageIdentifier languageIdentifier = new LanguageIdentifier(parsedData.getText());
+            var languageIdentifier = new LanguageIdentifier(parsedData.getText());
             page.setLanguage(languageIdentifier.getLanguage());
-
             page.setParseData(parsedData);
-
         }
     }
 }

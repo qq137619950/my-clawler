@@ -17,29 +17,26 @@
 
 package idea.bios.frontier;
 
-import java.util.List;
-
+import idea.bios.crawler.CrawlConfig;
+import idea.bios.url.WebURL;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.url.WebURL;
+import java.util.List;
 
 /**
  * @author Yasser Ganjisaffar
  */
-
+@Slf4j
 public class Frontier {
-    protected static final Logger logger = LoggerFactory.getLogger(Frontier.class);
-
     private static final String DATABASE_NAME = "PendingURLsDB";
     private static final int IN_PROCESS_RESCHEDULE_BATCH_SIZE = 100;
     private final CrawlConfig config;
     protected WorkQueues workQueues;
-
     protected InProcessPagesDB inProcessPages;
 
     protected final Object mutex = new Object();
@@ -61,7 +58,7 @@ public class Frontier {
                 inProcessPages = new InProcessPagesDB(env);
                 long numPreviouslyInProcessPages = inProcessPages.getLength();
                 if (numPreviouslyInProcessPages > 0) {
-                    logger.info("Rescheduling {} URLs from previous crawl.",
+                    log.info("Rescheduling {} URLs from previous crawl.",
                                 numPreviouslyInProcessPages);
                     scheduledPages -= numPreviouslyInProcessPages;
 
@@ -77,11 +74,15 @@ public class Frontier {
                 scheduledPages = 0;
             }
         } catch (DatabaseException e) {
-            logger.error("Error while initializing the Frontier", e);
+            log.error("Error while initializing the Frontier", e);
             workQueues = null;
         }
     }
 
+    /**
+     * 批量插入
+     * @param urls  urls
+     */
     public void scheduleAll(List<WebURL> urls) {
         int maxPagesToFetch = config.getMaxPagesToFetch();
         synchronized (mutex) {
@@ -89,14 +90,14 @@ public class Frontier {
             for (WebURL url : urls) {
                 if ((maxPagesToFetch > 0) &&
                     ((scheduledPages + newScheduledPage) >= maxPagesToFetch)) {
+                    log.warn("大于最大配置 maxPage:{}", maxPagesToFetch);
                     break;
                 }
-
                 try {
                     workQueues.put(url);
                     newScheduledPage++;
                 } catch (DatabaseException e) {
-                    logger.error("Error while putting the url in the work queue", e);
+                    log.error("Error while putting the url in the work queue", e);
                 }
             }
             if (newScheduledPage > 0) {
@@ -109,6 +110,10 @@ public class Frontier {
         }
     }
 
+    /**
+     * 单个插入
+     * @param url   url
+     */
     public void schedule(WebURL url) {
         int maxPagesToFetch = config.getMaxPagesToFetch();
         synchronized (mutex) {
@@ -119,7 +124,7 @@ public class Frontier {
                     counters.increment(Counters.ReservedCounterNames.SCHEDULED_PAGES);
                 }
             } catch (DatabaseException e) {
-                logger.error("Error while putting the url in the work queue", e);
+                log.error("Error while putting the url in the work queue", e);
             }
         }
     }
@@ -140,14 +145,12 @@ public class Frontier {
                     }
                     result.addAll(curResults);
                 } catch (DatabaseException e) {
-                    logger.error("Error while getting next urls", e);
+                    log.error("Error while getting next urls", e);
                 }
-
                 if (result.size() > 0) {
                     return;
                 }
             }
-
             try {
                 synchronized (waitingList) {
                     waitingList.wait();
@@ -165,7 +168,7 @@ public class Frontier {
         counters.increment(Counters.ReservedCounterNames.PROCESSED_PAGES);
         if (inProcessPages != null) {
             if (!inProcessPages.removeURL(webURL)) {
-                logger.warn("Could not remove: {} from list of processed pages.", webURL.getURL());
+                log.warn("Could not remove: {} from list of processed pages.", webURL.getURL());
             }
         }
     }

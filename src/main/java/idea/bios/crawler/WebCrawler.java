@@ -23,37 +23,39 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import idea.bios.crawler.exceptions.ContentFetchException;
+import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
+import idea.bios.crawler.exceptions.ParseException;
+import idea.bios.fetcher.PageFetchResult;
+import idea.bios.fetcher.PageFetcher;
+import idea.bios.frontier.DocIDServer;
+import idea.bios.frontier.Frontier;
+import idea.bios.parser.HtmlParseData;
+import idea.bios.parser.NotAllowedContentException;
+import idea.bios.parser.ParseData;
+import idea.bios.parser.Parser;
+import idea.bios.robotstxt.RobotsTxtServer;
+import idea.bios.url.WebURL;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import edu.uci.ics.crawler4j.crawler.exceptions.ContentFetchException;
-import edu.uci.ics.crawler4j.crawler.exceptions.PageBiggerThanMaxSizeException;
-import edu.uci.ics.crawler4j.crawler.exceptions.ParseException;
-import edu.uci.ics.crawler4j.fetcher.PageFetchResult;
-import edu.uci.ics.crawler4j.fetcher.PageFetcher;
-import edu.uci.ics.crawler4j.frontier.DocIDServer;
-import edu.uci.ics.crawler4j.frontier.Frontier;
-import edu.uci.ics.crawler4j.parser.HtmlParseData;
-import edu.uci.ics.crawler4j.parser.NotAllowedContentException;
-import edu.uci.ics.crawler4j.parser.ParseData;
-import edu.uci.ics.crawler4j.parser.Parser;
-import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
-import edu.uci.ics.crawler4j.url.WebURL;
+
 
 /**
  * WebCrawler class in the Runnable class that is executed by each crawler thread.
- *
+ * 复写此类，定制一些操作
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class WebCrawler implements Runnable {
-
-    protected static final Logger logger = LoggerFactory.getLogger(WebCrawler.class);
-
     /**
      * The id associated to the crawler thread running this instance
      */
+    @Getter
     protected int myId;
 
     /**
@@ -61,11 +63,13 @@ public class WebCrawler implements Runnable {
      * reference to the controller can be used for getting configurations of the
      * current crawl or adding new seeds during runtime.
      */
+    @Getter
     protected CrawlController myController;
 
     /**
      * The thread within which this crawler instance is running.
      */
+    @Getter @Setter
     private Thread myThread;
 
     /**
@@ -79,10 +83,10 @@ public class WebCrawler implements Runnable {
     private PageFetcher pageFetcher;
 
     /**
-     * The RobotstxtServer instance that is used by this crawler instance to
+     * The RobotsTxtServer instance that is used by this crawler instance to
      * determine whether the crawler is allowed to crawl the content of each page.
      */
-    private RobotstxtServer robotstxtServer;
+    private RobotsTxtServer robotstxtServer;
 
     /**
      * The DocIDServer that is used by this crawler instance to map each URL to a unique docid.
@@ -100,6 +104,7 @@ public class WebCrawler implements Runnable {
      * instances are waiting for new URLs and therefore there is no more work
      * and crawling can be stopped.
      */
+    @Getter
     private boolean isWaitingForNewURLs;
 
     private Throwable error;
@@ -113,11 +118,8 @@ public class WebCrawler implements Runnable {
      *            the id of this crawler instance
      * @param crawlController
      *            the controller that manages this crawling session
-     * @throws IllegalAccessException
-     * @throws InstantiationException
      */
-    public void init(int id, CrawlController crawlController)
-        throws InstantiationException, IllegalAccessException {
+    public void init(int id, CrawlController crawlController) {
         this.myId = id;
         this.pageFetcher = crawlController.getPageFetcher();
         this.robotstxtServer = crawlController.getRobotstxtServer();
@@ -127,19 +129,6 @@ public class WebCrawler implements Runnable {
         this.myController = crawlController;
         this.isWaitingForNewURLs = false;
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
-    }
-
-    /**
-     * Get the id of the current crawler instance
-     *
-     * @return the id of the current crawler instance
-     */
-    public int getMyId() {
-        return myId;
-    }
-
-    public CrawlController getMyController() {
-        return myController;
     }
 
     /**
@@ -194,7 +183,7 @@ public class WebCrawler implements Runnable {
      * @param urlStr - The URL which it's content is bigger than allowed size
      */
     protected void onPageBiggerThanMaxSize(String urlStr, long pageSize) {
-        logger.warn("Skipping a URL: {} which was bigger ( {} ) than max allowed size", urlStr,
+        log.warn("Skipping a URL: {} which was bigger ( {} ) than max allowed size", urlStr,
                     pageSize);
     }
 
@@ -209,10 +198,10 @@ public class WebCrawler implements Runnable {
 
     /**
      * Emitted when the crawler is redirected to an invalid Location.
-     * @param page
+     * @param page page
      */
     protected void onRedirectedToInvalidUrl(Page page) {
-        logger.warn("Unexpected error, URL: {} is redirected to NOTHING",
+        log.warn("Unexpected error, URL: {} is redirected to NOTHING",
             page.url.getURL());
     }
 
@@ -227,7 +216,7 @@ public class WebCrawler implements Runnable {
      */
     protected void onUnexpectedStatusCode(String urlStr, int statusCode, String contentType,
                                           String description) {
-        logger.warn("Skipping URL: {}, StatusCode: {}, {}, {}", urlStr, statusCode, contentType,
+        log.warn("Skipping URL: {}, StatusCode: {}, {}, {}", urlStr, statusCode, contentType,
                     description);
         // Do nothing by default (except basic logging)
         // Sub-classed can override this to add their custom functionality
@@ -242,7 +231,7 @@ public class WebCrawler implements Runnable {
      */
     @Deprecated
     protected void onContentFetchError(WebURL webUrl) {
-        logger.warn("Can't fetch content of: {}", webUrl.getURL());
+        log.warn("Can't fetch content of: {}", webUrl.getURL());
         // Do nothing by default (except basic logging)
         // Sub-classed can override this to add their custom functionality
     }
@@ -253,7 +242,7 @@ public class WebCrawler implements Runnable {
      * @param page Partial page object
      */
     protected void onContentFetchError(Page page) {
-        logger.warn("Can't fetch content of: {}", page.getWebURL().getURL());
+        log.warn("Can't fetch content of: {}", page.getUrl().getURL());
         // Do nothing by default (except basic logging)
         // Sub-classed can override this to add their custom functionality
     }
@@ -268,8 +257,8 @@ public class WebCrawler implements Runnable {
             throw new RuntimeException("unhandled exception", e);
         } else {
             String urlStr = (webUrl == null ? "NULL" : webUrl.getURL());
-            logger.warn("Unhandled exception while fetching {}: {}", urlStr, e.getMessage());
-            logger.info("Stacktrace: ", e);
+            log.warn("Unhandled exception while fetching {}: {}", urlStr, e.getMessage());
+            log.info("Stacktrace: ", e);
             // Do nothing by default (except basic logging)
             // Sub-classed can override this to add their custom functionality
         }
@@ -281,6 +270,7 @@ public class WebCrawler implements Runnable {
      * @param webUrl URL which failed on parsing
      */
     protected void onParseError(WebURL webUrl, ParseException e) throws ParseException {
+        log.error("ParseException occur.", e);
         onParseError(webUrl);
     }
 
@@ -291,7 +281,7 @@ public class WebCrawler implements Runnable {
      */
     @Deprecated
     protected void onParseError(WebURL webUrl) {
-        logger.warn("Parsing error of: {}", webUrl.getURL());
+        log.warn("Parsing error of: {}", webUrl.getURL());
         // Do nothing by default (Except logging)
         // Sub-classed can override this to add their custom functionality
     }
@@ -316,7 +306,7 @@ public class WebCrawler implements Runnable {
             setError(null);
             boolean halt = false;
             while (!halt) {
-                List<WebURL> assignedURLs = new ArrayList<>(batchReadSize);
+                var assignedURLs = new ArrayList<WebURL>(batchReadSize);
                 isWaitingForNewURLs = true;
                 frontier.getNextURLs(batchReadSize, assignedURLs);
                 isWaitingForNewURLs = false;
@@ -327,12 +317,12 @@ public class WebCrawler implements Runnable {
                     try {
                         Thread.sleep(3000);
                     } catch (InterruptedException e) {
-                        logger.error("Error occurred", e);
+                        log.error("Error occurred", e);
                     }
                 } else {
                     for (WebURL curURL : assignedURLs) {
                         if (myController.isShuttingDown()) {
-                            logger.info("Exiting because of controller shutdown.");
+                            log.info("Exiting because of controller shutdown.");
                             return;
                         }
                         if (curURL != null) {
@@ -344,7 +334,7 @@ public class WebCrawler implements Runnable {
                 }
                 if (myController.getConfig().isHaltOnError() && myController.getError() != null) {
                     halt = true;
-                    logger.info("halting because an error has occurred on another thread");
+                    log.info("halting because an error has occurred on another thread");
                 }
             }
         } catch (Throwable t) {
@@ -376,7 +366,6 @@ public class WebCrawler implements Runnable {
                         .contains("nofollow")) ||
                     url.getAttribute("rel").contains("nofollow"));
         }
-
         return true;
     }
 
@@ -410,21 +399,19 @@ public class WebCrawler implements Runnable {
         // Sub-classed should override this to add their custom functionality
     }
 
-    private void processPage(WebURL curURL) throws IOException, InterruptedException, ParseException {
+    private void processPage(WebURL curURL) throws ParseException {
         PageFetchResult fetchResult = null;
-        Page page = new Page(curURL);
+        var page = new Page(curURL);
         try {
             if (curURL == null) {
                 return;
             }
-
             fetchResult = pageFetcher.fetchPage(curURL);
             int statusCode = fetchResult.getStatusCode();
             handlePageStatusCode(curURL, statusCode,
                                  EnglishReasonPhraseCatalog.INSTANCE.getReason(statusCode,
                                                                                Locale.ENGLISH));
             // Finds the status reason for all known statuses
-
             page.setFetchResponseHeaders(fetchResult.getResponseHeaders());
             page.setStatusCode(statusCode);
             if (statusCode < 200 ||
@@ -436,7 +423,6 @@ public class WebCrawler implements Runnable {
                     statusCode == HttpStatus.SC_TEMPORARY_REDIRECT ||
                     statusCode == 308) { // is 3xx  todo
                     // follow https://issues.apache.org/jira/browse/HTTPCORE-389
-
                     page.setRedirect(true);
 
                     String movedToUrl = fetchResult.getMovedToUrl();
@@ -450,11 +436,10 @@ public class WebCrawler implements Runnable {
                     if (myController.getConfig().isFollowRedirects()) {
                         int newDocId = docIdServer.getDocId(movedToUrl);
                         if (newDocId > 0) {
-                            logger.debug("Redirect page: {} is already seen", curURL);
+                            log.debug("Redirect page: {} is already seen", curURL);
                             return;
                         }
-
-                        WebURL webURL = new WebURL();
+                        var webURL = new WebURL();
                         webURL.setTldList(myController.getTldList());
                         webURL.setURL(movedToUrl);
                         webURL.setParentDocid(curURL.getParentDocid());
@@ -464,15 +449,15 @@ public class WebCrawler implements Runnable {
                         webURL.setAnchor(curURL.getAnchor());
                         if (shouldVisit(page, webURL)) {
                             if (!shouldFollowLinksIn(webURL) || robotstxtServer.allows(webURL)) {
-                                webURL.setDocid(docIdServer.getNewDocID(movedToUrl));
+                                webURL.setDocid(docIdServer.getNewDocId(movedToUrl));
                                 frontier.schedule(webURL);
                             } else {
-                                logger.debug(
+                                log.debug(
                                     "Not visiting: {} as per the server's \"robots.txt\" policy",
                                     webURL.getURL());
                             }
                         } else {
-                            logger.debug("Not visiting: {} as per your \"shouldVisit\" policy",
+                            log.debug("Not visiting: {} as per your \"shouldVisit\" policy",
                                          webURL.getURL());
                         }
                     }
@@ -491,55 +476,50 @@ public class WebCrawler implements Runnable {
             } else { // if status code is 200
                 if (!curURL.getURL().equals(fetchResult.getFetchedUrl())) {
                     if (docIdServer.isSeenBefore(fetchResult.getFetchedUrl())) {
-                        logger.debug("Redirect page: {} has already been seen", curURL);
+                        log.debug("Redirect page: {} has already been seen", curURL);
                         return;
                     }
                     curURL.setURL(fetchResult.getFetchedUrl());
-                    curURL.setDocid(docIdServer.getNewDocID(fetchResult.getFetchedUrl()));
+                    curURL.setDocid(docIdServer.getNewDocId(fetchResult.getFetchedUrl()));
                 }
-
-                if (!fetchResult.fetchContent(page,
-                                              myController.getConfig().getMaxDownloadSize())) {
+                if (!fetchResult.fetchContent(page, myController.getConfig().getMaxDownloadSize())) {
                     throw new ContentFetchException();
                 }
-
                 if (page.isTruncated()) {
-                    logger.warn(
+                    log.warn(
                         "Warning: unknown page size exceeded max-download-size, truncated to: " +
                         "({}), at URL: {}",
                         myController.getConfig().getMaxDownloadSize(), curURL.getURL());
                 }
-
                 parser.parse(page, curURL.getURL());
-
-                if (shouldFollowLinksIn(page.getWebURL())) {
+                if (shouldFollowLinksIn(page.getUrl())) {
                     ParseData parseData = page.getParseData();
-                    List<WebURL> toSchedule = new ArrayList<>();
+                    var toSchedule = new ArrayList<WebURL>();
                     int maxCrawlDepth = myController.getConfig().getMaxDepthOfCrawling();
                     for (WebURL webURL : parseData.getOutgoingUrls()) {
                         webURL.setParentDocid(curURL.getDocid());
                         webURL.setParentUrl(curURL.getURL());
-                        int newdocid = docIdServer.getDocId(webURL.getURL());
-                        if (newdocid > 0) {
+                        int newDocId = docIdServer.getDocId(webURL.getURL());
+                        if (newDocId > 0) {
                             // This is not the first time that this Url is visited. So, we set the
                             // depth to a negative number.
                             webURL.setDepth((short) -1);
-                            webURL.setDocid(newdocid);
+                            webURL.setDocid(newDocId);
                         } else {
                             webURL.setDocid(-1);
                             webURL.setDepth((short) (curURL.getDepth() + 1));
                             if ((maxCrawlDepth == -1) || (curURL.getDepth() < maxCrawlDepth)) {
                                 if (shouldVisit(page, webURL)) {
                                     if (robotstxtServer.allows(webURL)) {
-                                        webURL.setDocid(docIdServer.getNewDocID(webURL.getURL()));
+                                        webURL.setDocid(docIdServer.getNewDocId(webURL.getURL()));
                                         toSchedule.add(webURL);
                                     } else {
-                                        logger.debug(
+                                        log.debug(
                                             "Not visiting: {} as per the server's \"robots.txt\" " +
                                             "policy", webURL.getURL());
                                     }
                                 } else {
-                                    logger.debug(
+                                    log.debug(
                                         "Not visiting: {} as per your \"shouldVisit\" policy",
                                         webURL.getURL());
                                 }
@@ -548,11 +528,10 @@ public class WebCrawler implements Runnable {
                     }
                     frontier.scheduleAll(toSchedule);
                 } else {
-                    logger.debug("Not looking for links in page {}, "
+                    log.debug("Not looking for links in page {}, "
                                  + "as per your \"shouldFollowLinksInPage\" policy",
-                                 page.getWebURL().getURL());
+                                 page.getUrl().getURL());
                 }
-
                 boolean noIndex = myController.getConfig().isRespectNoIndex() &&
                     page.getContentType() != null &&
                     page.getContentType().contains("html") &&
@@ -572,7 +551,7 @@ public class WebCrawler implements Runnable {
             onContentFetchError(curURL);
             onContentFetchError(page);
         } catch (NotAllowedContentException nace) {
-            logger.debug(
+            log.debug(
                 "Skipping: {} as it contains binary content which you configured not to crawl",
                 curURL.getURL());
         } catch (IOException | InterruptedException | RuntimeException e) {
@@ -582,18 +561,6 @@ public class WebCrawler implements Runnable {
                 fetchResult.discardContentIfNotConsumed();
             }
         }
-    }
-
-    public Thread getThread() {
-        return myThread;
-    }
-
-    public void setThread(Thread myThread) {
-        this.myThread = myThread;
-    }
-
-    public boolean isNotWaitingForNewURLs() {
-        return !isWaitingForNewURLs;
     }
 
     protected synchronized Throwable getError() {

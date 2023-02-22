@@ -5,7 +5,9 @@ import java.net.MalformedURLException;
 import javax.swing.text.html.FormSubmitEvent.MethodType;
 
 /**
- * Created by Avi Hayun on 11/25/2014.
+ *
+ * @author Avi Hayun
+ * @date 11/25/2014
  *
  * BasicAuthInfo contains the authentication information needed for BASIC authentication
  * (extending AuthInfo which
@@ -19,7 +21,6 @@ import javax.swing.text.html.FormSubmitEvent.MethodType;
  * </ul>
  */
 public class BasicAuthInfo extends AuthInfo {
-
     /**
      * Constructor
      *

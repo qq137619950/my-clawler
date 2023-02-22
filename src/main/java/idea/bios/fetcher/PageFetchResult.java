@@ -20,65 +20,36 @@ package idea.bios.fetcher;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
+import idea.bios.crawler.Page;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.uci.ics.crawler4j.crawler.Page;
 
 /**
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class PageFetchResult {
-
-    protected static final Logger logger = LoggerFactory.getLogger(PageFetchResult.class);
-
-    private boolean haltOnError;
+    private final boolean haltOnError;
+    @Getter @Setter
     protected int statusCode;
+    @Getter @Setter
     protected HttpEntity entity = null;
+    @Getter @Setter
     protected Header[] responseHeaders = null;
+    @Getter @Setter
     protected String fetchedUrl = null;
+    @Getter @Setter
     protected String movedToUrl = null;
 
     public PageFetchResult(boolean haltOnError) {
         this.haltOnError = haltOnError;
     }
 
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    public HttpEntity getEntity() {
-        return entity;
-    }
-
-    public void setEntity(HttpEntity entity) {
-        this.entity = entity;
-    }
-
-    public Header[] getResponseHeaders() {
-        return responseHeaders;
-    }
-
-    public void setResponseHeaders(Header[] responseHeaders) {
-        this.responseHeaders = responseHeaders;
-    }
-
-    public String getFetchedUrl() {
-        return fetchedUrl;
-    }
-
-    public void setFetchedUrl(String fetchedUrl) {
-        this.fetchedUrl = fetchedUrl;
-    }
-
-    public boolean fetchContent(Page page, int maxBytes) throws SocketTimeoutException, IOException {
+    public boolean fetchContent(Page page, int maxBytes) throws IOException {
         try {
             page.setFetchResponseHeaders(responseHeaders);
             page.load(entity, maxBytes);
@@ -89,7 +60,7 @@ public class PageFetchResult {
             if (haltOnError) {
                 throw e;
             } else {
-                logger.info("Exception while fetching content for: {} [{}]", page.getWebURL().getURL(),
+                log.info("Exception while fetching content for: {} [{}]", page.getUrl().getURL(),
                             e.getMessage());
             }
         }
@@ -110,16 +81,8 @@ public class PageFetchResult {
             if (haltOnError) {
                 throw e;
             } else {
-                logger.warn("Unexpected error occurred while trying to discard content", e);
+                log.warn("Unexpected error occurred while trying to discard content", e);
             }
         }
-    }
-
-    public String getMovedToUrl() {
-        return movedToUrl;
-    }
-
-    public void setMovedToUrl(String movedToUrl) {
-        this.movedToUrl = movedToUrl;
     }
 }

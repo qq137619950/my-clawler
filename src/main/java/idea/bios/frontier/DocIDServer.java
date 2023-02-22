@@ -17,6 +17,9 @@
 
 package idea.bios.frontier;
 
+import idea.bios.crawler.CrawlConfig;
+import idea.bios.util.Util;
+import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +30,8 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
 
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.util.Util;
-
 /**
+ * 文档ID Server
  * @author Yasser Ganjisaffar
  */
 
@@ -42,38 +43,39 @@ public class DocIDServer {
 
     private final Object mutex = new Object();
 
-    private CrawlConfig config;
-    private int lastDocID;
+    private final CrawlConfig config;
+    private int lastDocId;
 
     public DocIDServer(Environment env, CrawlConfig config) {
         this.config = config;
-        DatabaseConfig dbConfig = new DatabaseConfig();
+        var dbConfig = new DatabaseConfig();
         dbConfig.setAllowCreate(true);
         dbConfig.setTransactional(config.isResumableCrawling());
         dbConfig.setDeferredWrite(!config.isResumableCrawling());
-        lastDocID = 0;
+        lastDocId = 0;
         docIDsDB = env.openDatabase(null, DATABASE_NAME, dbConfig);
         if (config.isResumableCrawling()) {
             int docCount = getDocCount();
             if (docCount > 0) {
-                logger.info("Loaded {} URLs that had been detected in previous crawl.", docCount);
-                lastDocID = docCount;
+                logger.info("Loaded {} URLs that had been detected in previous crawl.",
+                        docCount);
+                lastDocId = docCount;
             }
         }
     }
 
     /**
-     * Returns the docid of an already seen url.
+     * Returns the docId of an already seen url.
      *
-     * @param url the URL for which the docid is returned.
-     * @return the docid of the url if it is seen before. Otherwise -1 is returned.
+     * @param url the URL for which the docId is returned.
+     * @return the docId of the url if it is seen before. Otherwise -1 is returned.
      */
     public int getDocId(String url) {
         synchronized (mutex) {
-            OperationStatus result = null;
-            DatabaseEntry value = new DatabaseEntry();
+            OperationStatus result;
+            var value = new DatabaseEntry();
             try {
-                DatabaseEntry key = new DatabaseEntry(url.getBytes());
+                var key = new DatabaseEntry(url.getBytes());
                 result = docIDsDB.get(null, key, value, null);
 
             } catch (RuntimeException e) {
@@ -88,24 +90,22 @@ public class DocIDServer {
             if ((result == OperationStatus.SUCCESS) && (value.getData().length > 0)) {
                 return Util.byteArray2Int(value.getData());
             }
-
             return -1;
         }
     }
 
-    public int getNewDocID(String url) {
+    public int getNewDocId(String url) {
         synchronized (mutex) {
             try {
-                // Make sure that we have not already assigned a docid for this URL
-                int docID = getDocId(url);
-                if (docID > 0) {
-                    return docID;
+                // Make sure that we have not already assigned a docId for this URL
+                int docId = getDocId(url);
+                if (docId > 0) {
+                    return docId;
                 }
-
-                ++lastDocID;
+                ++lastDocId;
                 docIDsDB.put(null, new DatabaseEntry(url.getBytes()),
-                             new DatabaseEntry(Util.int2ByteArray(lastDocID)));
-                return lastDocID;
+                             new DatabaseEntry(Util.int2ByteArray(lastDocId)));
+                return lastDocId;
             } catch (RuntimeException e) {
                 if (config.isHaltOnError()) {
                     throw e;
@@ -119,23 +119,22 @@ public class DocIDServer {
 
     public void addUrlAndDocId(String url, int docId) {
         synchronized (mutex) {
-            if (docId <= lastDocID) {
+            if (docId <= lastDocId) {
                 throw new IllegalArgumentException(
-                    "Requested doc id: " + docId + " is not larger than: " + lastDocID);
+                    "Requested doc id: " + docId + " is not larger than: " + lastDocId);
             }
-
-            // Make sure that we have not already assigned a docid for this URL
-            int prevDocid = getDocId(url);
-            if (prevDocid > 0) {
-                if (prevDocid == docId) {
+            // Make sure that we have not already assigned a docId for this URL
+            int prevDocId = getDocId(url);
+            if (prevDocId > 0) {
+                if (prevDocId == docId) {
                     return;
                 }
-                throw new IllegalArgumentException("Doc id: " + prevDocid + " is already assigned to URL: " + url);
+                throw new IllegalArgumentException("Doc id: " + prevDocId + " is already assigned to URL: " + url);
             }
 
             docIDsDB.put(null, new DatabaseEntry(url.getBytes()),
                          new DatabaseEntry(Util.int2ByteArray(docId)));
-            lastDocID = docId;
+            lastDocId = docId;
         }
     }
 

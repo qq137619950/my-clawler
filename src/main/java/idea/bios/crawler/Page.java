@@ -20,87 +20,99 @@ package idea.bios.crawler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
+import idea.bios.parser.ParseData;
+import idea.bios.url.WebURL;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.util.ByteArrayBuffer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.uci.ics.crawler4j.parser.ParseData;
-import edu.uci.ics.crawler4j.url.WebURL;
 
 /**
  * This class contains the data for a fetched and parsed page.
  *
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class Page {
-
-    protected final Logger logger = LoggerFactory.getLogger(Page.class);
-
     /**
      * The URL of this page.
      */
+    @Getter @Setter
     protected WebURL url;
 
     /**
      * Redirection flag
      */
+    @Getter @Setter
     protected boolean redirect;
 
     /**
      * The URL to which this page will be redirected to
      */
+    @Getter @Setter
     protected String redirectedToUrl;
 
     /**
      * Status of the page
      */
+    @Getter @Setter
     protected int statusCode;
 
     /**
      * The content of this page in binary format.
      */
+    @Getter @Setter
     protected byte[] contentData;
 
     /**
      * The ContentType of this page.
      * For example: "text/html; charset=UTF-8"
      */
+    @Getter @Setter
     protected String contentType;
 
     /**
      * The encoding of the content.
      * For example: "gzip"
      */
+    @Getter @Setter
     protected String contentEncoding;
 
     /**
      * The charset of the content.
      * For example: "UTF-8"
      */
+    @Getter @Setter
     protected String contentCharset;
 
     /**
      * Language of the Content.
      */
+    @Getter @Setter
     private String language;
 
     /**
      * Headers which were present in the response of the fetch request
      */
+    @Getter @Setter
     protected Header[] fetchResponseHeaders = new Header[0];
 
     /**
      * The parsed data populated by parsers
      */
+    @Getter @Setter
     protected ParseData parseData;
 
     /**
      * Whether the content was truncated because the received data exceeded the imposed maximum
      */
+    @Getter
     protected boolean truncated = false;
 
     public Page(WebURL url) {
@@ -122,8 +134,7 @@ public class Page {
             return new byte[0];
         }
         try (InputStream is = entity.getContent()) {
-            int size = (int) entity.getContentLength();
-            int readBufferLength = size;
+            int readBufferLength = (int) entity.getContentLength();
 
             if (readBufferLength <= 0) {
                 readBufferLength = 4096;
@@ -134,9 +145,9 @@ public class Page {
             // We allocate the buffer with either the actual size of the entity (if available)
             // or with the default 4KiB if the server did not return a value to avoid allocating
             // the full maxBytes (for the cases when the actual size will be smaller than maxBytes).
-            ByteArrayBuffer buffer = new ByteArrayBuffer(readBufferLength);
+            var buffer = new ByteArrayBuffer(readBufferLength);
 
-            byte[] tmpBuff = new byte[4096];
+            var tmpBuff = new byte[4096];
             int dataLength;
 
             while ((dataLength = is.read(tmpBuff)) != -1) {
@@ -161,7 +172,6 @@ public class Page {
      * @throws IOException when load fails
      */
     public void load(HttpEntity entity, int maxBytes) throws IOException {
-
         contentType = null;
         Header type = entity.getContentType();
         if (type != null) {
@@ -178,132 +188,13 @@ public class Page {
         try {
             charset = ContentType.getOrDefault(entity).getCharset();
         } catch (Exception e) {
-            logger.warn("parse charset failed: {}", e.getMessage());
-            charset = Charset.forName("UTF-8");
+            log.warn("parse charset failed: {}", e.getMessage());
+            charset = StandardCharsets.UTF_8;
         }
 
         if (charset != null) {
             contentCharset = charset.displayName();
         }
-
         contentData = toByteArray(entity, maxBytes);
-    }
-
-    public WebURL getWebURL() {
-        return url;
-    }
-
-    public void setWebURL(WebURL url) {
-        this.url = url;
-    }
-
-    public boolean isRedirect() {
-        return redirect;
-    }
-
-    public void setRedirect(boolean redirect) {
-        this.redirect = redirect;
-    }
-
-    public String getRedirectedToUrl() {
-        return redirectedToUrl;
-    }
-
-    public void setRedirectedToUrl(String redirectedToUrl) {
-        this.redirectedToUrl = redirectedToUrl;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    /**
-     * Returns headers which were present in the response of the fetch request
-     *
-     * @return Header Array, the response headers
-     */
-    public Header[] getFetchResponseHeaders() {
-        return fetchResponseHeaders;
-    }
-
-    public void setFetchResponseHeaders(Header[] headers) {
-        fetchResponseHeaders = headers;
-    }
-
-    /**
-     * @return parsed data generated for this page by parsers
-     */
-    public ParseData getParseData() {
-        return parseData;
-    }
-
-    public void setParseData(ParseData parseData) {
-        this.parseData = parseData;
-    }
-
-    /**
-     * @return content of this page in binary format.
-     */
-    public byte[] getContentData() {
-        return contentData;
-    }
-
-    public void setContentData(byte[] contentData) {
-        this.contentData = contentData;
-    }
-
-    /**
-     * @return ContentType of this page.
-     * For example: "text/html; charset=UTF-8"
-     */
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    /**
-     * @return encoding of the content.
-     * For example: "gzip"
-     */
-    public String getContentEncoding() {
-        return contentEncoding;
-    }
-
-    public void setContentEncoding(String contentEncoding) {
-        this.contentEncoding = contentEncoding;
-    }
-
-    /**
-     * @return charset of the content.
-     * For example: "UTF-8"
-     */
-    public String getContentCharset() {
-        return contentCharset;
-    }
-
-    public void setContentCharset(String contentCharset) {
-        this.contentCharset = contentCharset;
-    }
-
-    /**
-     * @return Language
-     */
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
-    public boolean isTruncated() {
-        return truncated;
     }
 }

@@ -1,7 +1,9 @@
 package idea.bios.parser;
 
 /**
- * Created by Avi on 8/19/2014.
+ *
+ * @author Avi
+ * @date 8/19/2014
  *
  * This Exception will be thrown whenever the parser tries to parse not allowed content<br>
  * For example when the parser tries to parse binary content although the user configured it not

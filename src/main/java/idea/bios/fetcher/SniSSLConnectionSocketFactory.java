@@ -22,11 +22,12 @@ import org.apache.http.protocol.HttpContext;
  *
  * http://stackoverflow.com/questions/7615645/ssl-handshake-alert-unrecognized-name-error-since
  * -upgrade-to-java-1-7-0/28571582#28571582
+ * @author 86153
  */
 public class SniSSLConnectionSocketFactory extends SSLConnectionSocketFactory {
     public static final String ENABLE_SNI = "__enable_sni__";
 
-    /*
+    /**
      * Implement any constructor you need for your particular application -
      * SSLConnectionSocketFactory has many variants
      */

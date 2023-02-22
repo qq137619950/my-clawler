@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,6 +32,16 @@ import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 
+import idea.bios.crawler.CrawlConfig;
+import idea.bios.crawler.authentication.AuthInfo;
+import idea.bios.crawler.authentication.BasicAuthInfo;
+import idea.bios.crawler.authentication.FormAuthInfo;
+import idea.bios.crawler.authentication.NtAuthInfo;
+import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
+import idea.bios.url.URLCanonicalizer;
+import idea.bios.url.WebURL;
+import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.HttpHost;
@@ -43,7 +52,6 @@ import org.apache.http.auth.Credentials;
 import org.apache.http.auth.NTCredentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -63,23 +71,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContexts;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.uci.ics.crawler4j.crawler.CrawlConfig;
-import edu.uci.ics.crawler4j.crawler.authentication.AuthInfo;
-import edu.uci.ics.crawler4j.crawler.authentication.BasicAuthInfo;
-import edu.uci.ics.crawler4j.crawler.authentication.FormAuthInfo;
-import edu.uci.ics.crawler4j.crawler.authentication.NtAuthInfo;
-import edu.uci.ics.crawler4j.crawler.exceptions.PageBiggerThanMaxSizeException;
-import edu.uci.ics.crawler4j.url.URLCanonicalizer;
-import edu.uci.ics.crawler4j.url.WebURL;
-
 /**
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class PageFetcher {
-    protected static final Logger logger = LoggerFactory.getLogger(PageFetcher.class);
     protected final Object mutex = new Object();
     /**
      * This field is protected for retro compatibility. Please use the getter method: getConfig() to
@@ -93,7 +89,6 @@ public class PageFetcher {
 
     public PageFetcher(CrawlConfig config) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
         this.config = config;
-
         RequestConfig requestConfig = RequestConfig.custom()
                 .setExpectContinueEnabled(false)
                 .setCookieSpec(config.getCookiePolicy())
@@ -108,12 +103,8 @@ public class PageFetcher {
             try { // Fixing: https://code.google.com/p/crawler4j/issues/detail?id=174
                 // By always trusting the ssl certificate
                 SSLContext sslContext =
-                        SSLContexts.custom().loadTrustMaterial(null, new TrustStrategy() {
-                            @Override
-                            public boolean isTrusted(final X509Certificate[] chain, String authType) {
-                                return true;
-                            }
-                        }).build();
+                        SSLContexts.custom().loadTrustMaterial(null,
+                                (TrustStrategy) (chain, authType) -> true).build();
                 SSLConnectionSocketFactory sslsf =
                         new SniSSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
                 connRegistryBuilder.register("https", sslsf);
@@ -121,8 +112,8 @@ public class PageFetcher {
                 if (config.isHaltOnError()) {
                     throw e;
                 } else {
-                    logger.warn("Exception thrown while trying to register https");
-                    logger.debug("Stacktrace", e);
+                    log.warn("Exception thrown while trying to register https");
+                    log.debug("Stacktrace", e);
                 }
             }
         }
@@ -142,20 +133,18 @@ public class PageFetcher {
         clientBuilder.setUserAgent(config.getUserAgentString());
         clientBuilder.setDefaultHeaders(config.getDefaultHeaders());
 
-        Map<AuthScope, Credentials> credentialsMap = new HashMap<>();
+        var credentialsMap = new HashMap<AuthScope, Credentials>();
         if (config.getProxyHost() != null) {
             if (config.getProxyUsername() != null) {
-                AuthScope authScope = new AuthScope(config.getProxyHost(), config.getProxyPort());
-                Credentials credentials = new UsernamePasswordCredentials(config.getProxyUsername(),
+                var authScope = new AuthScope(config.getProxyHost(), config.getProxyPort());
+                var credentials = new UsernamePasswordCredentials(config.getProxyUsername(),
                         config.getProxyPassword());
                 credentialsMap.put(authScope, credentials);
             }
-
-            HttpHost proxy = new HttpHost(config.getProxyHost(), config.getProxyPort());
+            var proxy = new HttpHost(config.getProxyHost(), config.getProxyPort());
             clientBuilder.setProxy(proxy);
-            logger.debug("Working through Proxy: {}", proxy.getHostName());
+            log.debug("Working through Proxy: {}", proxy.getHostName());
         }
-
         List<AuthInfo> authInfos = config.getAuthInfos();
         if (authInfos != null) {
             for (AuthInfo authInfo : authInfos) {
@@ -165,17 +154,13 @@ public class PageFetcher {
                     addNtCredentials((NtAuthInfo) authInfo, credentialsMap);
                 }
             }
-
             if (!credentialsMap.isEmpty()) {
-                CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                credentialsMap.forEach((AuthScope authscope, Credentials credentials) -> {
-                    credentialsProvider.setCredentials(authscope, credentials);
-                });
+                var credentialsProvider = new BasicCredentialsProvider();
+                credentialsMap.forEach(credentialsProvider::setCredentials);
                 clientBuilder.setDefaultCredentialsProvider(credentialsProvider);
                 clientBuilder.addInterceptorFirst(new BasicAuthHttpRequestInterceptor());
             }
             httpClient = clientBuilder.build();
-
             authInfos.stream()
                     .filter(info ->
                             AuthInfo.AuthenticationType.FORM_AUTHENTICATION.equals(info.getAuthenticationType()))
@@ -184,7 +169,6 @@ public class PageFetcher {
         } else {
             httpClient = clientBuilder.build();
         }
-
         if (connectionMonitorThread == null) {
             connectionMonitorThread = new IdleConnectionMonitorThread(connectionManager);
         }
@@ -198,8 +182,8 @@ public class PageFetcher {
      */
     private void addBasicCredentials(BasicAuthInfo authInfo,
                                      Map<AuthScope, Credentials> credentialsMap) {
-        logger.info("BASIC authentication for: {}", authInfo.getLoginTarget());
-        Credentials credentials = new UsernamePasswordCredentials(authInfo.getUsername(),
+        log.info("BASIC authentication for: {}", authInfo.getLoginTarget());
+        var credentials = new UsernamePasswordCredentials(authInfo.getUsername(),
                 authInfo.getPassword());
         credentialsMap.put(new AuthScope(authInfo.getHost(), authInfo.getPort()), credentials);
     }
@@ -208,14 +192,14 @@ public class PageFetcher {
      * Do NT auth for Microsoft AD sites.
      */
     private void addNtCredentials(NtAuthInfo authInfo, Map<AuthScope, Credentials> credentialsMap) {
-        logger.info("NT authentication for: {}", authInfo.getLoginTarget());
+        log.info("NT authentication for: {}", authInfo.getLoginTarget());
         try {
-            Credentials credentials = new NTCredentials(authInfo.getUsername(),
+            var credentials = new NTCredentials(authInfo.getUsername(),
                     authInfo.getPassword(), InetAddress.getLocalHost().getHostName(),
                     authInfo.getDomain());
             credentialsMap.put(new AuthScope(authInfo.getHost(), authInfo.getPort()), credentials);
         } catch (UnknownHostException e) {
-            logger.error("Error creating NT credentials", e);
+            log.error("Error creating NT credentials", e);
         }
     }
 
@@ -225,28 +209,27 @@ public class PageFetcher {
      * /apache/http/examples/client/ClientFormLogin.java
      */
     private void doFormLogin(FormAuthInfo authInfo) {
-        logger.info("FORM authentication for: {}", authInfo.getLoginTarget());
+        log.info("FORM authentication for: {}", authInfo.getLoginTarget());
         String fullUri =
                 authInfo.getProtocol() + "://" + authInfo.getHost() + ":" + authInfo.getPort() +
                         authInfo.getLoginTarget();
-        HttpPost httpPost = new HttpPost(fullUri);
+        var httpPost = new HttpPost(fullUri);
         List<NameValuePair> formParams = new ArrayList<>();
         formParams.add(
                 new BasicNameValuePair(authInfo.getUsernameFormStr(), authInfo.getUsername()));
         formParams.add(
                 new BasicNameValuePair(authInfo.getPasswordFormStr(), authInfo.getPassword()));
-        UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formParams, StandardCharsets.UTF_8);
+        var entity = new UrlEncodedFormEntity(formParams, StandardCharsets.UTF_8);
         httpPost.setEntity(entity);
-
         try {
             httpClient.execute(httpPost);
-            logger.debug("Successfully request to login in with user: {} to: {}", authInfo.getUsername(),
+            log.debug("Successfully request to login in with user: {} to: {}", authInfo.getUsername(),
                     authInfo.getHost());
         } catch (ClientProtocolException e) {
-            logger.error("While trying to login to: {} - Client protocol not supported",
+            log.error("While trying to login to: {} - Client protocol not supported",
                     authInfo.getHost(), e);
         } catch (IOException e) {
-            logger.error("While trying to login to: {} - Error making request", authInfo.getHost(),
+            log.error("While trying to login to: {} - Error making request", authInfo.getHost(),
                     e);
         }
     }
@@ -254,7 +237,7 @@ public class PageFetcher {
     public PageFetchResult fetchPage(WebURL webUrl)
             throws InterruptedException, IOException, PageBiggerThanMaxSizeException {
         // Getting URL, setting headers & content
-        PageFetchResult fetchResult = new PageFetchResult(config.isHaltOnError());
+        var fetchResult = new PageFetchResult(config.isHaltOnError());
         String toFetchURL = webUrl.getURL();
         HttpUriRequest request = null;
         try {
@@ -292,7 +275,8 @@ public class PageFetcher {
                             URLCanonicalizer.getCanonicalURL(header.getValue(), toFetchURL);
                     fetchResult.setMovedToUrl(movedToUrl);
                 }
-            } else if (statusCode >= 200 && statusCode <= 299) { // is 2XX, everything looks ok
+            } else if (statusCode >= 200 && statusCode <= 299) {
+                // is 2XX, everything looks ok
                 fetchResult.setFetchedUrl(toFetchURL);
                 String uri = request.getURI().toString();
                 if (!uri.equals(toFetchURL)) {
@@ -300,7 +284,6 @@ public class PageFetcher {
                         fetchResult.setFetchedUrl(uri);
                     }
                 }
-
                 // Checking maximum size
                 if (fetchResult.getEntity() != null) {
                     long size = fetchResult.getEntity().getContentLength();
@@ -320,10 +303,8 @@ public class PageFetcher {
                     }
                 }
             }
-
             fetchResult.setStatusCode(statusCode);
             return fetchResult;
-
         } finally { // occurs also with thrown exceptions
             if ((fetchResult.getEntity() == null) && (request != null)) {
                 request.abort();

@@ -2,12 +2,18 @@ package idea.bios.robotstxt;
 
 import java.util.regex.Pattern;
 
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author 86153
+ */
+@Slf4j
+@EqualsAndHashCode
 public class PathRule {
-    protected static final Logger logger = LoggerFactory.getLogger(PathRule.class);
-
     public int type;
     public Pattern pattern;
 
@@ -24,7 +30,7 @@ public class PathRule {
      * @return The compiled regexp pattern created from the robots.txt pattern
      */
     public static Pattern robotsPatternToRegexp(String pattern) {
-        StringBuilder regexp = new StringBuilder();
+        var regexp = new StringBuilder();
         regexp.append('^');
         StringBuilder quoteBuf = new StringBuilder();
         boolean terminated = false;
@@ -42,7 +48,7 @@ public class PathRule {
             if (ch == '\\') {
                 // Handle escaped * and $ characters
                 char nch = pos < pattern.length() - 1 ? pattern.charAt(pos + 1) : 0;
-                if (nch == '*' || ch == '$') {
+                if (nch == '*') {
                     quoteBuf.append(nch);
                     ++pos; // We need to skip one character
                 } else {

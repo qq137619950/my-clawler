@@ -17,18 +17,28 @@
 
 package idea.bios.robotstxt;
 
-public class RobotstxtConfig {
+import lombok.Getter;
+import lombok.Setter;
+
+/**
+ * @author 86153
+ */
+public class RobotsTxtConfig {
 
     /**
      * Should the crawler obey Robots.txt protocol? More info on Robots.txt is
      * available at http://www.robotstxt.org/
      */
+    @Getter
+    @Setter
     private boolean enabled = true;
 
     /**
      * user-agent name that will be used to determine whether some servers have
      * specific rules for this agent name.
      */
+    @Getter
+    @Setter
     private String userAgentName = "crawler4j";
 
     /**
@@ -39,42 +49,14 @@ public class RobotstxtConfig {
      * This can still be overridden when a robots.txt explicitly disallows the configured
      * User-agent, as such a rule supersedes the generic rule.
      */
+    @Getter
+    @Setter
     private boolean ignoreUADiscrimination = false;
 
     /**
      * The maximum number of hosts for which their robots.txt is cached.
      */
+    @Getter
+    @Setter
     private int cacheSize = 500;
-
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public String getUserAgentName() {
-        return userAgentName;
-    }
-
-    public void setUserAgentName(String userAgentName) {
-        this.userAgentName = userAgentName;
-    }
-
-    public int getCacheSize() {
-        return cacheSize;
-    }
-
-    public void setCacheSize(int cacheSize) {
-        this.cacheSize = cacheSize;
-    }
-
-    public void setIgnoreUADiscrimination(boolean ignore) {
-        this.ignoreUADiscrimination = ignore;
-    }
-
-    public boolean getIgnoreUADiscrimination() {
-        return ignoreUADiscrimination;
-    }
 }

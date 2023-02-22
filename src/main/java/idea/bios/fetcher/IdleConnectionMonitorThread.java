@@ -21,6 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
+/**
+ * @author 86153
+ */
 public class IdleConnectionMonitorThread extends Thread {
 
     private final PoolingHttpClientConnectionManager connMgr;

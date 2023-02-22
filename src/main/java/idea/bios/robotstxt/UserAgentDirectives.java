@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,15 +17,16 @@ import org.slf4j.LoggerFactory;
  * The UserAgentDirectives class stores the configuration for a single
  * user agent as defined in the robots.txt. The user agent string used
  * depends on the most recent User-agent: definition in the robots.txt file.
+ * @author 86153
  */
+@Slf4j
+@EqualsAndHashCode
 public class UserAgentDirectives {
-    public static final Logger logger = LoggerFactory.getLogger(UserAgentDirectives.class);
-
     public Set<String> userAgents;
     private List<String> sitemap = null;
     private String preferredHost = null;
     private Double crawlDelay = null;
-    private Set<PathRule> pathRules = new HashSet<>();
+    private final Set<PathRule> pathRules = new HashSet<>();
 
     /**
      * Comparator used to order the list of matching path rules in such a way
@@ -92,7 +95,7 @@ public class UserAgentDirectives {
         userAgent = userAgent.toLowerCase();
         int maxLength = 0;
         for (String ua : userAgents) {
-            if (ua.equals("*") || userAgent.contains(ua)) {
+            if ("*".equals(ua) || userAgent.contains(ua)) {
                 maxLength = Math.max(maxLength, ua.length());
             }
         }
@@ -181,25 +184,25 @@ public class UserAgentDirectives {
      * @param value The value of the rule
      */
     public void add(String rule, String value) {
-        if (rule.equals("sitemap")) {
+        if ("sitemap".equals(rule)) {
             if (this.sitemap == null) {
-                this.sitemap = new ArrayList<String>();
+                this.sitemap = new ArrayList<>();
             }
             this.sitemap.add(value);
-        } else if (rule.equals("crawl-delay")) {
+        } else if ("crawl-delay".equals(rule)) {
             try {
                 this.crawlDelay = Double.parseDouble(value);
             } catch (NumberFormatException e) {
-                logger.warn("Invalid number format for crawl-delay robots.txt: {}", value);
+                log.warn("Invalid number format for crawl-delay robots.txt: {}", value);
             }
-        } else if (rule.equals("host")) {
+        } else if ("host".equals(rule)) {
             this.preferredHost = value;
-        } else if (rule.equals("allow")) {
+        } else if ("allow".equals(rule)) {
             this.pathRules.add(new PathRule(HostDirectives.ALLOWED, value));
-        } else if (rule.equals("disallow")) {
+        } else if ("disallow".equals(rule)) {
             this.pathRules.add(new PathRule(HostDirectives.DISALLOWED, value));
         } else {
-            logger.error("Invalid key in robots.txt passed to UserAgentRules: {}", rule);
+            log.error("Invalid key in robots.txt passed to UserAgentRules: {}", rule);
         }
     }
 

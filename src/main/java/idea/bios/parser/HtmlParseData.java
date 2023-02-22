@@ -17,52 +17,28 @@
 
 package idea.bios.parser;
 
+import idea.bios.url.WebURL;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.util.Map;
 import java.util.Set;
 
-import edu.uci.ics.crawler4j.url.WebURL;
-
+/**
+ * @author 86153
+ */
 public class HtmlParseData implements ParseData {
-
+    @Getter @Setter
     private String html;
+    @Getter @Setter
     private String text;
+    @Getter @Setter
     private String title;
+    @Getter @Setter
     private Map<String, String> metaTags;
-
     private Set<WebURL> outgoingUrls;
+    @Getter @Setter
     private String contentCharset;
-
-    public String getHtml() {
-        return html;
-    }
-
-    public void setHtml(String html) {
-        this.html = html;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public void setText(String text) {
-        this.text = text;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public Map<String, String> getMetaTags() {
-        return metaTags;
-    }
-
-    public void setMetaTags(Map<String, String> metaTags) {
-        this.metaTags = metaTags;
-    }
 
     public String getMetaTagValue(String metaTag) {
         return metaTags.getOrDefault(metaTag, "");
@@ -81,13 +57,5 @@ public class HtmlParseData implements ParseData {
     @Override
     public String toString() {
         return text;
-    }
-
-    public void setContentCharset(String contentCharset) {
-        this.contentCharset = contentCharset;
-    }
-
-    public String getContentCharset() {
-        return contentCharset;
     }
 }
