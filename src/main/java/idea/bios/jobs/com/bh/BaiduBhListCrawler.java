@@ -128,14 +128,14 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     @Override
     public void runner() throws Exception {
         var startList = new ArrayList<String>(){{
-            add("https://m.baidu.com/bh/m/detail/ar_9757274631162417881");
-            add("https://m.baidu.com/bh/m/detail/ar_17307994535258803987");
+            add("https://m.baidu.com/bh/m/detail/vc_13683826448718648906");
+            add("https://m.baidu.com/bh/m/detail/qr_4601254214516465294");
             add("https://m.baidu.com/bh/m/detail/ar_12665210231907902229");
-            add("https://m.baidu.com/bh/m/detail/ar_4085299825249287360");
-            add("https://m.baidu.com/bh/m/detail/vc_16593335641951410586");
-            add("https://m.baidu.com/bh/m/detail/vc_12527290574691625828");
-            add("https://m.baidu.com/bh/m/detail/ar_14672916287349354402");
-            add("https://m.baidu.com/bh/m/detail/ar_2500694198211796944");
+            add("https://m.baidu.com/bh/m/detail/vc_11610267331908117856");
+            add("https://m.baidu.com/bh/m/detail/ar_1424585174400731800");
+            add("https://m.baidu.com/bh/m/detail/qr_11841073851626188033");
+            add("https://m.baidu.com/bh/m/detail/ar_4157176988545308825");
+            add("https://m.baidu.com/bh/m/detail/qr_12228924022753137252");
         }};
         listStarter = new ListStarter(configBuilder(-1, 1000));
         listStarter.run(ListCrawlerEnum.baidu_bh_list, (offset, limit) ->

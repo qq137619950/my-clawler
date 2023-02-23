@@ -20,8 +20,6 @@ package idea.bios.frontier;
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.url.WebURL;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;

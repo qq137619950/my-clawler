@@ -19,9 +19,8 @@ package idea.bios.frontier;
 
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.util.Util;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
@@ -35,9 +34,8 @@ import com.sleepycat.je.OperationStatus;
  * @author Yasser Ganjisaffar
  */
 
+@Slf4j
 public class DocIDServer {
-    private static final Logger logger = LoggerFactory.getLogger(DocIDServer.class);
-
     private final Database docIDsDB;
     private static final String DATABASE_NAME = "DocIDs";
 
@@ -57,7 +55,7 @@ public class DocIDServer {
         if (config.isResumableCrawling()) {
             int docCount = getDocCount();
             if (docCount > 0) {
-                logger.info("Loaded {} URLs that had been detected in previous crawl.",
+                log.info("Loaded {} URLs that had been detected in previous crawl.",
                         docCount);
                 lastDocId = docCount;
             }
@@ -82,7 +80,7 @@ public class DocIDServer {
                 if (config.isHaltOnError()) {
                     throw e;
                 } else {
-                    logger.error("Exception thrown while getting DocID", e);
+                    log.error("Exception thrown while getting DocID", e);
                     return -1;
                 }
             }
@@ -110,7 +108,7 @@ public class DocIDServer {
                 if (config.isHaltOnError()) {
                     throw e;
                 } else {
-                    logger.error("Exception thrown while getting new DocID", e);
+                    log.error("Exception thrown while getting new DocID", e);
                     return -1;
                 }
             }
@@ -146,7 +144,7 @@ public class DocIDServer {
         try {
             return (int) docIDsDB.count();
         } catch (DatabaseException e) {
-            logger.error("Exception thrown while getting DOC Count", e);
+            log.error("Exception thrown while getting DOC Count", e);
             return -1;
         }
     }
@@ -155,7 +153,7 @@ public class DocIDServer {
         try {
             docIDsDB.close();
         } catch (DatabaseException e) {
-            logger.error("Exception thrown while closing DocIDServer", e);
+            log.error("Exception thrown while closing DocIDServer", e);
         }
     }
 }

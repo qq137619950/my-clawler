@@ -2,6 +2,7 @@ package idea.bios.util.selenium;
 
 import lombok.var;
 import org.openqa.selenium.By;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -26,8 +27,22 @@ public class SeleniumUtils {
     private static ChromeDriver getChromeDriver() {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
-        //无浏览器模式
+        chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        // 配置参数优化
+        // 没有界面的模型，可以节省很多的内存和cpu占用，而且禁用了cpu渲染，提高加载速度
         chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--disable-software-rasterizer");
+        // 配置不加载图片
+        chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
+        // 禁用插件加载
+        chromeOptions.addArguments("--disable-extensions");
+        // 其他
+        chromeOptions.addArguments("--window-size=1920,1080");
+        chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("--ignore-certificate-errors");
+        chromeOptions.addArguments("--allow-running-insecure-content");
+        chromeOptions.addArguments("blink-settings=imagesEnabled=false");
         return new ChromeDriver(chromeOptions);
     }
 

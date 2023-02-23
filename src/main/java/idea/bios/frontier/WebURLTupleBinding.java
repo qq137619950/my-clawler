@@ -21,6 +21,7 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
 import com.sleepycat.bind.tuple.TupleOutput;
 import idea.bios.url.WebURL;
+import lombok.var;
 
 
 /**
@@ -30,7 +31,7 @@ public class WebURLTupleBinding extends TupleBinding<WebURL> {
 
     @Override
     public WebURL entryToObject(TupleInput input) {
-        WebURL webURL = new WebURL();
+        var webURL = new WebURL();
         webURL.setURL(input.readString());
         webURL.setDocid(input.readInt());
         webURL.setParentDocid(input.readInt());
