@@ -17,6 +17,8 @@ import java.util.Optional;
 
 
 /**
+ * Selenium的工具
+ * TODO 定一个一个接口实现方法在crawler中实现，或者定义为page parser的一部分
  * @author 86153
  */
 public class SeleniumUtils {
@@ -29,20 +31,23 @@ public class SeleniumUtils {
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
         // 配置参数优化
-        // 没有界面的模型，可以节省很多的内存和cpu占用，而且禁用了cpu渲染，提高加载速度
+        // 无头模式
         chromeOptions.addArguments("--headless");
+        // 禁用GPU和缓存
         chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--disable-gpu-program-cache");
         chromeOptions.addArguments("--disable-software-rasterizer");
         // 配置不加载图片
         chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
         // 禁用插件加载
         chromeOptions.addArguments("--disable-extensions");
-        // 其他
+        // 设置浏览器窗口大小
         chromeOptions.addArguments("--window-size=1920,1080");
+        // 不使用沙箱
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--ignore-certificate-errors");
         chromeOptions.addArguments("--allow-running-insecure-content");
-        chromeOptions.addArguments("blink-settings=imagesEnabled=false");
+        chromeOptions.addArguments("--disable-dev-shm-usage");
         return new ChromeDriver(chromeOptions);
     }
 
@@ -84,6 +89,9 @@ public class SeleniumUtils {
         return links;
     }
 
+    /**
+     * test
+     */
     public static void main(String[] args) throws InterruptedException {
         // https://m.baidu.com/bh/m/detail/ar_15210660146895383766
         System.out.println("urls:" + getBaiduBhLinks(
