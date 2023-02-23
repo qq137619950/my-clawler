@@ -25,6 +25,9 @@ import static idea.bios.crawler.my.Tools.configBuilder;
 public class BaiduBhListCrawler extends AbsCommonCrawler {
     // 启动器
     private static ListStarter listStarter;
+    // 禁用链接
+
+
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
         var result = new HashMap<String, Object>();
@@ -126,16 +129,22 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    public boolean shouldFollowLinksIn(WebURL url) {
+        // 有特定的链接生成方式
+        return false;
+    }
+
+    @Override
     public void runner() throws Exception {
         var startList = new ArrayList<String>(){{
-            add("https://m.baidu.com/bh/m/detail/vc_13683826448718648906");
-            add("https://m.baidu.com/bh/m/detail/qr_4601254214516465294");
-            add("https://m.baidu.com/bh/m/detail/ar_12665210231907902229");
-            add("https://m.baidu.com/bh/m/detail/vc_11610267331908117856");
-            add("https://m.baidu.com/bh/m/detail/ar_1424585174400731800");
-            add("https://m.baidu.com/bh/m/detail/qr_11841073851626188033");
-            add("https://m.baidu.com/bh/m/detail/ar_4157176988545308825");
-            add("https://m.baidu.com/bh/m/detail/qr_12228924022753137252");
+            add("https://m.baidu.com/bh/m/detail/ar_11690940218484428002");
+            add("https://m.baidu.com/bh/m/detail/ar_2091193480913404094");
+            add("https://m.baidu.com/bh/m/detail/ar_7411811194307069994");
+            add("https://m.baidu.com/bh/m/detail/qr_15796705653020074719");
+            add("https://m.baidu.com/bh/m/detail/qr_11295264292163515864");
+            add("https://m.baidu.com/bh/m/detail/ar_4029780677957538749");
+            add("https://m.baidu.com/bh/m/detail/qr_12108537395090571361");
+            add("https://m.baidu.com/bh/m/detail/qr_11795910193222559963");
         }};
         listStarter = new ListStarter(configBuilder(-1, 1000));
         listStarter.run(ListCrawlerEnum.baidu_bh_list, (offset, limit) ->

@@ -53,6 +53,16 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     public abstract boolean shouldVisit(Page referringPage, WebURL url);
 
     /**
+     * Determine whether links found at the given URL should be added to the queue for crawling.
+     * @param url the URL of the page under consideration
+     * @return boolean
+     */
+    @Override
+    protected boolean shouldFollowLinksIn(WebURL url) {
+        return true;
+    }
+
+    /**
      * 启动器
      * @throws Exception 异常
      */
