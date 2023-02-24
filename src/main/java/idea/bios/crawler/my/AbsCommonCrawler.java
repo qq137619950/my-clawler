@@ -101,8 +101,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                 return;
             }
             // 将格式化的数据写入MongoDb
-            MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(cName);
+            MongoCollection<Document> collection = new MongoDb().getCrawlerDataCollection(cName);
             var insertDoc = new Document();;
             result.forEach(insertDoc::append);
             // 页面url也记录下

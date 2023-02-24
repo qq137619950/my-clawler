@@ -1,5 +1,6 @@
 package idea.bios.util.selenium;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
 import org.openqa.selenium.PageLoadStrategy;
@@ -14,6 +15,8 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 
 /**
@@ -21,10 +24,18 @@ import java.util.Optional;
  * TODO 定一个一个接口实现方法在crawler中实现，或者定义为page parser的一部分
  * @author 86153
  */
+@Slf4j
 public class SeleniumUtils {
+    private static final double PASS_RATIO = 0.5;
+
     private static final String DESKTOP_CHROME_PATH =
             "C:/Program Files/Google/Chrome/Application/chromedriver.exe";
-    private static final String CHROME_PATH = "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe";
+    private static final String CHROME_PATH =
+            "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe";
+    private static final String CHROME_PATH_HYQ =
+            "C:/Users/IDEA/AppData/Local/Google/Chrome/Application/chromedriver.exe";
+
+    private static final Semaphore SEMAPHORE = new Semaphore(1);
 
     private static ChromeDriver getChromeDriver() {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
@@ -51,7 +62,28 @@ public class SeleniumUtils {
         return new ChromeDriver(chromeOptions);
     }
 
-    public static List<String> getBaiduBhLinks(String url) {
+    public static List<String> getLinks(String url) {
+        // 随机返回空
+        var random = new Random();
+        if (random.nextInt(10) > PASS_RATIO * 10) {
+            return new ArrayList<>();
+        }
+        try {
+            if (SEMAPHORE.tryAcquire()) {
+                List<String> res = getBaiduBhLinks(url);
+                SEMAPHORE.release();
+                return res;
+            } else {
+                return new ArrayList<>();
+            }
+        } catch (Exception e) {
+            log.warn("Exception", e);
+            SEMAPHORE.release();
+            return new ArrayList<>();
+        }
+    }
+
+    static List<String> getBaiduBhLinks(String url) {
         var links = new ArrayList<String>();
         if (url == null || url.isEmpty()) {
             return links;
@@ -86,6 +118,7 @@ public class SeleniumUtils {
                     });
         }
         driver.quit();
+        SEMAPHORE.release();
         return links;
     }
 

@@ -23,11 +23,10 @@ import static idea.bios.crawler.my.Tools.configBuilder;
  * @author 86153
  */
 public class BaiduBhListCrawler extends AbsCommonCrawler {
-    // 启动器
+    /**
+     * 启动器
+     */
     private static ListStarter listStarter;
-    // 禁用链接
-
-
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
         var result = new HashMap<String, Object>();
@@ -118,8 +117,8 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public void visit(Page page) {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
-        listStarter.setQueue(SeleniumUtils.getBaiduBhLinks(url));
         super.commonPageVisit(page, "com.baidu.bh.article.qa");
+        listStarter.setQueue(SeleniumUtils.getLinks(url));
     }
 
     @Override
@@ -137,16 +136,42 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     @Override
     public void runner() throws Exception {
         var startList = new ArrayList<String>(){{
-            add("https://m.baidu.com/bh/m/detail/ar_11690940218484428002");
-            add("https://m.baidu.com/bh/m/detail/ar_2091193480913404094");
-            add("https://m.baidu.com/bh/m/detail/ar_7411811194307069994");
-            add("https://m.baidu.com/bh/m/detail/qr_15796705653020074719");
-            add("https://m.baidu.com/bh/m/detail/qr_11295264292163515864");
-            add("https://m.baidu.com/bh/m/detail/ar_4029780677957538749");
-            add("https://m.baidu.com/bh/m/detail/qr_12108537395090571361");
-            add("https://m.baidu.com/bh/m/detail/qr_11795910193222559963");
+            add("https://m.baidu.com/bh/m/detail/ar_1151125392613938133");
+            add("https://m.baidu.com/bh/m/detail/ar_6442070064922690834");
+            add("https://m.baidu.com/bh/m/detail/ar_9439497617102990576");
+            add("https://m.baidu.com/bh/m/detail/ar_3640179929473294485");
+            add("https://m.baidu.com/bh/m/detail/ar_8083185686713864556");
+            add("https://m.baidu.com/bh/m/detail/ar_9615903856324255196");
+            add("https://m.baidu.com/bh/m/detail/ar_7788970030282471763");
+            add("https://m.baidu.com/bh/m/detail/ar_7026564090491937961");
+
+            add("https://m.baidu.com/bh/m/detail/ar_7922028990731072213");
+            add("https://m.baidu.com/bh/m/detail/ar_10858666168882250311");
+            add("https://m.baidu.com/bh/m/detail/ar_5539072192622654549");
+            add("https://m.baidu.com/bh/m/detail/ar_1954794905110302825");
+            add("https://m.baidu.com/bh/m/detail/ar_8302957808524277268");
+            add("https://m.baidu.com/bh/m/detail/ar_10070257364496974024");
+            add("https://m.baidu.com/bh/m/detail/vc_3000816748248986681");
+            add("https://m.baidu.com/bh/m/detail/qr_12274882085697843187");
+            add("https://m.baidu.com/bh/m/detail/ar_16626261557995470980");
+            add("https://m.baidu.com/bh/m/detail/ar_7217544763780178215");
+            add("https://m.baidu.com/bh/m/detail/qr_8082268841242361251");
+            add("https://m.baidu.com/bh/m/detail/ar_6850790536306110484");
+            add("https://m.baidu.com/bh/m/detail/ar_10487979156498197426");
+            add("https://m.baidu.com/bh/m/detail/ar_6788309259092883319");
+            add("https://m.baidu.com/bh/m/detail/ar_9344947297443864269");
+            add("https://m.baidu.com/bh/m/detail/ar_8887407635695244126");
+            add("https://m.baidu.com/bh/m/detail/ar_11563770150590832949");
+            add("https://m.baidu.com/bh/m/detail/qr_12255470671776017147");
+            add("https://m.baidu.com/bh/m/detail/ar_6829471551307117734");
+            add("https://m.baidu.com/bh/m/detail/ar_7291371047636713556");
+            add("https://m.baidu.com/bh/m/detail/ar_7996760970748216313");
+            add("https://m.baidu.com/bh/m/detail/ar_7058428578494431975");
+            add("https://m.baidu.com/bh/m/detail/qr_11723972364665847864");
+            add("https://m.baidu.com/bh/m/detail/qr_12697154049055531484");
+
         }};
-        listStarter = new ListStarter(configBuilder(-1, 1000));
+        listStarter = new ListStarter(configBuilder(-1, 300));
         listStarter.run(ListCrawlerEnum.baidu_bh_list, (offset, limit) ->
                 startList, startList.size(), 1, startList.size());
     }
