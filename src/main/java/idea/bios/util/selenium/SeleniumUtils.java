@@ -37,7 +37,9 @@ public class SeleniumUtils {
 
     private static final Semaphore SEMAPHORE = new Semaphore(1);
 
-    private static ChromeDriver getChromeDriver() {
+    private static ChromeDriver CHROME_DRIVER;
+
+    static {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
@@ -59,15 +61,18 @@ public class SeleniumUtils {
         chromeOptions.addArguments("--ignore-certificate-errors");
         chromeOptions.addArguments("--allow-running-insecure-content");
         chromeOptions.addArguments("--disable-dev-shm-usage");
-        return new ChromeDriver(chromeOptions);
+        CHROME_DRIVER = new ChromeDriver(chromeOptions);
     }
+
+    // 清除滞留的进程
+    private static final String WINDOWS_KILL_CMD = "taskkill /f /im chromedriver.exe";
 
     public static List<String> getLinks(String url) {
         // 随机返回空
-        var random = new Random();
-        if (random.nextInt(10) > PASS_RATIO * 10) {
-            return new ArrayList<>();
-        }
+//        var random = new Random();
+//        if (random.nextInt(10) > PASS_RATIO * 10) {
+//            return new ArrayList<>();
+//        }
         try {
             if (SEMAPHORE.tryAcquire()) {
                 List<String> res = getBaiduBhLinks(url);
@@ -88,10 +93,9 @@ public class SeleniumUtils {
         if (url == null || url.isEmpty()) {
             return links;
         }
-        ChromeDriver driver = getChromeDriver();
         //等待xx元素出现
-        var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        driver.get(url);
+        var wait = new WebDriverWait(CHROME_DRIVER, Duration.ofSeconds(10));
+        CHROME_DRIVER.get(url);
         // 自定义等待事件
         wait.until(ExpectedConditions.presenceOfElementLocated(By.className("health-carea")));
         WebElement element = wait.until((ExpectedCondition<WebElement>)
@@ -117,17 +121,20 @@ public class SeleniumUtils {
                         }
                     });
         }
-        driver.quit();
+        // CHROME_DRIVER.quit();
         SEMAPHORE.release();
         return links;
     }
 
+
     /**
      * test
      */
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
         // https://m.baidu.com/bh/m/detail/ar_15210660146895383766
-        System.out.println("urls:" + getBaiduBhLinks(
-                "https://m.baidu.com/bh/m/detail/ar_15210660146895383766"));
+//        System.out.println("urls:" + getBaiduBhLinks(
+//                "https://m.baidu.com/bh/m/detail/ar_15210660146895383766"));
+//        Process p = Runtime.getRuntime().exec("cmd /c " + WINDOWS_KILL_CMD);
+//        System.out.println(p.exitValue());
     }
 }
