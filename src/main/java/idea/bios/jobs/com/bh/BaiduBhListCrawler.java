@@ -143,7 +143,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     @Override
     public void runner() throws Exception {
         listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 300));
+                -1, 300, true));
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {

@@ -20,14 +20,19 @@ public class Tools {
         return robotsTxtConfig;
     }
 
-    public static CrawlConfig configBuilder(int maxDepthOfCrawling, int politenessDelay) {
+    public static CrawlConfig configBuilder(int maxDepthOfCrawling,
+                                            int politenessDelay,
+                                            boolean chromeDriver) {
         CrawlConfig config = Tools.defaultConfigBuilder();
         config.setMaxDepthOfCrawling(maxDepthOfCrawling);
         config.setPolitenessDelay(politenessDelay);
+        config.setChromeDriver(chromeDriver);
         return config;
     }
 
-    public static CrawlConfig configBuilder(int maxDepthOfCrawling, int politenessDelay, int connectionTimeout) {
+    public static CrawlConfig configBuilder(int maxDepthOfCrawling,
+                                            int politenessDelay,
+                                            int connectionTimeout) {
         CrawlConfig config = Tools.defaultConfigBuilder();
         config.setMaxDepthOfCrawling(maxDepthOfCrawling);
         config.setConnectionTimeout(connectionTimeout);

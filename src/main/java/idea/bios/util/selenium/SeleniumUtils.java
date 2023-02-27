@@ -3,10 +3,8 @@ package idea.bios.util.selenium;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
-import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -33,14 +31,13 @@ public class SeleniumUtils {
     private static final String CHROME_PATH_HYQ =
             "C:/Users/IDEA/AppData/Local/Google/Chrome/Application/chromedriver.exe";
 
-    private static final Semaphore SEMAPHORE = new Semaphore(1);
+    private static final Semaphore SEMAPHORE = new Semaphore(10);
 
     public static List<String> getLinks(String url, ChromeDriver driver) {
-        // 随机返回空
-//        var random = new Random();
-//        if (random.nextInt(10) > PASS_RATIO * 10) {
-//            return new ArrayList<>();
-//        }
+        if (driver == null) {
+            log.warn("ChromeDriver is null.");
+            return new ArrayList<>();
+        }
         try {
             if (SEMAPHORE.tryAcquire()) {
                 List<String> res = getBaiduBhLinks(url, driver);

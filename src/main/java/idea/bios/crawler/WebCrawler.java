@@ -133,7 +133,9 @@ public class WebCrawler implements Runnable {
         this.myController = crawlController;
         this.isWaitingForNewURLs = false;
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
-        this.chromeDriver = SeleniumBuilder.getChromeDriver();
+        if(myController.getConfig().isChromeDriver()) {
+            this.chromeDriver = SeleniumBuilder.getChromeDriver();
+        }
     }
 
     /**
@@ -155,7 +157,9 @@ public class WebCrawler implements Runnable {
         // Do nothing by default
         // Sub-classed can override this to add their custom functionality
         // 关闭绑定的Driver
-        SeleniumBuilder.shutdownDriver(chromeDriver);
+        if(myController.getConfig().isChromeDriver()) {
+            SeleniumBuilder.shutdownDriver(chromeDriver);
+        }
     }
 
     /**
