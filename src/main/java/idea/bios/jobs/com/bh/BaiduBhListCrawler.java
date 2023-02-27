@@ -145,15 +145,11 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public void runner() throws Exception {
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 300));
-        List<String> seeds = listStarter.getSeedFetcher().getSeedsPlain(
-                "https://m.baidu.com/bh/m/detail/qr_9522987927692819464",
-                "https://m.baidu.com/bh/m/detail/qr_6884364498076689267"
-        );
+        var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {
-            var seedFetcher = new SeedFetcherImpl();
-            var searchLinks = new BaiduSfSearchLinks();
-            List<String> sUrls = seedFetcher.getSeedsFromDb(START_INT.getAndIncrement(),
+            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+                    START_INT.getAndIncrement(),
                     1,
                     term -> BaiduSfSearchLinks.URL_PREFIX + term);
             // 解析其中的url
@@ -164,8 +160,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
             List<String> links = searchLinks.getLinks(sUrls.get(0));
             listStarter.addUrlsToQueue(links);
         }, 10);
-        listStarter.run(ListCrawlerEnum.baidu_bh_list, (offset, limit) -> seeds,
-                 seeds.size(), 1, seeds.size());
+        listStarter.run(ListCrawlerEnum.baidu_bh_list);
     }
 
     public static void main(String[] args) throws IOException {

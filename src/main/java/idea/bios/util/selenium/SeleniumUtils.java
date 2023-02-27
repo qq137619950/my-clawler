@@ -3,7 +3,6 @@ package idea.bios.util.selenium;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -17,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Semaphore;
-import java.util.function.Function;
 
 
 /**
@@ -64,7 +62,9 @@ public class SeleniumUtils {
         CHROME_DRIVER = new ChromeDriver(chromeOptions);
     }
 
-    // 清除滞留的进程
+    /**
+     * 清除windows中滞留进程
+     */
     private static final String WINDOWS_KILL_CMD = "taskkill /f /im chromedriver.exe";
 
     public static List<String> getLinks(String url) {

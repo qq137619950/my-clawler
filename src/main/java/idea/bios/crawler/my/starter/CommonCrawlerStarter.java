@@ -15,7 +15,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -24,21 +23,31 @@ import java.util.List;
  */
 @Slf4j
 public class CommonCrawlerStarter {
-
-    private static final int NUMBER_OF_CRAWLERS = 8;
-
+    /**
+     * 并行线程数
+     */
+    private static final int NUMBER_OF_CRAWLERS = 5;
+    /**
+     * 爬虫配置
+     */
     private final CrawlConfig config;
+    /**
+     * Robots.txt配置
+     */
     private final RobotsTxtConfig robotsTxtConfig;
+    /**
+     * 控制器
+     */
     private CommonController myListController;
+    /**
+     * seed的获取类，常用于持续性加入队列
+     */
     @Getter
     private final SeedFetcher seedFetcher;
+    /**
+     * 持久化数据目录，一般不需要改变
+     */
     private static final String CRAW_STORAGE_FOLDER = "./crawl/root";
-
-    public CommonCrawlerStarter(CrawlConfig config, RobotsTxtConfig robotsTxtConfig) {
-        this.config = config;
-        this.robotsTxtConfig = robotsTxtConfig;
-        seedFetcher = new SeedFetcherImpl();
-    }
 
     public CommonCrawlerStarter(CrawlConfig config) {
         this.config = config;
@@ -58,13 +67,34 @@ public class CommonCrawlerStarter {
      */
     public void addUrlsToQueue(List<String> pageUrls) {
         if (myListController == null || pageUrls == null || pageUrls.isEmpty()) {
+            log.warn("add nothing to queue.");
             return;
         }
         myListController.addUrlsToQueue(pageUrls);
     }
 
     /**
-     * 爬虫crawler启动类
+     * 启动一个没有初始seed的crawler
+     * @param crawlerEnum   crawlerEnum
+     * @throws Exception    Exception
+     */
+    public void run(ListCrawlerEnum crawlerEnum) throws Exception {
+        this.run(crawlerEnum, (offset, limit)-> null, 0, 0, 0);
+    }
+
+    /**
+     * 直接加载seed的crawler
+     * @param crawlerEnum   crawlerEnum
+     * @param originalUrls  初始的seeds
+     * @throws Exception    Exception
+     */
+    public void run(ListCrawlerEnum crawlerEnum, List<String> originalUrls) throws Exception {
+        this.run(crawlerEnum, (offset, limit)-> originalUrls,
+                originalUrls.size(), 0, originalUrls.size());
+    }
+
+    /**
+     * 爬虫crawler启动类（支持分页）
      * @param crawlerEnum           crawler枚举
      * @param urlSourceBuilder      urlSourceBuilder
      */
@@ -93,7 +123,7 @@ public class CommonCrawlerStarter {
         int s = start;
         while (s <= end) {
             // 分页获取web site
-            List<String> webSites = null;
+            List<String> webSites;
             try {
                 webSites = urlSourceBuilder.batchGetUrls(s, step);
                 if (webSites == null || webSites.isEmpty()) {
