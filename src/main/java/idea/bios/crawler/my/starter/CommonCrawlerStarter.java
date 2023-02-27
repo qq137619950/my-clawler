@@ -3,12 +3,15 @@ package idea.bios.crawler.my.starter;
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
-import idea.bios.crawler.my.CommonController;
+import idea.bios.crawler.my.controller.CommonController;
 import idea.bios.crawler.my.Tools;
+import idea.bios.crawler.my.seed.SeedFetcher;
+import idea.bios.crawler.my.seed.SeedFetcherImpl;
 import idea.bios.crawler.my.sites.ListCrawlerEnum;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
 import idea.bios.robotstxt.RobotsTxtServer;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 
@@ -16,59 +19,62 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
- * 启动类
+ * 启动类，crawler启动入口
  * @author 86153
  */
 @Slf4j
-public class ListStarter {
+public class CommonCrawlerStarter {
 
     private static final int NUMBER_OF_CRAWLERS = 8;
 
     private final CrawlConfig config;
     private final RobotsTxtConfig robotsTxtConfig;
     private CommonController myListController;
-
+    @Getter
+    private final SeedFetcher seedFetcher;
     private static final String CRAW_STORAGE_FOLDER = "./crawl/root";
 
-    public ListStarter(CrawlConfig config, RobotsTxtConfig robotsTxtConfig) {
+    public CommonCrawlerStarter(CrawlConfig config, RobotsTxtConfig robotsTxtConfig) {
         this.config = config;
         this.robotsTxtConfig = robotsTxtConfig;
+        seedFetcher = new SeedFetcherImpl();
     }
 
-    public ListStarter(CrawlConfig config) {
+    public CommonCrawlerStarter(CrawlConfig config) {
         this.config = config;
         this.robotsTxtConfig = Tools.defaultRobotsBuilder();
+        seedFetcher = new SeedFetcherImpl();
     }
 
-    public ListStarter() {
+    public CommonCrawlerStarter() {
         this.config = Tools.listConfigBuilder(1000);
         this.robotsTxtConfig = Tools.defaultRobotsBuilder();
+        seedFetcher = new SeedFetcherImpl();
     }
 
     /**
      * 在执行的过程中，有需要写入队列的
      * @param pageUrls  urls
      */
-    public void setQueue(List<String> pageUrls) {
+    public void addUrlsToQueue(List<String> pageUrls) {
         if (myListController == null || pageUrls == null || pageUrls.isEmpty()) {
             return;
         }
-        try {
-            myListController.addUrlsToQueue(pageUrls);
-        } catch (UnsupportedEncodingException e) {
-            log.warn("Exception occurs.", e);
-        }
+        myListController.addUrlsToQueue(pageUrls);
     }
 
     /**
-     *  处理list类型的爬虫
-     *
+     * 爬虫crawler启动类
+     * @param crawlerEnum           crawler枚举
+     * @param urlSourceBuilder      urlSourceBuilder
      */
     public void run(ListCrawlerEnum crawlerEnum, URLSourceBuilder urlSourceBuilder,
+                    // 分页参数
                     int step, final int start, final int end) throws Exception {
         config.setCrawlStorageFolder(CRAW_STORAGE_FOLDER);
         config.setRespectNoIndex(false);
-
+        // 不关闭进程，而是从其他途径不断加入seed
+        config.setContinuousPutSeeds(true);
         // 判断参数
         if (step <= 0 || start < 0 || start > end) {
             log.warn("param error!");
@@ -81,7 +87,7 @@ public class ListStarter {
         myListController = new CommonController(config, pageFetcher, robotsTxtServer);
         CrawlController.WebCrawlerFactory<WebCrawler> factory = crawlerEnum
                 .getCrawlerClass()::newInstance;
-        // 非阻塞
+        // 阻塞
         myListController.start(factory, NUMBER_OF_CRAWLERS);
 
         int s = start;
@@ -104,12 +110,8 @@ public class ListStarter {
                 log.warn("Exception:", e);
             }
         }
-        // 完成 停顿10秒，等待后续是否有动态加入队列的
-        Thread.sleep(10000);
-        myListController.putQueueFinish();
-    }
-
-    public boolean getQueueFinish() {
-        return myListController.isSchedulePutQueueFinish();
+        if (!config.isContinuousPutSeeds()) {
+            myListController.putQueueFinish();
+        }
     }
 }

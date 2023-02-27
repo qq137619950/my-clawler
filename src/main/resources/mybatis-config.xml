@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <properties resource="jdbc.properties" />
+    <!-- 设置整个包下的文件都以自己的类名为别名 ，不然在之后的mapper.xml中要写类的全路径-->
+    <typeAliases>
+        <package name="idea.bios" />
+    </typeAliases>
+
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="${jdbc.driverClassName}" />
+                <property name="url" value="${jdbc.url}" />
+                <property name="username" value="${jdbc.username}" />
+                <property name="password" value="${jdbc.password}" />
+            </dataSource>
+        </environment>
+    </environments>
+    <!-- 将映射的文件指定到类中而不是资源文件中，可用resource 或者class指定到资源文件中 -->
+    <mappers>
+        <mapper resource="mapper/OmahaMapper.xml" />
+    </mappers>
+
+</configuration>

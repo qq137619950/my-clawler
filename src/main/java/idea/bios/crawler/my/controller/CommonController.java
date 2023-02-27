@@ -1,4 +1,4 @@
-package idea.bios.crawler.my;
+package idea.bios.crawler.my.controller;
 
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
@@ -28,7 +28,7 @@ public class CommonController extends CrawlController {
     /**
      * 计划中的url是否插入完毕
      */
-    private boolean isSchedulePutQueueFinish;
+    private boolean isSchedulePutQueueFinish = false;
 
     public CommonController(CrawlConfig config, PageFetcher pageFetcher,
                             RobotsTxtServer robotsTxtServer) throws Exception {
@@ -52,7 +52,7 @@ public class CommonController extends CrawlController {
      * 在task存续期增加url进队列
      * @param pageUrls   List
      */
-    public void addUrlsToQueue(List<String> pageUrls) throws UnsupportedEncodingException {
+    public void addUrlsToQueue(List<String> pageUrls) {
         if (pageUrls == null || pageUrls.isEmpty()) {
             log.warn("pageUrls empty!");
             return;
@@ -60,13 +60,19 @@ public class CommonController extends CrawlController {
         // 标准化
         List<String> canonicalUrls = new ArrayList<>();
         for (String pageUrl : pageUrls) {
-            URLCanonicalizer.getCanonicalURL(pageUrl);
+            try {
+                URLCanonicalizer.getCanonicalURL(pageUrl);
+            } catch (UnsupportedEncodingException e) {
+                log.warn("Exception occurs. pageUrls={}", pageUrls, e);
+                continue;
+            }
             if (pageUrl != null) {
                 canonicalUrls.add(pageUrl);
             }
         }
         if (canonicalUrls.isEmpty()) {
-            log.error("Invalid seed URL: {}", pageUrls);
+            log.warn("seed URL empty: {}", pageUrls);
+            return;
         }
         // 构造URL List
         var urls = new ArrayList<WebURL>(canonicalUrls.size());
@@ -93,7 +99,8 @@ public class CommonController extends CrawlController {
                 if (robotstxtServer.allows(webUrl)) {
                     urls.add(webUrl);
                 } else {
-                    // using the WARN level here, as the user specifically asked to add this seed
+                    // using the WARN level here
+                    // as the user specifically asked to add this seed
                     log.warn("Robots.txt does not allow this seed: {}", webUrl);
                 }
             } catch (IOException | InterruptedException e) {
@@ -108,7 +115,7 @@ public class CommonController extends CrawlController {
     }
 
     /**
-     * 重写启动方法
+     * 重写启动方法，不退出程序，持续性放入新的数据
      * @param crawlerFactory        爬虫构造方法
      * @param numberOfCrawlers      爬虫线程池个数
      * @param <T>                   T
@@ -125,9 +132,11 @@ public class CommonController extends CrawlController {
             // 爬虫队列
             final var crawlers = new ArrayList<T>();
             for (int i = 1; i <= numberOfCrawlers; i++) {
+                // 创建一个crawler
                 T crawler = crawlerFactory.newInstance();
                 var thread = new Thread(crawler, "Crawler " + i);
                 crawler.setMyThread(thread);
+                // 初始化crawler
                 crawler.init(i, this);
                 thread.start();
                 crawlers.add(crawler);
@@ -149,17 +158,16 @@ public class CommonController extends CrawlController {
                                 if (!thread.isAlive()) {
                                     if (!shuttingDown) {
                                         // 重新拉起一个线程
-                                        log.info("Thread {} was dead, I'll recreate it", i);
-                                        // 重新建一个新的
                                         T crawler = crawlerFactory.newInstance();
                                         thread = new Thread(crawler, "Crawler " + (i + 1));
-                                        threads.remove(i);
+                                        Thread droppedThread = threads.remove(i);
+                                        log.warn("Thread {} is droped. then new one:{}", droppedThread.getName(), thread.getName());
                                         threads.add(i, thread);
                                         crawler.setMyThread(thread);
                                         crawler.init(i + 1, controller);
                                         thread.start();
                                         // 更新crawler list
-                                        crawlers.remove(i);
+                                        T droppedCrawler = crawlers.remove(i);
                                         crawlers.add(i, crawler);
                                     }
                                 } else if (!crawlers.get(i).isWaitingForNewURLs()){
@@ -196,9 +204,8 @@ public class CommonController extends CrawlController {
                                     crawler.onBeforeExit();
                                     crawlersLocalData.add(crawler.getMyLocalData());
                                 }
-                                log.info(
-                                        "Waiting for " + config.getCleanupDelaySeconds() +
-                                                " seconds before final clean up...");
+                                log.info("Waiting for {} seconds before final clean up...",
+                                        config.getCleanupDelaySeconds());
                                 sleep(config.getCleanupDelaySeconds());
                                 frontier.close();
                                 docIdServer.close();

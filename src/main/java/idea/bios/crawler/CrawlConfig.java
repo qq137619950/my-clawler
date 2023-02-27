@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 
 import idea.bios.crawler.authentication.AuthInfo;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.Header;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
@@ -41,36 +43,42 @@ public class CrawlConfig {
      * The folder which will be used by crawler for storing the intermediate
      * crawl data. The content of this folder should not be modified manually.
      */
+    @Getter
     private String crawlStorageFolder;
 
     /**
      * If this feature is enabled, you would be able to resume a previously
      * stopped/crashed crawl. However, it makes crawling slightly slower
      */
+    @Getter
     private boolean resumableCrawling = false;
 
     /**
-     * The lock timeout for the underlying sleepycat DB, in milliseconds
+     * The lock timeout for the underlying sleepy cat DB, in milliseconds
      */
+    @Getter
     private long dbLockTimeout = 500;
 
     /**
      * Maximum depth of crawling For unlimited depth this parameter should be
      * set to -1
      */
+    @Getter
     private int maxDepthOfCrawling = -1;
 
     /**
      * Maximum number of pages to fetch For unlimited number of pages, this
      * parameter should be set to -1
      */
+    @Getter
     private int maxPagesToFetch = -1;
 
     /**
      * user-agent string that is used for representing your crawler to web
      * servers. See http://en.wikipedia.org/wiki/User_agent for more details
+     * private String userAgentString = "crawler4j (https://github.com/yasserg/crawler4j/)";
      */
-    // private String userAgentString = "crawler4j (https://github.com/yasserg/crawler4j/)";
+    @Getter
     private String userAgentString =
             "Mozilla/5.0(Macintosh;IntelMacOSX10_7_0)AppleWebKit/535.11(KHTML,likeGecko)Chrome/17.0.963.56Safari/535.11";
     /**
@@ -79,14 +87,22 @@ public class CrawlConfig {
     private Collection<BasicHeader> defaultHeaders = new HashSet<>();
 
     /**
+     * 是否不关闭进程，持续往队列添加seed
+     */
+    @Getter @Setter
+    private boolean continuousPutSeeds = false;
+
+    /**
      * Politeness delay in milliseconds (delay between sending two requests to
      * the same host).
      */
+    @Getter
     private int politenessDelay = 200;
 
     /**
      * Should we also crawl https pages?
      */
+    @Getter @Setter
     private boolean includeHttpsPages = true;
 
     /**
@@ -102,6 +118,7 @@ public class CrawlConfig {
     /**
      * Maximum Connections per host
      */
+    @Getter @Setter
     private int maxConnectionsPerHost = 100;
 
     /**
@@ -217,7 +234,6 @@ public class CrawlConfig {
      * useful for passing initial cookies to the crawler.
      */
     private CookieStore cookieStore;
-
     /**
      * DNS resolver to use, {@link SystemDefaultDnsResolver} is default.
      */
@@ -262,10 +278,6 @@ public class CrawlConfig {
         }
     }
 
-    public String getCrawlStorageFolder() {
-        return crawlStorageFolder;
-    }
-
     /**
      * Sets the folder which will be used by crawler for storing the
      * intermediate crawl data (e.g. list of urls that are extracted
@@ -274,10 +286,6 @@ public class CrawlConfig {
      */
     public void setCrawlStorageFolder(String crawlStorageFolder) {
         this.crawlStorageFolder = crawlStorageFolder;
-    }
-
-    public boolean isResumableCrawling() {
-        return resumableCrawling;
     }
 
     /**
@@ -299,14 +307,6 @@ public class CrawlConfig {
         this.dbLockTimeout = dbLockTimeout;
     }
 
-    public long getDbLockTimeout() {
-        return this.dbLockTimeout;
-    }
-
-    public int getMaxDepthOfCrawling() {
-        return maxDepthOfCrawling;
-    }
-
     /**
      * Maximum depth of crawling For unlimited depth this parameter should be set to -1
      *
@@ -314,10 +314,6 @@ public class CrawlConfig {
      */
     public void setMaxDepthOfCrawling(int maxDepthOfCrawling) {
         this.maxDepthOfCrawling = maxDepthOfCrawling;
-    }
-
-    public int getMaxPagesToFetch() {
-        return maxPagesToFetch;
     }
 
     /**
@@ -328,14 +324,6 @@ public class CrawlConfig {
      */
     public void setMaxPagesToFetch(int maxPagesToFetch) {
         this.maxPagesToFetch = maxPagesToFetch;
-    }
-
-    /**
-     *
-     * @return userAgentString
-     */
-    public String getUserAgentString() {
-        return userAgentString;
     }
 
     /**
@@ -366,10 +354,6 @@ public class CrawlConfig {
         this.defaultHeaders = copiedHeaders;
     }
 
-    public int getPolitenessDelay() {
-        return politenessDelay;
-    }
-
     /**
      * Politeness delay in milliseconds (delay between sending two requests to
      * the same host).
@@ -379,17 +363,6 @@ public class CrawlConfig {
      */
     public void setPolitenessDelay(int politenessDelay) {
         this.politenessDelay = politenessDelay;
-    }
-
-    public boolean isIncludeHttpsPages() {
-        return includeHttpsPages;
-    }
-
-    /**
-     * @param includeHttpsPages Should we crawl https pages?
-     */
-    public void setIncludeHttpsPages(boolean includeHttpsPages) {
-        this.includeHttpsPages = includeHttpsPages;
     }
 
     public boolean isIncludeBinaryContentInCrawling() {
@@ -414,17 +387,6 @@ public class CrawlConfig {
      */
     public void setProcessBinaryContentInCrawling(boolean processBinaryContentInCrawling) {
         this.processBinaryContentInCrawling = processBinaryContentInCrawling;
-    }
-
-    public int getMaxConnectionsPerHost() {
-        return maxConnectionsPerHost;
-    }
-
-    /**
-     * @param maxConnectionsPerHost Maximum Connections per host
-     */
-    public void setMaxConnectionsPerHost(int maxConnectionsPerHost) {
-        this.maxConnectionsPerHost = maxConnectionsPerHost;
     }
 
     public int getMaxTotalConnections() {

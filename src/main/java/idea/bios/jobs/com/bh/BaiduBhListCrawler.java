@@ -3,11 +3,15 @@ package idea.bios.jobs.com.bh;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
+import idea.bios.crawler.my.seed.SeedFetcherImpl;
 import idea.bios.crawler.my.sites.ListCrawlerEnum;
-import idea.bios.crawler.my.starter.ListStarter;
+import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.JsoupUtils;
+import idea.bios.util.Schedule;
+import idea.bios.util.search.BaiduSfSearchLinks;
 import idea.bios.util.selenium.SeleniumUtils;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,6 +19,7 @@ import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static idea.bios.crawler.my.Tools.configBuilder;
 
@@ -22,11 +27,14 @@ import static idea.bios.crawler.my.Tools.configBuilder;
  * https://m.baidu.com/bh/m/detail/ar_1151125392613938133
  * @author 86153
  */
+@Slf4j
 public class BaiduBhListCrawler extends AbsCommonCrawler {
     /**
      * 启动器
      */
-    private static ListStarter listStarter;
+    private static CommonCrawlerStarter listStarter;
+    private static final AtomicInteger START_INT = new AtomicInteger(0);
+
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
         var result = new HashMap<String, Object>();
@@ -118,7 +126,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
         super.commonPageVisit(page, "com.baidu.bh.article.qa");
-        listStarter.setQueue(SeleniumUtils.getLinks(url));
+        listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url));
     }
 
     @Override
@@ -135,12 +143,29 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
 
     @Override
     public void runner() throws Exception {
-        var startList = new ArrayList<String>(){{
-            add("https://m.baidu.com/bh/m/detail/vc_15895054322843582499");
-        }};
-        listStarter = new ListStarter(configBuilder(-1, 300));
-        listStarter.run(ListCrawlerEnum.baidu_bh_list, (offset, limit) ->
-                startList, startList.size(), 1, startList.size());
+        listStarter = new CommonCrawlerStarter(configBuilder(
+                -1, 300));
+        List<String> seeds = listStarter.getSeedFetcher().getSeedsPlain(
+                "https://m.baidu.com/bh/m/detail/qr_9522987927692819464",
+                "https://m.baidu.com/bh/m/detail/qr_6884364498076689267"
+        );
+        // 创建一个定时任务，10s从数据库拿1条数据
+        Schedule.scheduleAtFixedRate(()-> {
+            var seedFetcher = new SeedFetcherImpl();
+            var searchLinks = new BaiduSfSearchLinks();
+            List<String> sUrls = seedFetcher.getSeedsFromDb(START_INT.getAndIncrement(),
+                    1,
+                    term -> BaiduSfSearchLinks.URL_PREFIX + term);
+            // 解析其中的url
+            log.info("count:{}, urls:{}", START_INT.get(), sUrls);
+            if (sUrls == null || sUrls.isEmpty()) {
+                return;
+            }
+            List<String> links = searchLinks.getLinks(sUrls.get(0));
+            listStarter.addUrlsToQueue(links);
+        }, 10);
+        listStarter.run(ListCrawlerEnum.baidu_bh_list, (offset, limit) -> seeds,
+                 seeds.size(), 1, seeds.size());
     }
 
     public static void main(String[] args) throws IOException {

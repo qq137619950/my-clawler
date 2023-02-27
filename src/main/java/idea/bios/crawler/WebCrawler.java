@@ -413,6 +413,7 @@ public class WebCrawler implements Runnable {
             }
             fetchResult = pageFetcher.fetchPage(curURL);
             int statusCode = fetchResult.getStatusCode();
+            // 此处处理http返回信息
             handlePageStatusCode(curURL, statusCode,
                                  EnglishReasonPhraseCatalog.INSTANCE.getReason(statusCode,
                                                                                Locale.ENGLISH));
