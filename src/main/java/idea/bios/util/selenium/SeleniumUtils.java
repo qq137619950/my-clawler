@@ -35,39 +35,7 @@ public class SeleniumUtils {
 
     private static final Semaphore SEMAPHORE = new Semaphore(1);
 
-    private static final ChromeDriver CHROME_DRIVER;
-
-    static {
-        System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
-        var chromeOptions = new ChromeOptions();
-        chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
-        // 配置参数优化
-        // 无头模式
-        chromeOptions.addArguments("--headless");
-        // 禁用GPU和缓存
-        chromeOptions.addArguments("--disable-gpu");
-        chromeOptions.addArguments("--disable-gpu-program-cache");
-        chromeOptions.addArguments("--disable-software-rasterizer");
-        // 配置不加载图片
-        chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
-        // 禁用插件加载
-        chromeOptions.addArguments("--disable-extensions");
-        // 设置浏览器窗口大小
-        chromeOptions.addArguments("--window-size=1920,1080");
-        // 不使用沙箱
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--ignore-certificate-errors");
-        chromeOptions.addArguments("--allow-running-insecure-content");
-        chromeOptions.addArguments("--disable-dev-shm-usage");
-        CHROME_DRIVER = new ChromeDriver(chromeOptions);
-    }
-
-    /**
-     * 清除windows中滞留进程
-     */
-    private static final String WINDOWS_KILL_CMD = "taskkill /f /im chromedriver.exe";
-
-    public static List<String> getLinks(String url) {
+    public static List<String> getLinks(String url, ChromeDriver driver) {
         // 随机返回空
 //        var random = new Random();
 //        if (random.nextInt(10) > PASS_RATIO * 10) {
@@ -75,7 +43,7 @@ public class SeleniumUtils {
 //        }
         try {
             if (SEMAPHORE.tryAcquire()) {
-                List<String> res = getBaiduBhLinks(url);
+                List<String> res = getBaiduBhLinks(url, driver);
                 SEMAPHORE.release();
                 return res;
             } else {
@@ -90,7 +58,8 @@ public class SeleniumUtils {
 
     public static String getContentWait(String url,
                                         String cssCondition,
-                                        int waitSecond) {
+                                        int waitSecond,
+                                        ChromeDriver driver) {
         var content = "";
         if (url == null || url.isEmpty()) {
             log.warn("url empty, then return null.");
@@ -100,14 +69,14 @@ public class SeleniumUtils {
         if (waitSecond < 0) {
             waitSecond = 0;
         }
-        var wait = new WebDriverWait(CHROME_DRIVER, Duration.ofSeconds(waitSecond));
-        CHROME_DRIVER.get(url);
+        var wait = new WebDriverWait(driver, Duration.ofSeconds(waitSecond));
+        driver.get(url);
         // 自定义等待事件
         if (cssCondition == null || cssCondition.isEmpty()) {
             cssCondition = "body";
         }
         wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(cssCondition)));
-        return CHROME_DRIVER.getPageSource();
+        return driver.getPageSource();
     }
 
     /**
@@ -115,14 +84,14 @@ public class SeleniumUtils {
      * @param url   site
      * @return      link的地址
      */
-    public static List<String> getBaiduBhLinks(String url) {
+    public static List<String> getBaiduBhLinks(String url, ChromeDriver driver) {
         var links = new ArrayList<String>();
         if (url == null || url.isEmpty()) {
             return links;
         }
         // 等待xx元素出现
-        var wait = new WebDriverWait(CHROME_DRIVER, Duration.ofSeconds(10));
-        CHROME_DRIVER.get(url);
+        var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        driver.get(url);
         // 自定义等待事件
         wait.until(ExpectedConditions.presenceOfElementLocated(By.className("health-carea")));
         WebElement element = wait.until((ExpectedCondition<WebElement>)
@@ -151,19 +120,5 @@ public class SeleniumUtils {
         // CHROME_DRIVER.quit();
         SEMAPHORE.release();
         return links;
-    }
-
-
-    /**
-     * test
-     */
-    public static void main(String[] args) throws Exception {
-//        System.out.println("urls:" + getBaiduBhLinks(
-//                "https://m.baidu.com/bh/m/detail/ar_15210660146895383766"));
-//        Process p = Runtime.getRuntime().exec("cmd /c " + WINDOWS_KILL_CMD);
-//        System.out.println(p.exitValue());
-        System.out.println(getContentWait(
-                "https://m.baidu.com/bh/m/detail/ar_15210660146895383766",
-                "div.health-carea", 10));
     }
 }

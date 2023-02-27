@@ -7,6 +7,7 @@ import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtServer;
 import idea.bios.url.URLCanonicalizer;
 import idea.bios.url.WebURL;
+import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 
@@ -168,6 +169,8 @@ public class CommonController extends CrawlController {
                                         thread.start();
                                         // 更新crawler list
                                         T droppedCrawler = crawlers.remove(i);
+                                        // 关闭驱动
+                                        SeleniumBuilder.shutdownDriver(droppedCrawler.getChromeDriver());
                                         crawlers.add(i, crawler);
                                     }
                                 } else if (!crawlers.get(i).isWaitingForNewURLs()){

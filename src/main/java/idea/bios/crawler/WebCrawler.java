@@ -20,7 +20,6 @@ package idea.bios.crawler;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import idea.bios.crawler.exceptions.ContentFetchException;
@@ -36,13 +35,14 @@ import idea.bios.parser.ParseData;
 import idea.bios.parser.Parser;
 import idea.bios.robotstxt.RobotsTxtServer;
 import idea.bios.url.WebURL;
+import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
-
+import org.openqa.selenium.chrome.ChromeDriver;
 
 
 /**
@@ -111,6 +111,10 @@ public class WebCrawler implements Runnable {
 
     private int batchReadSize;
 
+    @Getter
+    private ChromeDriver chromeDriver;
+
+
     /**
      * Initializes the current instance of the crawler
      *
@@ -129,6 +133,7 @@ public class WebCrawler implements Runnable {
         this.myController = crawlController;
         this.isWaitingForNewURLs = false;
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
+        this.chromeDriver = SeleniumBuilder.getChromeDriver();
     }
 
     /**
@@ -149,6 +154,8 @@ public class WebCrawler implements Runnable {
     public void onBeforeExit() {
         // Do nothing by default
         // Sub-classed can override this to add their custom functionality
+        // 关闭绑定的Driver
+        SeleniumBuilder.shutdownDriver(chromeDriver);
     }
 
     /**

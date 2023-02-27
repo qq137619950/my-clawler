@@ -3,7 +3,6 @@ package idea.bios.jobs.com.bh;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.seed.SeedFetcherImpl;
 import idea.bios.crawler.my.sites.ListCrawlerEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
@@ -126,7 +125,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
         super.commonPageVisit(page, "com.baidu.bh.article.qa");
-        listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url));
+        listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
     @Override

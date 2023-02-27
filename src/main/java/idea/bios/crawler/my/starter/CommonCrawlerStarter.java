@@ -105,11 +105,6 @@ public class CommonCrawlerStarter {
         config.setRespectNoIndex(false);
         // 不关闭进程，而是从其他途径不断加入seed
         config.setContinuousPutSeeds(true);
-        // 判断参数
-        if (step <= 0 || start < 0 || start > end) {
-            log.warn("param error!");
-            return;
-        }
         // 先启动一个空队列的Controller
         var pageFetcher = new PageFetcher(config);
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
@@ -118,8 +113,15 @@ public class CommonCrawlerStarter {
         CrawlController.WebCrawlerFactory<WebCrawler> factory = crawlerEnum
                 .getCrawlerClass()::newInstance;
         // 阻塞
+        if (!config.isContinuousPutSeeds()) {
+            myListController.putQueueFinish();
+        }
         myListController.start(factory, NUMBER_OF_CRAWLERS);
 
+        // 判断参数
+        if (step <= 0 || start < 0 || start > end) {
+            return;
+        }
         int s = start;
         while (s <= end) {
             // 分页获取web site
@@ -139,9 +141,6 @@ public class CommonCrawlerStarter {
             } catch (Exception e) {
                 log.warn("Exception:", e);
             }
-        }
-        if (!config.isContinuousPutSeeds()) {
-            myListController.putQueueFinish();
         }
     }
 }
