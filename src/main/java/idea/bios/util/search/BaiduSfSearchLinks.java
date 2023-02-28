@@ -11,6 +11,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author 86153
@@ -53,7 +54,9 @@ public class BaiduSfSearchLinks implements SearchLinks {
     }
 
     public static void main(String[] args) {
-        System.out.println(
-                new BaiduSfSearchLinks().getLinks(URL_PREFIX + "阿尔兹海默症"));
+//        System.out.println(
+//                new BaiduSfSearchLinks().getLinks(URL_PREFIX + "阿尔兹海默症"));
+        UUID uuid = UUID.nameUUIDFromBytes("".getBytes());
+        System.out.println(uuid.toString());
     }
 }

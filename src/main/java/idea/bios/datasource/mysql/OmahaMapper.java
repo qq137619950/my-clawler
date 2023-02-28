@@ -19,4 +19,13 @@ public interface OmahaMapper {
      */
     List<String> batchGetChiTerm(@Param("offset") int offset,
                                  @Param("limit") int limit);
+
+    /**
+     * 从bios_ch_term_short表中批量获取数据
+     * @param offset
+     * @param limit
+     * @return
+     */
+    List<String> batchGetBiosChiShortTerm(@Param("offset") int offset,
+                                          @Param("limit") int limit);
 }

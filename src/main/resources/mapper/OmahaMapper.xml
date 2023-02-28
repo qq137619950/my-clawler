@@ -8,4 +8,8 @@
         select str from omaha_term_only_chi limit #{offset}, #{limit};
     </select>
 
+    <select id="batchGetBiosChiShortTerm" resultType="java.lang.String">
+        select str from bios_ch_term_short limit #{offset}, #{limit};
+    </select>
+
 </mapper>
