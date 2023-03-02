@@ -14,10 +14,13 @@ import lombok.var;
 public class TestController {
     public static void main(String[] args) throws Exception {
         String crawlStorageFolder = "/data/crawl/root";
-        int numberOfCrawlers = 7;
+        int numberOfCrawlers = 3;
 
         var config = new CrawlConfig();
         config.setCrawlStorageFolder(crawlStorageFolder);
+        // 测试代理
+        config.setProxyHost("47.106.191.148");
+        config.setProxyPort(443);
 
         // Instantiate the controller for this crawl.
         var pageFetcher = new PageFetcher(config);
@@ -28,9 +31,7 @@ public class TestController {
         // For each crawl, you need to add some seed urls. These are the first
         // URLs that are fetched and then the crawler starts following links
         // which are found in these pages
-        controller.addSeed("https://www.ics.uci.edu/~lopes/");
-        controller.addSeed("https://www.ics.uci.edu/~welling/");
-        controller.addSeed("https://www.ics.uci.edu/");
+        controller.addSeed("https://www.chunyuyisheng.com/pc/qa/Flul6ZGrH9G269aZq484UA/");
 
         // The factory which creates instances of crawlers.
         CrawlController.WebCrawlerFactory<TestCrawler> factory = TestCrawler::new;

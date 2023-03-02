@@ -16,7 +16,9 @@ import java.util.List;
  * @author 86153
  */
 @Slf4j
-public class DxyDialogSearchLinks implements SearchLinks {
+public class CyysDialogSearchLinks implements SearchLinks {
+    public static final String CYYS_DIALOG_PREFIX =
+            "https://www.chunyuyisheng.com/pc/search/qalist/?query=";
 
     @Override
     public List<String> getLinks(String url) {
@@ -31,35 +33,19 @@ public class DxyDialogSearchLinks implements SearchLinks {
         }
         if (res.statusCode() == 200) {
             String html = res.body();
-            // 解析
             Document doc = Jsoup.parseBodyFragment(html);
             Element body = doc.body();
-            Elements contentList = body.select(
-                    "div.content-info > div.content-list > a");
-            if (contentList == null || contentList.isEmpty()) {
-                return list;
+            Elements links = body.select("div.hot-qa.main-block > div > div.qa-item.qa-item-ask > a");
+            if (links != null) {
+                links.forEach(l -> list.add("https://www.chunyuyisheng.com"
+                        + l.attr("href")));
             }
-            contentList.forEach(c -> list.add(c.absUrl("href")));
         }
         return list;
     }
 
-    public List<String> getAllLinks(String prefix) {
-        var res = new ArrayList<String>();
-        for(int i = 1; i <= 10; i++) {
-            res.addAll(getLinks(prefix + i));
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                log.warn("InterruptedException", e);
-                break;
-            }
-        }
-        return res;
-    }
-
     public static void main(String[] args) {
-        System.out.println(new DxyDialogSearchLinks().getLinks(
-                "https://dxy.com/search/questions/%E8%84%91%E5%8D%92%E4%B8%AD?page_index=10"));
+        System.out.println(new CyysDialogSearchLinks().getLinks(
+                "https://www.chunyuyisheng.com/pc/search/qalist/?query=%E5%8D%92%E4%B8%AD"));
     }
 }

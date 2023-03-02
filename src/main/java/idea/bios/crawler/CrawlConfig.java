@@ -518,8 +518,8 @@ public class CrawlConfig {
     }
 
     /**
-     * @param proxyHost If crawler should run behind a proxy, this parameter can be used for
-     * specifying the proxy host.
+     * @param proxyHost If crawler should run behind a proxy,
+     *                  this parameter can be used for specifying the proxy host.
      */
     public void setProxyHost(String proxyHost) {
         this.proxyHost = proxyHost;
@@ -530,8 +530,8 @@ public class CrawlConfig {
     }
 
     /**
-     * @param proxyPort If crawler should run behind a proxy, this parameter can be used for
-     * specifying the proxy port.
+     * @param proxyPort If crawler should run behind a proxy,
+     *                 this parameter can be used for specifying the proxy port.
      */
     public void setProxyPort(int proxyPort) {
         this.proxyPort = proxyPort;

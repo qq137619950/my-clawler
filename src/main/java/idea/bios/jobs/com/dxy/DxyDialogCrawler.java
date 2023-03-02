@@ -7,7 +7,6 @@ import idea.bios.crawler.my.sites.ListCrawlerEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
-import idea.bios.util.search.BaiduSfSearchLinks;
 import idea.bios.util.search.DxyDialogSearchLinks;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -87,7 +86,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
     @Override
     public void runner() throws Exception {
         listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 300, false));
+                -1, 2000, false));
         var searchLinks = new DxyDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
@@ -96,7 +95,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
                     DxyDialogCrawler::getSearchUrlPrefix);
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(searchLinks.getAllLinks(sUrls.get(0)));
-            }}, 10);
+            }}, 30);
         var seeds = new ArrayList<String>();
         seeds.add("https://dxy.com/question/50314296");
         listStarter.run(ListCrawlerEnum.dxy_dialog, seeds);
