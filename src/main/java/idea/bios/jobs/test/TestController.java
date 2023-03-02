@@ -20,7 +20,7 @@ public class TestController {
         config.setCrawlStorageFolder(crawlStorageFolder);
         // 测试代理
         config.setProxyHost("47.106.191.148");
-        config.setProxyPort(443);
+        config.setProxyPort(43128);
 
         // Instantiate the controller for this crawl.
         var pageFetcher = new PageFetcher(config);

@@ -9,6 +9,6 @@ import idea.bios.jobs.com.dxy.DxyDialogCrawler;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        new CyysDialogCrawler().runner();
+        new DxyDialogCrawler().runner();
     }
 }

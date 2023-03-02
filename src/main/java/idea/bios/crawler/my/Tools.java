@@ -27,6 +27,9 @@ public class Tools {
         config.setMaxDepthOfCrawling(maxDepthOfCrawling);
         config.setPolitenessDelay(politenessDelay);
         config.setChromeDriver(chromeDriver);
+        // 使用代理
+        config.setProxyHost("47.106.191.148");
+        config.setProxyPort(43128);
         return config;
     }
 
