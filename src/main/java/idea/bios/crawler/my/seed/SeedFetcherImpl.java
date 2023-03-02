@@ -45,6 +45,9 @@ public class SeedFetcherImpl implements SeedFetcher {
         try (SqlSession session = sqlSessionFactory.openSession()) {
             OmahaMapper mapper = session.getMapper(OmahaMapper.class);
             List<String> terms = mapper.batchGetBiosChiShortTerm(offset, limit);
+            if (terms == null || terms.isEmpty()) {
+                return new ArrayList<>();
+            }
             return terms.stream().map(urlConvert).collect(Collectors.toList());
         } catch (Exception e) {
             log.warn("Exception occur", e);

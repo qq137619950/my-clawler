@@ -3,6 +3,7 @@ package idea.bios.crawler.my.sites;
 
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.jobs.com.bh.BaiduBhListCrawler;
+import idea.bios.jobs.com.dxy.DxyDialogCrawler;
 
 /**
  * @author 86153
@@ -10,7 +11,9 @@ import idea.bios.jobs.com.bh.BaiduBhListCrawler;
 
 public enum ListCrawlerEnum {
 
-    baidu_bh_list(BaiduBhListCrawler.class);
+    baidu_bh_list(BaiduBhListCrawler.class),
+
+    dxy_dialog(DxyDialogCrawler.class);
 
     private Class<? extends AbsCommonCrawler> crawlerClass;
 

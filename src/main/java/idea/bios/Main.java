@@ -1,6 +1,6 @@
 package idea.bios;
 
-import idea.bios.jobs.com.bh.BaiduBhListCrawler;
+import idea.bios.jobs.com.dxy.DxyDialogCrawler;
 
 /**
  * 启动类
@@ -8,6 +8,6 @@ import idea.bios.jobs.com.bh.BaiduBhListCrawler;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        new BaiduBhListCrawler().runner();
+        new DxyDialogCrawler().runner();
     }
 }

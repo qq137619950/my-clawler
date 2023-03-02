@@ -29,10 +29,7 @@ import static idea.bios.crawler.my.Tools.configBuilder;
  */
 @Slf4j
 public class BaiduBhListCrawler extends AbsCommonCrawler {
-    /**
-     * 启动器
-     */
-    private static CommonCrawlerStarter listStarter;
+
     private static final AtomicInteger START_INT = new AtomicInteger(0);
 
     @Override
@@ -126,7 +123,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
         super.commonPageVisit(page, "com.baidu.bh.article.qa");
-        // listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
+        listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
     @Override
@@ -144,7 +141,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     @Override
     public void runner() throws Exception {
         listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 300, false));
+                -1, 300, true));
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {
