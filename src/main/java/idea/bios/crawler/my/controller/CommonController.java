@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * 重写Controller方法
@@ -51,6 +52,7 @@ public class CommonController extends CrawlController {
 
     /**
      * 在task存续期增加url进队列
+     * 持续加入队列接口
      * @param pageUrls   List
      */
     public void addUrlsToQueue(List<String> pageUrls) {
@@ -58,19 +60,19 @@ public class CommonController extends CrawlController {
             log.warn("pageUrls empty!");
             return;
         }
-        // 标准化
-        List<String> canonicalUrls = new ArrayList<>();
-        for (String pageUrl : pageUrls) {
+        List<String> canonicalUrls = pageUrls.stream().filter(pageUrl -> {
+            if (pageUrl == null) {
+                return false;
+            }
             try {
                 URLCanonicalizer.getCanonicalURL(pageUrl);
+                return true;
             } catch (UnsupportedEncodingException e) {
-                log.warn("Exception occurs. pageUrls={}", pageUrls, e);
-                continue;
+                log.warn("Exception occurs. pageUrl={}", pageUrl, e);
+                return false;
             }
-            if (pageUrl != null) {
-                canonicalUrls.add(pageUrl);
-            }
-        }
+        }).collect(Collectors.toList());
+
         if (canonicalUrls.isEmpty()) {
             log.warn("seed URL empty: {}", pageUrls);
             return;
@@ -109,7 +111,7 @@ public class CommonController extends CrawlController {
             }
         });
         if (urls.isEmpty()) {
-            log.warn("all url illegal!");
+            log.warn("all url illegal, adding nothing!");
             return;
         }
         frontier.scheduleAll(urls);
@@ -135,7 +137,7 @@ public class CommonController extends CrawlController {
             for (int i = 1; i <= numberOfCrawlers; i++) {
                 // 创建一个crawler
                 T crawler = crawlerFactory.newInstance();
-                var thread = new Thread(crawler, "Crawler " + i);
+                var thread = new Thread(crawler, crawlerThreadBuilder(i));
                 crawler.setMyThread(thread);
                 // 初始化crawler
                 crawler.init(i, this);
@@ -145,7 +147,6 @@ public class CommonController extends CrawlController {
                 log.info("Crawler {} started", i);
             }
             // 监控时钟
-            final CrawlController controller = this;
             MONITOR_THREAD_EXECUTOR.execute(() -> {
                 try {
                     synchronized (waitingLock) {
@@ -158,19 +159,21 @@ public class CommonController extends CrawlController {
                                 // 线程不存活
                                 if (!thread.isAlive()) {
                                     if (!shuttingDown) {
-                                        // 重新拉起一个线程
+                                        // 重新创建一个线程
                                         T crawler = crawlerFactory.newInstance();
-                                        thread = new Thread(crawler, "Crawler " + (i + 1));
+                                        thread = new Thread(crawler, crawlerThreadBuilder(i + 1));
                                         Thread droppedThread = threads.remove(i);
-                                        log.warn("Thread {} is droped. then new one:{}", droppedThread.getName(), thread.getName());
+                                        log.warn("Thread {} is dropped. then new one:{}", droppedThread.getName(), thread.getName());
                                         threads.add(i, thread);
                                         crawler.setMyThread(thread);
-                                        crawler.init(i + 1, controller);
+                                        crawler.init(i + 1, this);
                                         thread.start();
                                         // 更新crawler list
                                         T droppedCrawler = crawlers.remove(i);
                                         // 关闭驱动
-                                        SeleniumBuilder.shutdownDriver(droppedCrawler.getChromeDriver());
+                                        if (config.isChromeDriver()) {
+                                            SeleniumBuilder.shutdownDriver(droppedCrawler.getChromeDriver());
+                                        }
                                         crawlers.add(i, crawler);
                                     }
                                 } else if (!crawlers.get(i).isWaitingForNewURLs()){
@@ -181,7 +184,6 @@ public class CommonController extends CrawlController {
                             if (!someoneIsWorking && isSchedulePutQueueFinish) {
                                 log.info("任务可能已经完成，等待几秒再进行第一次判断");
                                 sleep(config.getThreadShutdownDelaySeconds());
-                                // sleep几秒，再次做一次检测
                                 // 再检测一下队列，如果还有数据，则不退出
                                 boolean firstCheck = false;
                                 for (int i = 0; i < threads.size(); i++) {
@@ -201,11 +203,14 @@ public class CommonController extends CrawlController {
                                     continue;
                                 }
                                 // 此时确定已经完毕，关闭系统
-                                log.info("任务可能已经完成，系统关闭");
+                                log.info("任务可能已经完成，系统即将关闭");
                                 frontier.finish();
                                 for (T crawler : crawlers) {
                                     crawler.onBeforeExit();
                                     crawlersLocalData.add(crawler.getMyLocalData());
+                                    if (config.isChromeDriver()) {
+                                        SeleniumBuilder.shutdownDriver(crawler.getChromeDriver());
+                                    }
                                 }
                                 log.info("Waiting for {} seconds before final clean up...",
                                         config.getCleanupDelaySeconds());
@@ -227,5 +232,9 @@ public class CommonController extends CrawlController {
         } catch (Exception e) {
             log.error("Error happened", e);
         }
+    }
+
+    private static String crawlerThreadBuilder(int index) {
+        return "Crawler " + index;
     }
 }

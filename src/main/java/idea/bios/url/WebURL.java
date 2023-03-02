@@ -23,8 +23,11 @@ import java.util.Map;
 import com.google.common.net.InternetDomainName;
 import com.sleepycat.persist.model.Entity;
 import com.sleepycat.persist.model.PrimaryKey;
+import jdk.nashorn.internal.objects.annotations.Getter;
+import lombok.Setter;
 
 /**
+ * WebURL
  * @author Yasser Ganjisaffar
  */
 
@@ -35,7 +38,6 @@ public class WebURL implements Serializable {
 
     @PrimaryKey
     private String url;
-
     private int docid;
     private int parentDocid;
     private String parentUrl;
@@ -126,6 +128,7 @@ public class WebURL implements Serializable {
      * @return
      *      unique document id of the parent page. The parent page is the
      *      page in which the Url of this page is first observed.
+     *      纪录上级页面的用途：
      */
     public int getParentDocid() {
         return parentDocid;
@@ -165,7 +168,7 @@ public class WebURL implements Serializable {
      * If {@link WebURL} was provided with a {@link TLDList} then domain will be the
      * privately registered domain which is an immediate child of an effective top
      * level domain as defined at
-     * <a href="https://publicsuffix.org">publicsuffix.org</a>. Otherwise it will be
+     * <a href="https://publicsuffix.org">publicsuffix.org</a>. Otherwise, it will be
      * the entire domain.
      *
      * @return Domain of this Url. For 'http://www.example.com/sample.htm',
@@ -189,7 +192,8 @@ public class WebURL implements Serializable {
 
     /**
      * @return
-     *      path of this Url. For 'http://www.example.com/sample.htm', registeredDomain will be 'sample.htm'
+     *      path of this Url. For 'http://www.example.com/sample.htm',
+     *      registeredDomain will be 'sample.htm'
      */
     public String getPath() {
         return path;
@@ -213,7 +217,8 @@ public class WebURL implements Serializable {
     }
 
     /**
-     * @return priority for crawling this URL. A lower number results in higher priority.
+     * @return priority for crawling this URL.
+     * A lower number results in higher priority.
      */
     public byte getPriority() {
         return priority;

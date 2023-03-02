@@ -35,6 +35,7 @@ import org.apache.http.util.ByteArrayBuffer;
 
 /**
  * This class contains the data for a fetched and parsed page.
+ * 用于标识一个抓取的网页
  *
  * @author Yasser Ganjisaffar
  */
@@ -42,30 +43,35 @@ import org.apache.http.util.ByteArrayBuffer;
 public class Page {
     /**
      * The URL of this page.
+     * page的URL
      */
     @Getter @Setter
     protected WebURL url;
 
     /**
      * Redirection flag
+     * 重定向
      */
     @Getter @Setter
     protected boolean redirect;
 
     /**
      * The URL to which this page will be redirected to
+     * 重定向的URL
      */
     @Getter @Setter
     protected String redirectedToUrl;
 
     /**
      * Status of the page
+     * 返回码
      */
     @Getter @Setter
     protected int statusCode;
 
     /**
      * The content of this page in binary format.
+     * 页面内容
      */
     @Getter @Setter
     protected byte[] contentData;
@@ -105,6 +111,7 @@ public class Page {
 
     /**
      * The parsed data populated by parsers
+     * 已经解析后的网页
      */
     @Getter @Setter
     protected ParseData parseData;
@@ -121,7 +128,7 @@ public class Page {
 
     /**
      * Read contents from an entity, with a specified maximum. This is a replacement of
-     * EntityUtils.toByteArray because that function does not impose a maximum size.
+     * EntityUtils. toByteArray because that function does not impose a maximum size.
      *
      * @param entity The entity from which to read
      * @param maxBytes The maximum number of bytes to read

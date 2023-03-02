@@ -34,6 +34,7 @@ public class Frontier {
     private static final String DATABASE_NAME = "PendingURLsDB";
     private static final int IN_PROCESS_RESCHEDULE_BATCH_SIZE = 100;
     private final CrawlConfig config;
+
     protected WorkQueues workQueues;
     protected InProcessPagesDB inProcessPages;
 
@@ -82,6 +83,7 @@ public class Frontier {
      * @param urls  urls
      */
     public void scheduleAll(List<WebURL> urls) {
+        // Maximum number of pages to fetch For unlimited number of pages
         int maxPagesToFetch = config.getMaxPagesToFetch();
         synchronized (mutex) {
             int newScheduledPage = 0;
@@ -127,6 +129,12 @@ public class Frontier {
         }
     }
 
+    /**
+     * 获取下一个url
+     * @param max       number of pages to fetch/process from the database in a single read
+     *                  默认 50
+     * @param result    result
+     */
     public void getNextURLs(int max, List<WebURL> result) {
         while (true) {
             synchronized (mutex) {
@@ -137,9 +145,7 @@ public class Frontier {
                     List<WebURL> curResults = workQueues.get(max);
                     workQueues.delete(curResults.size());
                     if (inProcessPages != null) {
-                        for (WebURL curPage : curResults) {
-                            inProcessPages.put(curPage);
-                        }
+                        curResults.forEach(res -> inProcessPages.put(res));
                     }
                     result.addAll(curResults);
                 } catch (DatabaseException e) {
@@ -150,6 +156,7 @@ public class Frontier {
                 }
             }
             try {
+                // 等待 scheduleAll 进行完毕
                 synchronized (waitingList) {
                     waitingList.wait();
                 }

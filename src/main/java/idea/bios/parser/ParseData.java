@@ -25,11 +25,22 @@ import java.util.Set;
  * @author 86153
  */
 public interface ParseData {
-
+    /**
+     * 获取链接集合
+     * @return  链接
+     */
     Set<WebURL> getOutgoingUrls();
 
+    /**
+     * 设置链接集合
+     * @param outgoingUrls  链接
+     */
     void setOutgoingUrls(Set<WebURL> outgoingUrls);
 
+    /**
+     * toString
+     * @return  String
+     */
     @Override
     String toString();
 }

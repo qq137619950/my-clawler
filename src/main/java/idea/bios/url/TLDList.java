@@ -15,6 +15,9 @@ import de.malkusch.whoisServerList.publicSuffixList.PublicSuffixListFactory;
  * This class obtains a list of eTLDs (from online or a local file) in order to
  * determine private/public components of domain names per definition at
  * <a href="https://publicsuffix.org">publicsuffix.org</a>.
+ *
+ * 从网络或本地文件中获取顶级域名的列表
+ * TLDList类从网络或本地文件中获取顶级域名列表，用来判断url是否为有效域名
  * @author 86153
  */
 public class TLDList {

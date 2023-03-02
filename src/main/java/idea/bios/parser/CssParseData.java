@@ -27,7 +27,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
+/**
+ * @author 86153
+ */
 public class CssParseData extends TextParseData {
 
     private Set<WebURL> parseOutgoingUrls(WebURL referringPage) throws UnsupportedEncodingException {

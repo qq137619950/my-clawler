@@ -17,6 +17,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -125,7 +126,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
         super.commonPageVisit(page, "com.baidu.bh.article.qa");
-        listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
+        // listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
     @Override
@@ -143,7 +144,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     @Override
     public void runner() throws Exception {
         listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 300, true));
+                -1, 300, false));
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {
@@ -159,11 +160,18 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
             List<String> links = searchLinks.getLinks(sUrls.get(0));
             listStarter.addUrlsToQueue(links);
         }, 10);
-        listStarter.run(ListCrawlerEnum.baidu_bh_list);
+        var seeds = new ArrayList<String>();
+        seeds.add("https://m.baidu.com/bh/m/detail/qr_12116861696193512074");
+        seeds.add("https://m.baidu.com/bh/m/detail/ar_12703356293423056141");
+        seeds.add("https://m.baidu.com/bh/m/detail/ar_8883886229467987604");
+        listStarter.run(ListCrawlerEnum.baidu_bh_list, seeds);
     }
 
     public static void main(String[] args) throws IOException {
-        new BaiduBhListCrawler().testGetHtmlInfo(
-                "https://m.baidu.com/bh/m/detail/ar_14190860354893284009");
+//        new BaiduBhListCrawler().testGetHtmlInfo(
+//                "https://m.baidu.com/bh/m/detail/ar_17806348835341762212");
+        UUID uuid = UUID.nameUUIDFromBytes(
+                "https://baijiahao.baidu.com/s?id=1696989908880011257".getBytes(StandardCharsets.UTF_8));
+        System.out.println(uuid);
     }
 }
