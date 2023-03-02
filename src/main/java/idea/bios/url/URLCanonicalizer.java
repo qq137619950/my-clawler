@@ -149,6 +149,7 @@ public class URLCanonicalizer {
                 case 2:
                     params.put(tokens[0], tokens[1]);
                     break;
+                default: {}
             }
         }
         return new LinkedHashMap<>(params);

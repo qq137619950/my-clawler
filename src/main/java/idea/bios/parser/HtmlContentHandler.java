@@ -45,17 +45,15 @@ public class HtmlContentHandler extends DefaultHandler {
     }
 
     private static class HtmlFactory {
-        private static final Map<String, Element> name2Element;
-
+        private static final Map<String, Element> NAME_2_ELEMENT = new HashMap<>();
         static {
-            name2Element = new HashMap<>();
             for (Element element : Element.values()) {
-                name2Element.put(element.toString().toLowerCase(), element);
+                NAME_2_ELEMENT.put(element.toString().toLowerCase(), element);
             }
         }
 
         public static Element getElement(String name) {
-            return name2Element.get(name);
+            return NAME_2_ELEMENT.get(name);
         }
     }
 

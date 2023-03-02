@@ -17,6 +17,8 @@ public class PathRule {
     public int type;
     public Pattern pattern;
 
+    private static final Pattern PA = Pattern.compile("^$");
+
     /**
      * Match a pattern defined in a robots.txt file to a path
      * Following the pattern definition as stated on:
@@ -38,7 +40,7 @@ public class PathRule {
         // If the pattern is empty, match only completely empty entries, e.g., none as
         // there will always be a leading forward slash.
         if (pattern.isEmpty()) {
-            return Pattern.compile("^$");
+            return PA;
         }
 
         // Iterate over the characters
