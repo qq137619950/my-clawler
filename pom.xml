@@ -97,7 +97,6 @@
             <version>4.4.0</version>
         </dependency>
 
-
         <!-- Test Dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -147,8 +146,15 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.29</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba.nacos</groupId>
+            <artifactId>nacos-client</artifactId>
+            <version>1.4.2</version>
+        </dependency>
     </dependencies>
     <build>
+        <finalName>crawler</finalName>
         <resources>
             <resource>
                 <directory>src/main/resources/lib</directory>

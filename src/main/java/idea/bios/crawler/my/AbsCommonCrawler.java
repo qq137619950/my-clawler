@@ -163,7 +163,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             }
             MongoCollection<Document> collection = new MongoDb()
                     .getCrawlerDataCollection(cName);
-            var insertDoc = new Document();;
+            var insertDoc = new Document();
             result.forEach(insertDoc::append);
             // url也记录下
             insertDoc.append("src", url);

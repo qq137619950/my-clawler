@@ -31,7 +31,8 @@ public class TestController {
         // For each crawl, you need to add some seed urls. These are the first
         // URLs that are fetched and then the crawler starts following links
         // which are found in these pages
-        controller.addSeed("https://www.chunyuyisheng.com/pc/qa/Flul6ZGrH9G269aZq484UA/");
+        controller.addSeed(
+                "https://www.chunyuyisheng.com/pc/qa/Flul6ZGrH9G269aZq484UA/");
 
         // The factory which creates instances of crawlers.
         CrawlController.WebCrawlerFactory<TestCrawler> factory = TestCrawler::new;
