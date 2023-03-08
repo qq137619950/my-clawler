@@ -25,14 +25,31 @@ import java.util.*;
 @Slf4j
 public class MedSciPdfCrawlerScript {
     private static final String LOGIN_URL = "https://login.medsci.cn";
-    private static final String NICK_NAME = "18871432492";
-    private static final String PASSWORD = "Sunxiaowu#12";
+    private static final String PDF_DOWNLOAD_SETTING = "chrome://settings/content/pdfDocuments";
+
+    private static final String NICK_NAME_1 = "18871432492";
+    private static final String PASSWORD_1 = "Sunxiaowu#12";
 
     private static final String NICK_NAME_2 = "15327783808";
     private static final String PASSWORD_2 = "Idea@123123";
 
     private static final String NICK_NAME_3 = "13160612048";
     private static final String PASSWORD_3 = "Idea@2022";
+
+    private static final String NICK_NAME_4 = "renjingyi@idea.edu.cn";
+    private static final String PASSWORD_4 = "Idea@2022";
+
+    private static final String NICK_NAME_5 = "18610604036";
+    private static final String PASSWORD_5 = "Guizong@2023";
+
+    private static final String NICK_NAME_6 = "18610167782";
+    private static final String PASSWORD_6 = "4rfv#RFV";
+
+    private static final String NICK_NAME_7 = "18296114964";
+    private static final String PASSWORD_7 = "Hx123456.";
+
+    private static final String NICK_NAME_8 = "17304406755";
+    private static final String PASSWORD_8 = "Zy123456@";
 
 
 
@@ -46,21 +63,29 @@ public class MedSciPdfCrawlerScript {
 
     private static void login(ChromeDriver driver) throws InterruptedException {
         driver.get(LOGIN_URL);
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         log.info("打开登录页面,地址是{}", LOGIN_URL);
         WebElement tab = driver.findElement(By.cssSelector("#registerTabs > a"));
         tab.click();
-        Thread.sleep(1000);
+        Thread.sleep(500);
         // 找到账号的输入框，并模拟输入账号
         WebElement nickname = driver.findElement(By.id("nickname"));
-        nickname.sendKeys(NICK_NAME_2);
+        nickname.sendKeys(NICK_NAME_1);
         WebElement password = driver.findElement(By.id("password"));
-        password.sendKeys(PASSWORD_2);
+        password.sendKeys(PASSWORD_1);
         WebElement check = driver.findElement(By.cssSelector("#loginForm > div > form > div.ms-checkbox.check-link > label"));
         check.click();
         WebElement login = driver.findElement(By.id("submit"));
         login.click();
-        Thread.sleep(2000);
+        Thread.sleep(1000);
+        // 设置pdf自动下载
+        driver.get(PDF_DOWNLOAD_SETTING);
+        Thread.sleep(500);
+        // #button  #radioCollapse
+//        WebElement pdfDownload = driver.findElement(By.cssSelector("#radioCollapse"));
+//        Thread.sleep(1000);
+//        pdfDownload.click();
+//        Thread.sleep(1000);
     }
 
     private static void run() throws InterruptedException {
@@ -69,7 +94,7 @@ public class MedSciPdfCrawlerScript {
         int start = (int) collection.countDocuments();
         // 先登录
         login(driver);
-        for (int type = 1; type <= 100; type++) {
+        for (int type = 12; type <= 100; type++) {
             // 循环100页，如果没有数据，则break
             for (int i = 1; i <= 100; i++) {
                 var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
@@ -155,7 +180,7 @@ public class MedSciPdfCrawlerScript {
                     }
                     // 查找文件夹中新加入文件, 循环遍历3次
                     String fileName = null;
-                    for (int k = 0; k < 3; k++) {
+                    for (int k = 0; k < 1; k++) {
                         fileName = getFileName(typeElement.getText());
                         if (fileName == null) {
                             try {
@@ -183,8 +208,10 @@ public class MedSciPdfCrawlerScript {
 
     private static final String DESKTOP_CHROME_PATH =
             "C:/Program Files/Google/Chrome/Application/chromedriver.exe";
+    private static final String CHROME_PATH =
+            "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe";
     private static ChromeDriver buildScriptChromeDriver() {
-        System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
+        System.getProperties().setProperty("webdriver.chrome.driver", CHROME_PATH);
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
         // 配置参数优化
@@ -210,7 +237,7 @@ public class MedSciPdfCrawlerScript {
 
 
     private static String getFileName(String title){
-        var file = new File("C:/Users/86153/Downloads");
+        var file = new File("C:/Users/19106/Downloads");
         //判断文件或目录是否存在
         if(!file.exists()){
             log.info("【"+ "C:/Users/86153/Downloads" + " not exists】");
@@ -240,6 +267,9 @@ public class MedSciPdfCrawlerScript {
         boolean res = oldFile.renameTo(new File(newPath));
         if (!res) {
             log.warn("rename error! old:{}, newPath:{}", oldFile.getName(), newPath);
+            if(!oldFile.delete()) {
+                log.warn("error!");
+            }
             return null;
         }
         return newName;
