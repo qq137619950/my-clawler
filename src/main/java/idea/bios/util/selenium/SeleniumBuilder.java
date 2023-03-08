@@ -2,7 +2,7 @@ package idea.bios.util.selenium;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
-import org.openqa.selenium.PageLoadStrategy;
+// import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
@@ -60,7 +60,7 @@ public class SeleniumBuilder {
     private static ChromeDriver buildChromeDriver() {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
-        chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        // chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
         // 配置参数优化
         // 无头模式
         chromeOptions.addArguments("--headless");

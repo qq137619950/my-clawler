@@ -1,5 +1,6 @@
 package idea.bios;
 
+import idea.bios.jobs.com.ahospital.HospitalBaikeCrawler;
 import idea.bios.jobs.com.chunyuyisheng.CyysDialogCrawler;
 import idea.bios.jobs.com.dxy.DxyDialogCrawler;
 
@@ -9,6 +10,6 @@ import idea.bios.jobs.com.dxy.DxyDialogCrawler;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        new DxyDialogCrawler().runner();
+        new HospitalBaikeCrawler().runner();
     }
 }

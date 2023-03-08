@@ -25,27 +25,35 @@
         <wiremock.version>2.21.0</wiremock.version>
         <spock.version>1.2-groovy-2.5</spock.version>
         <groovy.version>2.4.12</groovy.version>
+        <gson.version>2.9.0</gson.version>
+        <mongo.version>3.12.11</mongo.version>
+        <guava.verison>31.1-jre</guava.verison>
     </properties>
 
     <dependencies>
+        <!-- detect and extract urls in a long piece of text -->
+        <!-- https://github.com/URL-Detector/URL-Detector -->
         <dependency>
             <groupId>io.github.pgalbraith</groupId>
             <artifactId>url-detector</artifactId>
             <version>0.1.20</version>
         </dependency>
 
+        <!-- Gson -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.9.0</version>
+            <version>${gson.version}</version>
         </dependency>
 
+        <!-- mongodb 结构化数据落地DB -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver</artifactId>
-            <version>3.12.11</version>
+            <version>${mongo.version}</version>
         </dependency>
 
+        <!-- lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -53,25 +61,29 @@
             <version>${lombok.version}</version>
         </dependency>
 
+        <!-- guava -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>31.1-jre</version>
+            <version>${guava.verison}</version>
         </dependency>
 
+        <!-- Logging framework -->
         <dependency>
-            <!-- Logging framework -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+
+        <!-- Implementation of slf4j -->
         <dependency>
-            <!-- Implementation of slf4j -->
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
             <scope>runtime</scope>
         </dependency>
+
+        <!-- http核心组件 -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -91,10 +103,19 @@
             <version>${apache.tika.version}</version>
         </dependency>
 
+        <!-- selenium -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>4.4.0</version>
+        </dependency>
+
+        <!-- phantomjs 驱动 -->
+        <!-- https://mvnrepository.com/artifact/com.codeborne/phantomjsdriver -->
+        <dependency>
+            <groupId>com.codeborne</groupId>
+            <artifactId>phantomjsdriver</artifactId>
+            <version>1.5.0</version>
         </dependency>
 
         <!-- Test Dependencies -->
@@ -129,29 +150,34 @@
             <version>2.2.0</version>
         </dependency>
 
+        <!-- Hystrix 暂时不用 -->
         <dependency>
             <groupId>com.netflix.hystrix</groupId>
             <artifactId>hystrix-core</artifactId>
             <version>1.5.12</version>
         </dependency>
 
+        <!-- mybatis -->
         <dependency>
             <groupId>org.mybatis</groupId>
             <artifactId>mybatis</artifactId>
             <version>3.5.9</version>
         </dependency>
 
+        <!-- mysql驱动 -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>8.0.29</version>
         </dependency>
 
+        <!-- nacos测试 -->
         <dependency>
             <groupId>com.alibaba.nacos</groupId>
             <artifactId>nacos-client</artifactId>
             <version>1.4.2</version>
         </dependency>
+
     </dependencies>
     <build>
         <finalName>crawler</finalName>

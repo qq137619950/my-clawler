@@ -2,6 +2,7 @@ package idea.bios.crawler.my.sites;
 
 
 import idea.bios.crawler.my.AbsCommonCrawler;
+import idea.bios.jobs.com.ahospital.HospitalBaikeCrawler;
 import idea.bios.jobs.com.bh.BaiduBhListCrawler;
 import idea.bios.jobs.com.chunyuyisheng.CyysDialogCrawler;
 import idea.bios.jobs.com.dxy.DxyDialogCrawler;
@@ -15,6 +16,8 @@ public enum ListCrawlerEnum {
     baidu_bh_list(BaiduBhListCrawler.class),
 
     dxy_dialog(DxyDialogCrawler.class),
+
+    a_hospital(HospitalBaikeCrawler.class),
 
     cyys_dialog(CyysDialogCrawler.class);
 
