@@ -19,7 +19,7 @@ import java.util.UUID;
 @Slf4j
 public class BaiduSfSearchLinks implements SearchLinks {
     public static final String URL_PREFIX =
-            "https://www.baidu.com/sf?openapi=1&dspName=iphone&from_sf=1&pd=wenda_kg&resource_id=5243&dsp=iphone&aptstamp=1677429910&top=%7B%22sfhs%22%3A11%7D&alr=1&fromSite=pc&total_res_num=127842&ms=1&frsrcid=5242&frorder=8&lid=18406692112105615091&pcEqid=ff71b4f4000a2ef30000000663fc1134&word=";
+            "https://www.baidu.com/sf?openapi=1&dspName=iphone&from_sf=1&pd=wenda_kg&resource_id=5243&&dsp=iphone&aptstamp=1678266350&top=%7B%22sfhs%22%3A11%7D&alr=1&fromSite=pc&total_res_num=812&ms=1&frsrcid=5242&frorder=3&lid=11342033447821599347&pcEqid=9d66ff54000162730000000664084fed&word=";
     @Override
     public List<String> getLinks(String url) {
         var list = new ArrayList<String>();
@@ -54,9 +54,9 @@ public class BaiduSfSearchLinks implements SearchLinks {
     }
 
     public static void main(String[] args) {
-//        System.out.println(
-//                new BaiduSfSearchLinks().getLinks(URL_PREFIX + "阿尔兹海默症"));
-        UUID uuid = UUID.nameUUIDFromBytes("".getBytes());
-        System.out.println(uuid.toString());
+        System.out.println(
+                new BaiduSfSearchLinks().getLinks(URL_PREFIX + "阿尔兹海默症"));
+//        UUID uuid = UUID.nameUUIDFromBytes("".getBytes());
+//        System.out.println(uuid.toString());
     }
 }

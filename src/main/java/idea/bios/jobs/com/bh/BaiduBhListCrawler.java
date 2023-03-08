@@ -30,7 +30,7 @@ import static idea.bios.crawler.my.Tools.configBuilder;
 @Slf4j
 public class BaiduBhListCrawler extends AbsCommonCrawler {
 
-    private static final AtomicInteger START_INT = new AtomicInteger(0);
+    private static final AtomicInteger START_INT = new AtomicInteger(60000);
 
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
