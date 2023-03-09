@@ -122,6 +122,13 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 //                    }
 //                }
 //            }}, 6);
+        // 半小时一次，拉取seed
+        Schedule.scheduleAtFixedRate(()-> {
+            // TODO 分布式锁
+            listStarter.addUrlsToQueue(seedFetcher.getSeedsFromPool(
+                    crawlerSiteEnum.getSourceId()));
+            }, 1800);
+        // 启动
         listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
                 "https://www.mfk.com/ask/999767.shtml"));
     }

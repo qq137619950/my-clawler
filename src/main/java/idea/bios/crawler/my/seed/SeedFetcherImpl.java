@@ -1,8 +1,10 @@
 package idea.bios.crawler.my.seed;
 
 import idea.bios.datasource.mysql.OmahaMapper;
+import idea.bios.datasource.mysql.dao.SeedDao;
 import idea.bios.util.search.BaiduSfSearchLinks;
 import lombok.extern.slf4j.Slf4j;
+import lombok.var;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -62,7 +64,30 @@ public class SeedFetcherImpl implements SeedFetcher {
 
     @Override
     public List<String> getSeedsFromPool(String sourceId) {
-        return null;
+        log.info("get seeds from pool. sourceId:{}", sourceId);
+        InputStream inputStream;
+        try {
+            inputStream = Resources.getResourceAsStream(MYBATIS_CFG_PATH);
+        } catch (IOException e) {
+            log.warn("Exception occur", e);
+            return new ArrayList<>();
+        }
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        try (SqlSession session = sqlSessionFactory.openSession()) {
+            OmahaMapper mapper = session.getMapper(OmahaMapper.class);
+            List<SeedDao> seeds = mapper.batchGetSeeds(sourceId);
+            if (seeds == null || seeds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            // 删除
+            mapper.delSeedsByIds(seeds.stream().map(SeedDao::getId)
+                    .collect(Collectors.toList()));
+            return seeds.stream().map(SeedDao::getSite)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.warn("Exception occur", e);
+            return new ArrayList<>();
+        }
     }
 
     public static void main(String[] args) {

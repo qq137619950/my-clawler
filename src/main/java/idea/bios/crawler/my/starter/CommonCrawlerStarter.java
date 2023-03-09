@@ -3,6 +3,7 @@ package idea.bios.crawler.my.starter;
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
+import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.CommonController;
 import idea.bios.crawler.my.Tools;
 import idea.bios.crawler.my.seed.SeedFetcher;
@@ -99,17 +100,12 @@ public class CommonCrawlerStarter {
         config.setRespectNoIndex(false);
         // 不关闭进程，而是从其他途径不断加入seed
         config.setContinuousPutSeeds(true);
-        // 半小时一次，拉取seed
-        Schedule.scheduleAtFixedRate(()-> {
-            // TODO 分布式锁
-
-        }, 1800);
         // 先启动一个空队列的Controller
         var pageFetcher = new PageFetcher(config);
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
         controller = new CommonController(config, pageFetcher, robotsTxtServer);
-        CrawlController.WebCrawlerFactory<WebCrawler> factory = crawlerEnum
+        CrawlController.WebCrawlerFactory<AbsCommonCrawler> factory = crawlerEnum
                 .getCrawlerClass()::newInstance;
         // 阻塞
         if (!config.isContinuousPutSeeds()) {

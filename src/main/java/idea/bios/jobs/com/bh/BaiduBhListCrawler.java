@@ -122,7 +122,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public void visit(Page page) {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
-        super.commonPageVisit(page);
+        commonPageVisit(page);
         listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 

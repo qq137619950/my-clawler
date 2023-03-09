@@ -19,7 +19,7 @@
         limit 100
     </select>
 
-    <delete id="delSeedsByIds" parameterType="java.lang.String">
+    <delete id="delSeedsByIds" parameterType="java.lang.Integer">
         delete from data_crawler_seed where id in 
         <foreach collection="idList" open="(" close=")" item="id">
             #{id}

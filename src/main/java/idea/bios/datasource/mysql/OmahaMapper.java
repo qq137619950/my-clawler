@@ -1,5 +1,6 @@
 package idea.bios.datasource.mysql;
 
+import idea.bios.datasource.mysql.dao.SeedDao;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -34,11 +35,11 @@ public interface OmahaMapper {
      * @param sourceId  sourceId
      * @return
      */
-    List<String> batchGetSeeds(@Param("sourceId") String sourceId);
+    List<SeedDao> batchGetSeeds(@Param("sourceId") String sourceId);
 
     /**
      * 删除seed
      * @param idList    idList
      */
-    void delSeedsByIds(@Param("idList") List<String> idList);
+    void delSeedsByIds(@Param("idList") List<Integer> idList);
 }

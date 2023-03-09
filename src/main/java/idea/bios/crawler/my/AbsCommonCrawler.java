@@ -20,6 +20,8 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -41,9 +43,6 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     protected static CrawlerSiteEnum crawlerSiteEnum;
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
             ".*(\\.(css|js|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz|bmp|gif|jpeg|png|))$");
-
-    protected AbsCommonCrawler() {
-    }
 
     /**
      * 最终的处理HTML页面函数
