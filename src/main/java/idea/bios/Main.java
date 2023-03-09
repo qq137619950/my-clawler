@@ -1,5 +1,6 @@
 package idea.bios;
 
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.jobs.com.ahospital.HospitalBaikeCrawler;
 import idea.bios.jobs.com.bh.BaiduBhListCrawler;
 import idea.bios.jobs.com.chunyuyisheng.CyysDialogCrawler;
@@ -13,6 +14,7 @@ import idea.bios.util.search.MfkQaSearchLinks;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        new MkfQaCrawler().runner();
+        CrawlerSiteEnum cur = CrawlerSiteEnum.a_hospital;
+        cur.getCrawlerClass().newInstance().runner();
     }
 }

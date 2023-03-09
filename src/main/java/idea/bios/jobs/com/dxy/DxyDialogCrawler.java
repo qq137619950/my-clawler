@@ -3,7 +3,7 @@ package idea.bios.jobs.com.dxy;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.ListCrawlerEnum;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
@@ -98,7 +98,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
             }}, 30);
         var seeds = new ArrayList<String>();
         seeds.add("https://dxy.com/question/50314296");
-        listStarter.run(ListCrawlerEnum.dxy_dialog, seeds);
+        listStarter.run(CrawlerSiteEnum.dxy_dialog, seeds);
     }
 
     public static void main(String[] args) throws IOException {

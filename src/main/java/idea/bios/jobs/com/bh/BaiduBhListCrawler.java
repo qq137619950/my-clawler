@@ -3,7 +3,7 @@ package idea.bios.jobs.com.bh;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.ListCrawlerEnum;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.JsoupUtils;
@@ -122,7 +122,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public void visit(Page page) {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
-        super.commonPageVisit(page, "com.baidu.bh.article.qa");
+        super.commonPageVisit(page, crawlerSiteEnum.getSourceId());
         listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
@@ -140,6 +140,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
 
     @Override
     public void runner() throws Exception {
+        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 300, true));
         var searchLinks = new BaiduSfSearchLinks();
@@ -161,7 +162,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         seeds.add("https://m.baidu.com/bh/m/detail/qr_12116861696193512074");
         seeds.add("https://m.baidu.com/bh/m/detail/ar_12703356293423056141");
         seeds.add("https://m.baidu.com/bh/m/detail/ar_8883886229467987604");
-        listStarter.run(ListCrawlerEnum.baidu_bh_list, seeds);
+        listStarter.run(crawlerSiteEnum, seeds);
     }
 
     public static void main(String[] args) throws IOException {

@@ -3,7 +3,7 @@ package idea.bios.jobs.com.chunyuyisheng;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.ListCrawlerEnum;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
@@ -95,7 +95,7 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
             }}, 5);
         var seeds = new ArrayList<String>();
         seeds.add("https://www.chunyuyisheng.com/pc/qa/MbtB8noHjm3h3L9mpnrwDw/");
-        listStarter.run(ListCrawlerEnum.cyys_dialog, seeds);
+        listStarter.run(CrawlerSiteEnum.cyys_dialog, seeds);
     }
 
     public static void main(String[] args) throws IOException {

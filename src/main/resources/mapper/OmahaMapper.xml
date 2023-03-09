@@ -12,4 +12,19 @@
         select str from bios_ch_term_short limit #{offset}, #{limit};
     </select>
 
+    <!-- 从seed库中获取数据 -->
+    <select id="batchGetSeeds" resultType="idea.bios.datasource.mysql.dao.SeedDao">
+        select * from data_crawler_seed
+        where sourceId = #{sourceId}
+        limit 100
+    </select>
+
+    <delete id="delSeedsByIds" parameterType="java.lang.String">
+        delete from data_crawler_seed where id in 
+        <foreach collection="idList" open="(" close=")" item="id">
+            #{id}
+        </foreach>
+    </delete>
+
+
 </mapper>

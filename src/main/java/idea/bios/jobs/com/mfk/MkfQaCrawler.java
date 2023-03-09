@@ -3,7 +3,7 @@ package idea.bios.jobs.com.mfk;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.ListCrawlerEnum;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
@@ -123,7 +123,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 //            }}, 6);
         var seeds = new ArrayList<String>();
         seeds.add("https://www.mfk.com/ask/999767.shtml");
-        listStarter.run(ListCrawlerEnum.mfk_qa, seeds);
+        listStarter.run(CrawlerSiteEnum.mfk_qa, seeds);
     }
 
     public static void main(String[] args) throws IOException {

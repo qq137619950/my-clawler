@@ -5,6 +5,7 @@ import com.drew.lang.annotations.NotNull;
 import com.mongodb.client.MongoCollection;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.WebCrawler;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
@@ -31,6 +32,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 启动器
      */
     protected static CommonCrawlerStarter listStarter;
+    protected static CrawlerSiteEnum crawlerSiteEnum;
 
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
             ".*(\\.(css|js|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz|bmp|gif|jpeg|png|))$");

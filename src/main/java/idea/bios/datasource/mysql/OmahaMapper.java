@@ -28,4 +28,17 @@ public interface OmahaMapper {
      */
     List<String> batchGetBiosChiShortTerm(@Param("offset") int offset,
                                           @Param("limit") int limit);
+
+    /**
+     * 获取seeds
+     * @param sourceId  sourceId
+     * @return
+     */
+    List<String> batchGetSeeds(@Param("sourceId") String sourceId);
+
+    /**
+     * 删除seed
+     * @param idList    idList
+     */
+    void delSeedsByIds(@Param("idList") List<String> idList);
 }

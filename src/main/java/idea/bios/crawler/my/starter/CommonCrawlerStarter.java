@@ -7,7 +7,7 @@ import idea.bios.crawler.my.controller.CommonController;
 import idea.bios.crawler.my.Tools;
 import idea.bios.crawler.my.seed.SeedFetcher;
 import idea.bios.crawler.my.seed.SeedFetcherImpl;
-import idea.bios.crawler.my.sites.ListCrawlerEnum;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
 import idea.bios.robotstxt.RobotsTxtServer;
@@ -78,7 +78,7 @@ public class CommonCrawlerStarter {
      * @param crawlerEnum   crawlerEnum
      * @throws Exception    Exception
      */
-    public void run(ListCrawlerEnum crawlerEnum) throws Exception {
+    public void run(CrawlerSiteEnum crawlerEnum) throws Exception {
         this.run(crawlerEnum, (offset, limit)-> null, 0, 0, 0);
     }
 
@@ -88,7 +88,7 @@ public class CommonCrawlerStarter {
      * @param originalUrls  初始的seeds
      * @throws Exception    Exception
      */
-    public void run(ListCrawlerEnum crawlerEnum, List<String> originalUrls) throws Exception {
+    public void run(CrawlerSiteEnum crawlerEnum, List<String> originalUrls) throws Exception {
         this.run(crawlerEnum, (offset, limit)-> originalUrls,
                 originalUrls.size(), 0, originalUrls.size());
     }
@@ -98,7 +98,7 @@ public class CommonCrawlerStarter {
      * @param crawlerEnum           crawler枚举
      * @param urlSourceBuilder      urlSourceBuilder
      */
-    public void run(ListCrawlerEnum crawlerEnum, URLSourceBuilder urlSourceBuilder,
+    public void run(CrawlerSiteEnum crawlerEnum, URLSourceBuilder urlSourceBuilder,
                     // 分页参数
                     int step, final int start, final int end) throws Exception {
         config.setCrawlStorageFolder(CRAW_STORAGE_FOLDER);
