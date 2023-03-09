@@ -11,6 +11,7 @@ import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
 import idea.bios.robotstxt.RobotsTxtServer;
+import idea.bios.util.Schedule;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -38,12 +39,8 @@ public class CommonCrawlerStarter {
     /**
      * 控制器
      */
-    private CommonController myListController;
-    /**
-     * seed的获取类，常用于持续性加入队列
-     */
-    @Getter
-    private final SeedFetcher seedFetcher;
+    private CommonController controller;
+
     /**
      * 持久化数据目录，一般不需要改变
      */
@@ -52,13 +49,6 @@ public class CommonCrawlerStarter {
     public CommonCrawlerStarter(CrawlConfig config) {
         this.config = config;
         this.robotsTxtConfig = Tools.defaultRobotsBuilder();
-        seedFetcher = new SeedFetcherImpl();
-    }
-
-    public CommonCrawlerStarter() {
-        this.config = Tools.listConfigBuilder(1000);
-        this.robotsTxtConfig = Tools.defaultRobotsBuilder();
-        seedFetcher = new SeedFetcherImpl();
     }
 
     /**
@@ -66,11 +56,11 @@ public class CommonCrawlerStarter {
      * @param pageUrls  urls
      */
     public void addUrlsToQueue(List<String> pageUrls) {
-        if (myListController == null || pageUrls == null || pageUrls.isEmpty()) {
+        if (controller == null || pageUrls == null || pageUrls.isEmpty()) {
             log.warn("add nothing to queue.");
             return;
         }
-        myListController.addUrlsToQueue(pageUrls);
+        controller.addUrlsToQueue(pageUrls);
     }
 
     /**
@@ -89,6 +79,10 @@ public class CommonCrawlerStarter {
      * @throws Exception    Exception
      */
     public void run(CrawlerSiteEnum crawlerEnum, List<String> originalUrls) throws Exception {
+        if (crawlerEnum == null) {
+            log.error("crawlerEnum not pointed.");
+            return;
+        }
         this.run(crawlerEnum, (offset, limit)-> originalUrls,
                 originalUrls.size(), 0, originalUrls.size());
     }
@@ -105,18 +99,23 @@ public class CommonCrawlerStarter {
         config.setRespectNoIndex(false);
         // 不关闭进程，而是从其他途径不断加入seed
         config.setContinuousPutSeeds(true);
+        // 半小时一次，拉取seed
+        Schedule.scheduleAtFixedRate(()-> {
+            // TODO 分布式锁
+
+        }, 1800);
         // 先启动一个空队列的Controller
         var pageFetcher = new PageFetcher(config);
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
-        myListController = new CommonController(config, pageFetcher, robotsTxtServer);
+        controller = new CommonController(config, pageFetcher, robotsTxtServer);
         CrawlController.WebCrawlerFactory<WebCrawler> factory = crawlerEnum
                 .getCrawlerClass()::newInstance;
         // 阻塞
         if (!config.isContinuousPutSeeds()) {
-            myListController.putQueueFinish();
+            controller.putQueueFinish();
         }
-        myListController.start(factory, NUMBER_OF_CRAWLERS);
+        controller.start(factory, NUMBER_OF_CRAWLERS);
 
         // 判断参数
         if (step <= 0 || start < 0 || start > end) {
@@ -134,7 +133,7 @@ public class CommonCrawlerStarter {
                 }
                 // 入队列
                 // 此时控制入队列速度，网页处理间隔 * 批处理条数 / 2;
-                myListController.addUrlsToQueue(webSites);
+                controller.addUrlsToQueue(webSites);
                 log.info("url list enter queue. size:{}", webSites.size());
                 s += step;
                 Thread.sleep((long) config.getPolitenessDelay() * step / 2);

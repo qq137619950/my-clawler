@@ -74,7 +74,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page, "com.dxy.dialog");
+        super.commonPageVisit(page);
     }
 
     @Override
@@ -85,20 +85,20 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void runner() throws Exception {
+        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 2000, false));
         var searchLinks = new DxyDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
-            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+            List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     1,
                     DxyDialogCrawler::getSearchUrlPrefix);
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(searchLinks.getAllLinks(sUrls.get(0)));
             }}, 30);
-        var seeds = new ArrayList<String>();
-        seeds.add("https://dxy.com/question/50314296");
-        listStarter.run(CrawlerSiteEnum.dxy_dialog, seeds);
+        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
+                "https://dxy.com/question/50314296"));
     }
 
     public static void main(String[] args) throws IOException {

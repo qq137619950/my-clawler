@@ -27,7 +27,6 @@ import static idea.bios.crawler.my.Tools.configBuilder;
  */
 @Slf4j
 public class HospitalBaikeCrawler extends AbsCommonCrawler {
-    private static final AtomicInteger START_INT = new AtomicInteger(0);
 
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
@@ -76,7 +75,7 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page, crawlerSiteEnum.getSourceId());
+        super.commonPageVisit(page);
     }
 
     @Override
@@ -92,16 +91,15 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 1000, false));
         Schedule.scheduleAtFixedRate(()-> {
-            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+            List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     1,
                     term -> "http://www.a-hospital.com/w/" + term);
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(sUrls);
             }}, 5);
-        var seeds = new ArrayList<String>();
-        seeds.add("http://www.a-hospital.com/w/%E8%A7%A3%E5%89%96%E5%AD%A6/%E5%BF%83%E8%A1%80%E7%AE%A1");
-        listStarter.run(crawlerSiteEnum, seeds);
+        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
+                "http://www.a-hospital.com/w/%E8%A7%A3%E5%89%96%E5%AD%A6/%E5%BF%83%E8%A1%80%E7%AE%A1"));
     }
 
     public static void main(String[] args) throws IOException {

@@ -122,7 +122,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public void visit(Page page) {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
-        super.commonPageVisit(page, crawlerSiteEnum.getSourceId());
+        super.commonPageVisit(page);
         listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
@@ -146,7 +146,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {
-            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+            List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     1,
                     term -> BaiduSfSearchLinks.URL_PREFIX + term);
@@ -158,11 +158,9 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
             List<String> links = searchLinks.getLinks(sUrls.get(0));
             listStarter.addUrlsToQueue(links);
         }, 10);
-        var seeds = new ArrayList<String>();
-        seeds.add("https://m.baidu.com/bh/m/detail/qr_12116861696193512074");
-        seeds.add("https://m.baidu.com/bh/m/detail/ar_12703356293423056141");
-        seeds.add("https://m.baidu.com/bh/m/detail/ar_8883886229467987604");
-        listStarter.run(crawlerSiteEnum, seeds);
+        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
+                "https://m.baidu.com/bh/m/detail/qr_12116861696193512074",
+                "https://m.baidu.com/bh/m/detail/ar_12703356293423056141"));
     }
 
     public static void main(String[] args) throws IOException {

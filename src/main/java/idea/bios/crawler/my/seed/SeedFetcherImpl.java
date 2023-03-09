@@ -33,7 +33,6 @@ public class SeedFetcherImpl implements SeedFetcher {
     @Override
     public List<String> getSeedsFromDb(int offset, int limit,
                                        Function<String, String> urlConvert) {
-        // TODO
         InputStream inputStream;
         try {
             inputStream = Resources.getResourceAsStream(MYBATIS_CFG_PATH);
@@ -58,6 +57,11 @@ public class SeedFetcherImpl implements SeedFetcher {
     @Override
     public List<String> getSeedsFromTxt(String filePath) {
         // TODO
+        return null;
+    }
+
+    @Override
+    public List<String> getSeedsFromPool(String sourceId) {
         return null;
     }
 

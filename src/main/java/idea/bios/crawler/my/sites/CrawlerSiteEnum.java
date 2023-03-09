@@ -20,7 +20,7 @@ public enum CrawlerSiteEnum {
     /**
      * 丁香园 对话
      */
-    dxy_dialog(DxyDialogCrawler.class, ""),
+    dxy_dialog(DxyDialogCrawler.class, "com.dxy.dialog"),
     /**
      * a hospital
      */
@@ -32,7 +32,7 @@ public enum CrawlerSiteEnum {
     /**
      * 春雨医生 对话
      */
-    cyys_dialog(CyysDialogCrawler.class, "");
+    cyys_dialog(CyysDialogCrawler.class, "com.cyys.dialog");
 
 
 

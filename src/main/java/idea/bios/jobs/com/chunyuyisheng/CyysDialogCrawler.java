@@ -71,7 +71,7 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page, "com.cyys.dialog");
+        super.commonPageVisit(page);
     }
 
     @Override
@@ -82,20 +82,20 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void runner() throws Exception {
+        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 500, false));
         var searchLinks = new CyysDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
-            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+            List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     1,
                     term ->CyysDialogSearchLinks.CYYS_DIALOG_PREFIX + term);
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(searchLinks.getLinks(sUrls.get(0)));
             }}, 5);
-        var seeds = new ArrayList<String>();
-        seeds.add("https://www.chunyuyisheng.com/pc/qa/MbtB8noHjm3h3L9mpnrwDw/");
-        listStarter.run(CrawlerSiteEnum.cyys_dialog, seeds);
+        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
+                "https://www.chunyuyisheng.com/pc/qa/MbtB8noHjm3h3L9mpnrwDw/"));
     }
 
     public static void main(String[] args) throws IOException {

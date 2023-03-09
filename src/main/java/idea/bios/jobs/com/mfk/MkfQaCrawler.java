@@ -86,7 +86,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page, "com.mfk.qa");
+        super.commonPageVisit(page);
     }
 
     @Override
@@ -97,6 +97,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 
     @Override
     public void runner() throws Exception {
+        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 200, false));
         Schedule.scheduleAtFixedRateMi(()-> {
@@ -107,7 +108,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
         }, 100);
 //        Schedule.scheduleAtFixedRate(()-> {
 //            var searchLinks = new MfkQaSearchLinks();
-//            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+//            List<String> sUrls = seedFetcher.getSeedsFromDb(
 //                    START_INT.getAndIncrement(),
 //                    1,
 //                    term -> "https://www.mfk.com/search/?q=" + term + "page=");
@@ -121,9 +122,8 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 //                    }
 //                }
 //            }}, 6);
-        var seeds = new ArrayList<String>();
-        seeds.add("https://www.mfk.com/ask/999767.shtml");
-        listStarter.run(CrawlerSiteEnum.mfk_qa, seeds);
+        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
+                "https://www.mfk.com/ask/999767.shtml"));
     }
 
     public static void main(String[] args) throws IOException {

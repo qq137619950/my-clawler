@@ -33,4 +33,11 @@ public interface SeedFetcher {
      * @return          seed
      */
     List<String> getSeedsFromTxt(String filePath);
+
+    /**
+     * 从seeds池中获取seed
+     * @param sourceId  资源id
+     * @return          seed
+     */
+    List<String> getSeedsFromPool(String sourceId);
 }

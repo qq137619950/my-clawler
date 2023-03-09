@@ -5,11 +5,14 @@ import com.drew.lang.annotations.NotNull;
 import com.mongodb.client.MongoCollection;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.WebCrawler;
+import idea.bios.crawler.my.seed.SeedFetcher;
+import idea.bios.crawler.my.seed.SeedFetcherImpl;
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
 import idea.bios.url.WebURL;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.bson.Document;
@@ -19,6 +22,7 @@ import org.jsoup.Jsoup;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -31,11 +35,15 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     /**
      * 启动器
      */
+    protected static final AtomicInteger START_INT = new AtomicInteger(0);
     protected static CommonCrawlerStarter listStarter;
+    protected final SeedFetcher seedFetcher = new SeedFetcherImpl();
     protected static CrawlerSiteEnum crawlerSiteEnum;
-
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
             ".*(\\.(css|js|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz|bmp|gif|jpeg|png|))$");
+
+    protected AbsCommonCrawler() {
+    }
 
     /**
      * 最终的处理HTML页面函数
@@ -88,9 +96,8 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     /**
      * 处理page的通用方法
      * @param page  page
-     * @param cName collection name
      */
-    protected void commonPageVisit(@NotNull Page page, String cName) {
+    protected void commonPageVisit(@NotNull Page page) {
         String url = page.getUrl().getURL();
         if (!shouldParse(page.getUrl())) {
             log.info("this page should not be parse: {}", url);
@@ -109,14 +116,16 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                 return;
             }
             // 将格式化的数据写入MongoDb
-            MongoCollection<Document> collection = new MongoDb().getCrawlerDataCollection(cName);
-            var insertDoc = new Document();;
+            MongoCollection<Document> collection = new MongoDb()
+                    .getCrawlerDataCollection(crawlerSiteEnum.getSourceId());
+            var insertDoc = new Document();
             result.forEach(insertDoc::append);
             // 页面url也记录下
             insertDoc.append("site", url);
             // 根据site生成唯一的docId
             UUID uuid = UUID.nameUUIDFromBytes(url.getBytes());
             insertDoc.append("docId", uuid.toString());
+            // TODO 是否允许空值
             for (Object o : result.values()) {
                 if (o == null || "".equals(o)) {
                     log.warn("some content empty.");
@@ -230,10 +239,9 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     /**
      * 带过滤的page处理
      * @param page      page
-     * @param cName     collection name
      * @param func      filter function
      */
-    protected void filteredPageVisit(@NotNull Page page, String cName,
+    protected void filteredPageVisit(@NotNull Page page,
                                      Function<Map<String, ?>, Boolean> func) {
         String url = page.getUrl().getURL();
         if (!shouldParse(page.getUrl())) {
@@ -257,7 +265,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                 return;
             }
             MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(cName);
+                    .getCrawlerDataCollection(crawlerSiteEnum.getSourceId());
             var insertDoc = new Document();
             result.forEach(insertDoc::append);
             // url也记录下
@@ -291,7 +299,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 校验url解析
      * @param url   url
      */
-    public void testGetHtmlInfo(String url) throws IOException {
+    protected void testGetHtmlInfo(String url) throws IOException {
         if (url == null || !url.startsWith("http")) {
             log.warn("url format error！ url:{}", url);
             return;
