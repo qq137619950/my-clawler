@@ -30,6 +30,11 @@ public class Schedule {
                 TimeUnit.SECONDS);
     }
 
+    public static void scheduleAtFixedRateMi(Runnable command, long period) {
+        scheduledExecutorService.scheduleAtFixedRate(command, period, period,
+                TimeUnit.MILLISECONDS);
+    }
+
     public static void main(String[] args) {
         // 1s 后开始执行，每 3s 执行一次
         scheduledExecutorService.scheduleAtFixedRate(() ->

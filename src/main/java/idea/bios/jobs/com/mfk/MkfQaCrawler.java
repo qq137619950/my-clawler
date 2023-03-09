@@ -7,7 +7,6 @@ import idea.bios.crawler.my.sites.ListCrawlerEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
-import idea.bios.util.search.MfkQaSearchLinks;
 import lombok.var;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -100,22 +99,28 @@ public class MkfQaCrawler extends AbsCommonCrawler {
     public void runner() throws Exception {
         listStarter = new CommonCrawlerStarter(configBuilder(
                 -1, 200, false));
-        Schedule.scheduleAtFixedRate(()-> {
-            var searchLinks = new MfkQaSearchLinks();
-            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
-                    START_INT.getAndIncrement(),
-                    1,
-                    term -> "https://www.mfk.com/search/?q=" + term + "page=");
-            if (!sUrls.isEmpty()) {
-                // 每隔1s检索一次，共5次
-                for (int i = 1; i <= 5; i++) {
-                    listStarter.addUrlsToQueue(searchLinks.getLinks(sUrls.get(0) + i));
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-            }}, 6);
+        Schedule.scheduleAtFixedRateMi(()-> {
+            // 直接拼接
+            var seeds = new ArrayList<String>();
+            seeds.add("https://www.mfk.com/ask/" + START_INT.incrementAndGet() + ".shtml");
+            listStarter.addUrlsToQueue(seeds);
+        }, 100);
+//        Schedule.scheduleAtFixedRate(()-> {
+//            var searchLinks = new MfkQaSearchLinks();
+//            List<String> sUrls = listStarter.getSeedFetcher().getSeedsFromDb(
+//                    START_INT.getAndIncrement(),
+//                    1,
+//                    term -> "https://www.mfk.com/search/?q=" + term + "page=");
+//            if (!sUrls.isEmpty()) {
+//                // 每隔1s检索一次，共5次
+//                for (int i = 1; i <= 5; i++) {
+//                    listStarter.addUrlsToQueue(searchLinks.getLinks(sUrls.get(0) + i));
+//                    try {
+//                        Thread.sleep(1000);
+//                    } catch (InterruptedException ignored) {
+//                    }
+//                }
+//            }}, 6);
         var seeds = new ArrayList<String>();
         seeds.add("https://www.mfk.com/ask/999767.shtml");
         listStarter.run(ListCrawlerEnum.mfk_qa, seeds);
