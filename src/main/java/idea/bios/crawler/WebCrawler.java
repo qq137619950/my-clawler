@@ -19,8 +19,8 @@ package idea.bios.crawler;
 
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.util.ArrayList;
-import java.util.Locale;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import idea.bios.crawler.exceptions.ContentFetchException;
 import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
@@ -399,6 +399,16 @@ public class WebCrawler implements Runnable {
     }
 
     /**
+     * 这个函数是过滤是否加入link队列
+     * 注意和上面的函数区分
+     * @param url   url
+     * @return      boolean
+     */
+    protected boolean shouldAddLinkQueue(WebURL url) {
+        return true;
+    }
+
+    /**
      * Classes that extends WebCrawler should overwrite this function to process
      * the content of the fetched and parsed page.
      *
@@ -422,6 +432,7 @@ public class WebCrawler implements Runnable {
             if (curURL == null) {
                 return;
             }
+            // Fetch阶段控制频率
             fetchResult = pageFetcher.fetchPage(curURL);
             int statusCode = fetchResult.getStatusCode();
             // 此处处理http返回信息
@@ -489,8 +500,8 @@ public class WebCrawler implements Runnable {
                     onUnexpectedStatusCode(curURL.getURL(), fetchResult.getStatusCode(),
                                            contentType, description);
                 }
-
-            } else { // if status code is 200
+                // if status code is 200
+            } else {
                 if (!curURL.getURL().equals(fetchResult.getFetchedUrl())) {
                     if (docIdServer.isSeenBefore(fetchResult.getFetchedUrl())) {
                         log.debug("Redirect page: {} has already been seen", curURL);
@@ -513,7 +524,13 @@ public class WebCrawler implements Runnable {
                     ParseData parseData = page.getParseData();
                     var toSchedule = new ArrayList<WebURL>();
                     int maxCrawlDepth = myController.getConfig().getMaxDepthOfCrawling();
-                    for (WebURL webURL : parseData.getOutgoingUrls()) {
+                    /*
+                     * 为了防止过多无用的url进入队列，影响效率，加入过滤过程
+                     * 原因是，在这个函数上限制频率
+                     */
+                    Set<WebURL> links = Optional.of(parseData.getOutgoingUrls()).orElse(new HashSet<>())
+                            .stream().filter(this::shouldAddLinkQueue).collect(Collectors.toSet());
+                    for (WebURL webURL : links) {
                         webURL.setParentDocid(curURL.getDocid());
                         webURL.setParentUrl(curURL.getURL());
                         int newDocId = docIdServer.getDocId(webURL.getURL());

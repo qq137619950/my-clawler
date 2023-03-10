@@ -72,6 +72,13 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    public boolean shouldAddLinkQueue(WebURL url) {
+        return url.getURL().startsWith("http://www.a-hospital.com/w/") &&
+                !url.getURL().contains("%E7%89%B9%E6%AE%8A") &&
+                !url.getURL().substring(27).contains(":");
+    }
+
+    @Override
     public void visit(Page page) {
         super.commonPageVisit(page);
     }
