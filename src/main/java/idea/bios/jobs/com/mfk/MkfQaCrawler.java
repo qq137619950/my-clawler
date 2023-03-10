@@ -19,8 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static idea.bios.crawler.my.Config.configBuilder;
-
 /**
  * 民福康问答
  * https://www.mfk.com/ask/999767.shtml

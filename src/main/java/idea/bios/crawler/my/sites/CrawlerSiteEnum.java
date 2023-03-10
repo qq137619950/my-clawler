@@ -7,6 +7,7 @@ import idea.bios.jobs.com.bh.BaiduBhListCrawler;
 import idea.bios.jobs.com.chunyuyisheng.CyysDialogCrawler;
 import idea.bios.jobs.com.dxy.DxyDialogCrawler;
 import idea.bios.jobs.com.mfk.MkfQaCrawler;
+import idea.bios.jobs.com.yixue.YixueCrawler;
 
 /**
  * @author 86153
@@ -29,6 +30,11 @@ public enum CrawlerSiteEnum {
      * 民福康 问答
      */
     mfk_qa(MkfQaCrawler.class, "com.mfk.qa"),
+    /**
+     * 医学百科
+     * https://www.yixue.com/
+     */
+    yixue_baike(YixueCrawler.class, "com.yixue.baike"),
     /**
      * 春雨医生 对话
      */

@@ -13,6 +13,6 @@ import static idea.bios.crawler.my.Config.configBuilder;
 public class Main {
     public static void main(String[] args) throws Exception {
         new CommonCrawlerStarter(configBuilder(-1,
-                2000, false)).run(CrawlerSiteEnum.a_hospital);
+                200, false)).run(CrawlerSiteEnum.yixue_baike);
     }
 }
