@@ -1,6 +1,9 @@
 package idea.bios;
 
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
+import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+
+import static idea.bios.crawler.my.Config.configBuilder;
 
 
 /**
@@ -9,7 +12,7 @@ import idea.bios.crawler.my.sites.CrawlerSiteEnum;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        CrawlerSiteEnum cur = CrawlerSiteEnum.a_hospital;
-        cur.getCrawlerClass().newInstance().runner();
+        new CommonCrawlerStarter(configBuilder(-1,
+                2000, false)).run(CrawlerSiteEnum.a_hospital);
     }
 }

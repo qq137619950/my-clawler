@@ -2,7 +2,6 @@ package idea.bios.jobs.com.ahospital;
 
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
@@ -17,9 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static idea.bios.crawler.my.Tools.configBuilder;
+import static idea.bios.crawler.my.Config.configBuilder;
 
 /**
  * http://www.a-hospital.com/w/医学电子书
@@ -86,20 +84,15 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void runner() throws Exception {
-        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
-        listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 1000, false));
+    public void prepareToRun(CommonCrawlerStarter listStarter) {
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
-                    START_INT.getAndIncrement(),
+                    INT_FLAG.getAndIncrement(),
                     1,
                     term -> "http://www.a-hospital.com/w/" + term);
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(sUrls);
             }}, 5);
-        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
-                "http://www.a-hospital.com/w/%E8%A7%A3%E5%89%96%E5%AD%A6/%E5%BF%83%E8%A1%80%E7%AE%A1"));
     }
 
     public static void main(String[] args) throws IOException {

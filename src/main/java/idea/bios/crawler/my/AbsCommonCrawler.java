@@ -12,7 +12,6 @@ import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
 import idea.bios.url.WebURL;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.bson.Document;
@@ -20,8 +19,6 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,10 +34,10 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     /**
      * 启动器
      */
-    protected static final AtomicInteger START_INT = new AtomicInteger(0);
-    protected static CommonCrawlerStarter listStarter;
+    protected static final AtomicInteger INT_FLAG = new AtomicInteger(0);
+
     protected final SeedFetcher seedFetcher = new SeedFetcherImpl();
-    protected static CrawlerSiteEnum crawlerSiteEnum;
+    // protected static CrawlerSiteEnum crawlerSiteEnum;
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
             ".*(\\.(css|js|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz|bmp|gif|jpeg|png|))$");
 
@@ -78,10 +75,10 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     }
 
     /**
-     * 启动器
-     * @throws Exception 异常
+     * 启动器准备
+     * public abstract void runner() throws Exception;
      */
-    public abstract void runner() throws Exception;
+    public abstract void prepareToRun(CommonCrawlerStarter listStarter);
 
     /**
      * 页面是否需要Parse
@@ -116,7 +113,9 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             }
             // 将格式化的数据写入MongoDb
             MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(crawlerSiteEnum.getSourceId());
+                    .getCrawlerDataCollection(
+                            CrawlerSiteEnum.findCrawlerSiteEnumByClass(
+                                    this.getClass()).getSourceId());
             var insertDoc = new Document();
             result.forEach(insertDoc::append);
             // 页面url也记录下
@@ -264,7 +263,9 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                 return;
             }
             MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(crawlerSiteEnum.getSourceId());
+                    .getCrawlerDataCollection(
+                            CrawlerSiteEnum.findCrawlerSiteEnumByClass(
+                                    this.getClass()).getSourceId());
             var insertDoc = new Document();
             result.forEach(insertDoc::append);
             // url也记录下
@@ -298,7 +299,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 校验url解析
      * @param url   url
      */
-    protected void testGetHtmlInfo(String url) throws IOException {
+    public void testGetHtmlInfo(String url) throws IOException {
         if (url == null || !url.startsWith("http")) {
             log.warn("url format error！ url:{}", url);
             return;

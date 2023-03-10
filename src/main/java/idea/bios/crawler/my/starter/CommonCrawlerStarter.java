@@ -2,22 +2,20 @@ package idea.bios.crawler.my.starter;
 
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
-import idea.bios.crawler.WebCrawler;
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.CommonController;
-import idea.bios.crawler.my.Tools;
-import idea.bios.crawler.my.seed.SeedFetcher;
-import idea.bios.crawler.my.seed.SeedFetcherImpl;
+import idea.bios.crawler.my.Config;
+
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
 import idea.bios.robotstxt.RobotsTxtServer;
-import idea.bios.util.Schedule;
-import lombok.Getter;
+
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 
 import java.util.List;
+
 
 /**
  * 启动类，crawler启动入口
@@ -49,7 +47,7 @@ public class CommonCrawlerStarter {
 
     public CommonCrawlerStarter(CrawlConfig config) {
         this.config = config;
-        this.robotsTxtConfig = Tools.defaultRobotsBuilder();
+        this.robotsTxtConfig = Config.defaultRobotsBuilder();
     }
 
     /**
@@ -79,7 +77,8 @@ public class CommonCrawlerStarter {
      * @param originalUrls  初始的seeds
      * @throws Exception    Exception
      */
-    public void run(CrawlerSiteEnum crawlerEnum, List<String> originalUrls) throws Exception {
+    public void run(CrawlerSiteEnum crawlerEnum,
+                    List<String> originalUrls) throws Exception {
         if (crawlerEnum == null) {
             log.error("crawlerEnum not pointed.");
             return;
@@ -93,7 +92,8 @@ public class CommonCrawlerStarter {
      * @param crawlerEnum           crawler枚举
      * @param urlSourceBuilder      urlSourceBuilder
      */
-    public void run(CrawlerSiteEnum crawlerEnum, URLSourceBuilder urlSourceBuilder,
+    public void run(CrawlerSiteEnum crawlerEnum,
+                    URLSourceBuilder urlSourceBuilder,
                     // 分页参数
                     int step, final int start, final int end) throws Exception {
         config.setCrawlStorageFolder(CRAW_STORAGE_FOLDER);
@@ -105,12 +105,16 @@ public class CommonCrawlerStarter {
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
         controller = new CommonController(config, pageFetcher, robotsTxtServer);
-        CrawlController.WebCrawlerFactory<AbsCommonCrawler> factory = crawlerEnum
-                .getCrawlerClass()::newInstance;
+        CrawlController.WebCrawlerFactory<? extends AbsCommonCrawler> factory =
+                crawlerEnum.getCrawlerClass()::newInstance;
         // 阻塞
         if (!config.isContinuousPutSeeds()) {
             controller.putQueueFinish();
         }
+        // 执行特定函数
+        AbsCommonCrawler crawlerTemp = crawlerEnum.getCrawlerClass().newInstance();
+        crawlerTemp.prepareToRun(this);
+        // 开启
         controller.start(factory, NUMBER_OF_CRAWLERS);
 
         // 判断参数

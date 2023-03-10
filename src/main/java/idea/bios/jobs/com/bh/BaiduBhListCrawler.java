@@ -3,13 +3,11 @@ package idea.bios.jobs.com.bh;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.JsoupUtils;
 import idea.bios.util.Schedule;
 import idea.bios.util.search.BaiduSfSearchLinks;
-import idea.bios.util.selenium.SeleniumUtils;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.jsoup.Jsoup;
@@ -20,8 +18,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static idea.bios.crawler.my.Tools.configBuilder;
 
 /**
  * https://m.baidu.com/bh/m/detail/ar_1151125392613938133
@@ -123,7 +119,8 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
         commonPageVisit(page);
-        listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
+        // TODO 在 visit 之后增加获取link
+        // listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
     @Override
@@ -139,10 +136,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void runner() throws Exception {
-        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
-        listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 300, true));
+    public void prepareToRun(CommonCrawlerStarter listStarter) {
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {
@@ -158,9 +152,6 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
             List<String> links = searchLinks.getLinks(sUrls.get(0));
             listStarter.addUrlsToQueue(links);
         }, 10);
-        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
-                "https://m.baidu.com/bh/m/detail/qr_12116861696193512074",
-                "https://m.baidu.com/bh/m/detail/ar_12703356293423056141"));
     }
 
     public static void main(String[] args) throws IOException {

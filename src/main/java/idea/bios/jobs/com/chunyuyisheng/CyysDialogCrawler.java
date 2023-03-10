@@ -7,7 +7,9 @@ import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
+import idea.bios.util.search.BaiduSfSearchLinks;
 import idea.bios.util.search.CyysDialogSearchLinks;
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -21,12 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static idea.bios.crawler.my.Tools.configBuilder;
+import static idea.bios.crawler.my.Config.configBuilder;
 
 /**
  * 春雨医生对话
  * @author 86153
  */
+@Slf4j
 public class CyysDialogCrawler extends AbsCommonCrawler {
     private static final AtomicInteger START_INT = new AtomicInteger(0);
 
@@ -81,10 +84,7 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void runner() throws Exception {
-        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
-        listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 500, false));
+    public void prepareToRun(CommonCrawlerStarter listStarter) {
         var searchLinks = new CyysDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
@@ -94,8 +94,6 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(searchLinks.getLinks(sUrls.get(0)));
             }}, 5);
-        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
-                "https://www.chunyuyisheng.com/pc/qa/MbtB8noHjm3h3L9mpnrwDw/"));
     }
 
     public static void main(String[] args) throws IOException {

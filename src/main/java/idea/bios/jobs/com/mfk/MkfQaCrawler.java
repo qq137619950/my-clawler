@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static idea.bios.crawler.my.Tools.configBuilder;
+import static idea.bios.crawler.my.Config.configBuilder;
 
 /**
  * 民福康问答
@@ -96,10 +96,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void runner() throws Exception {
-        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
-        listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 200, false));
+    public void prepareToRun(CommonCrawlerStarter listStarter) {
         Schedule.scheduleAtFixedRateMi(()-> {
             // 直接拼接
             var seeds = new ArrayList<String>();
@@ -126,11 +123,9 @@ public class MkfQaCrawler extends AbsCommonCrawler {
         Schedule.scheduleAtFixedRate(()-> {
             // TODO 分布式锁
             listStarter.addUrlsToQueue(seedFetcher.getSeedsFromPool(
-                    crawlerSiteEnum.getSourceId()));
-            }, 1800);
-        // 启动
-        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
-                "https://www.mfk.com/ask/999767.shtml"));
+                    CrawlerSiteEnum.findCrawlerSiteEnumByClass(
+                            this.getClass()).getSourceId()));
+        }, 1800);
     }
 
     public static void main(String[] args) throws IOException {

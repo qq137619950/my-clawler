@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static idea.bios.crawler.my.Tools.configBuilder;
+import static idea.bios.crawler.my.Config.configBuilder;
 
 /**
  * 丁香园多轮问答  https://dxy.com/question/102688528
@@ -84,10 +84,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void runner() throws Exception {
-        crawlerSiteEnum = CrawlerSiteEnum.findCrawlerSiteEnumByClass(this.getClass());
-        listStarter = new CommonCrawlerStarter(configBuilder(
-                -1, 2000, false));
+    public void prepareToRun(CommonCrawlerStarter listStarter) {
         var searchLinks = new DxyDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
@@ -97,8 +94,6 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
             if (!sUrls.isEmpty()) {
                 listStarter.addUrlsToQueue(searchLinks.getAllLinks(sUrls.get(0)));
             }}, 30);
-        listStarter.run(crawlerSiteEnum, seedFetcher.getSeedsPlain(
-                "https://dxy.com/question/50314296"));
     }
 
     public static void main(String[] args) throws IOException {
