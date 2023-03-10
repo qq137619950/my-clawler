@@ -66,19 +66,28 @@ public abstract class AbsCommonCrawler extends WebCrawler {
 
     /**
      * Determine whether links found at the given URL should be added to the queue for crawling.
+     * 这个方法用来控制是否需要加入link，但是此时已经耗时。
+     * 可以用shouldAddLinkQueue替代
+     * @see #shouldAddLinkQueue
      * @param url the URL of the page under consideration
      * @return boolean
      */
     @Override
+    @Deprecated
     protected boolean shouldFollowLinksIn(WebURL url) {
         return true;
     }
 
     /**
-     * 启动器准备
-     * public abstract void runner() throws Exception;
+     * 这个函数是过滤是否加入link队列
+     * 注意和上面的函数区分
+     * @param url   url
+     * @return      boolean
      */
-    public abstract void prepareToRun(CommonCrawlerStarter listStarter);
+    @Override
+    protected boolean shouldAddLinkQueue(WebURL url) {
+        return true;
+    }
 
     /**
      * 页面是否需要Parse
@@ -88,6 +97,13 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     protected boolean shouldParse(WebURL url) {
         return true;
     }
+
+    /**
+     * 启动器准备
+     * public abstract void runner() throws Exception;
+     */
+    public abstract void prepareToRun(CommonCrawlerStarter listStarter);
+
 
     /**
      * 处理page的通用方法
