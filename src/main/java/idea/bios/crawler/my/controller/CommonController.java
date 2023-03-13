@@ -172,7 +172,12 @@ public class CommonController extends CrawlController {
                                         T droppedCrawler = crawlers.remove(i);
                                         // 关闭驱动
                                         if (config.isChromeDriver()) {
-                                            SeleniumBuilder.shutdownDriver(droppedCrawler.getChromeDriver());
+                                            SeleniumBuilder.shutdownChromeDriver(
+                                                    droppedCrawler.getChromeDriver());
+                                        }
+                                        if (config.isPhantomJsDriver()) {
+                                            SeleniumBuilder.shutdownPhantomJsDriver(
+                                                    droppedCrawler.getPhantomJsDriver());
                                         }
                                         crawlers.add(i, crawler);
                                     }
@@ -209,7 +214,10 @@ public class CommonController extends CrawlController {
                                     crawler.onBeforeExit();
                                     crawlersLocalData.add(crawler.getMyLocalData());
                                     if (config.isChromeDriver()) {
-                                        SeleniumBuilder.shutdownDriver(crawler.getChromeDriver());
+                                        SeleniumBuilder.shutdownChromeDriver(crawler.getChromeDriver());
+                                    }
+                                    if (config.isPhantomJsDriver()) {
+                                        SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
                                     }
                                 }
                                 log.info("Waiting for {} seconds before final clean up...",

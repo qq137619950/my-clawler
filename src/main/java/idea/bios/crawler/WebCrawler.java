@@ -43,6 +43,7 @@ import lombok.var;
 import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 
 
 /**
@@ -111,9 +112,14 @@ public class WebCrawler implements Runnable {
 
     private int batchReadSize;
 
+    /**
+     * 谷歌浏览器驱动和轻量的PhantomJs驱动
+     */
     @Getter
     private ChromeDriver chromeDriver;
 
+    @Getter
+    private PhantomJSDriver phantomJsDriver;
 
     /**
      * Initializes the current instance of the crawler
@@ -135,6 +141,9 @@ public class WebCrawler implements Runnable {
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
         if(myController.getConfig().isChromeDriver()) {
             this.chromeDriver = SeleniumBuilder.getChromeDriver();
+        }
+        if(myController.getConfig().isPhantomJsDriver()) {
+            this.phantomJsDriver = SeleniumBuilder.getPhantomJsDriver();
         }
     }
 
@@ -158,7 +167,10 @@ public class WebCrawler implements Runnable {
         // Sub-classed can override this to add their custom functionality
         // 关闭绑定的Driver
         if(myController.getConfig().isChromeDriver()) {
-            SeleniumBuilder.shutdownDriver(chromeDriver);
+            SeleniumBuilder.shutdownChromeDriver(chromeDriver);
+        }
+        if(myController.getConfig().isPhantomJsDriver()) {
+            SeleniumBuilder.shutdownPhantomJsDriver(phantomJsDriver);
         }
     }
 

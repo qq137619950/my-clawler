@@ -2,8 +2,11 @@ package idea.bios.util.selenium.script;
 
 import lombok.var;
 import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.remote.CapabilityType;
+import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
  * 浏览器驱动
@@ -18,6 +21,14 @@ public class ChromeDriverBuilder {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        // 设置代理
+        var proxy = new Proxy();
+        var cap = new DesiredCapabilities();
+        cap.setCapability(CapabilityType.PROXY, proxy);
+        String proxyIpAndPort = "192.168.218.26:3128";
+        String proxyIpAndPort2 = "192.168.218.37:13128";
+        proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+        chromeOptions.setProxy(proxy);
         // 配置参数优化
         // 无头模式
         // chromeOptions.addArguments("--headless");

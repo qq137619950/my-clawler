@@ -37,7 +37,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     protected static final AtomicInteger INT_FLAG = new AtomicInteger(0);
 
     protected final SeedFetcher seedFetcher = new SeedFetcherImpl();
-    // protected static CrawlerSiteEnum crawlerSiteEnum;
+
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
             ".*(\\.(css|js|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz|bmp|gif|jpeg|png|))$");
 
@@ -151,57 +151,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
         }
     }
 
-    /**
-     * 特殊处理page的通用方法
-     * @param page  page
-     * @param cName collection name
-     */
-    protected void specialPageVisit(@NotNull Page page, String cName, String charset) {
-        String url = page.getUrl().getURL();
-        if (!shouldParse(page.getUrl())) {
-            log.info("this page should not be parse: {}", url);
-            return;
-        }
-        log.info("special visit URL: {}", url);
-        // 重新获取
-        Connection connection = Jsoup.connect(url);
-        Connection.Response res;
-        try {
-            res = connection.execute().charset(charset);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-        if (res.statusCode() == 200) {
-            String html = res.body();
-//            try {
-//                byte[] bytes = html.getBytes(charset);
-//                html = new String(bytes, StandardCharsets.UTF_8);
-//            } catch (UnsupportedEncodingException e) {
-//                e.printStackTrace();
-//            }
-            // 解析html
-            Map<String, ?> result = this.getSingleHtmlInfo(html);
-            // 写数据库
-            if (result == null) {
-                log.warn("get nothing from html.");
-                return;
-            }
-            MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(cName);
-            var insertDoc = new Document();
-            result.forEach(insertDoc::append);
-            // url也记录下
-            insertDoc.append("src", url);
-            for (Object o : result.values()) {
-                if (o == null || "".equals(o)) {
-                    log.warn("some content empty.");
-                    return;
-                }
-            }
-            collection.insertOne(insertDoc);
-        }
-    }
+
 
     /**
      * 适合一个网站获取多种结构化数据的场景

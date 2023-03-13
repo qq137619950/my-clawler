@@ -1,5 +1,6 @@
 package idea.bios.browser.phantomjs;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Platform;
@@ -11,14 +12,14 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * 测试PhantomJs
  * @author 86153
  */
+@Slf4j
 public class TestPhantomJs {
     public static void main(String[] args) {
         //设置必要参数
@@ -38,35 +39,31 @@ public class TestPhantomJs {
         //创建无界面浏览器对象
         var driver = new PhantomJSDriver(dcaps);
         final String url =
-                "https://www.medsci.cn/guideline/search?s_id=37";
-        var links = new ArrayList<String>();
+                "https://www.khanacademy.org/math/get-ready-for-algebra-ii/x6e4201668896ef07:get-ready-for-equations/x6e4201668896ef07:solving-systems-of-equations-with-substitution/a/substitution-method-review-systems-of-equations";
         // 等待xx元素出现
         var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.get(url);
-//        // 自定义等待事件
-//        wait.until((ExpectedCondition<Boolean>) d -> d != null &&
-//                d.findElement(By.cssSelector(
-//                        "div.health-carea")) != null);
-//
-//        WebElement element = driver.findElement(By.cssSelector(
-//                "div.health-carea"));
-//
-//        System.out.println("Element:" + driver.findElement(By.name("body")).getText());
-//        if (element != null) {
-//            List<WebElement> nextDivList = element.findElements(By.cssSelector("div.swan-ad-fc-feed"));
-//            Optional.ofNullable(nextDivList)
-//                    .orElse(new ArrayList<>()).forEach(e -> {
-//                        try {
-//                            WebElement inner = e.findElement(By.cssSelector("div.swan-ad-fc-recommend"));
-//                            if (inner != null) {
-//                                String dataSrc = inner.getAttribute("data-source");
-//                                String[] dsa = dataSrc.split("\\?");
-//                                links.add(dsa[0]);
-//                            }
-//                        } catch (Exception ignored) {
-//                        }
-//                    });
-//        }
-        System.out.println(links);
+        WebElement body = wait.until((ExpectedCondition<WebElement>)
+                d -> {
+            if (d != null) {
+                return d.findElement(By.cssSelector(
+                        "div[data-test-id='article-renderer-scroll-container']"));
+            }
+            return null;
+        });
+        if (body == null) {
+            log.warn("找不到内容, url:{}", url);
+            return;
+        }
+        WebElement title = body.findElement(By.cssSelector("header"));
+        List<WebElement> contents = body.findElements(By.cssSelector(
+                "div > div > div.clearfix"));
+        if (title == null || contents == null || contents.isEmpty()) {
+            log.warn("找不到内容, url:{}", url);
+            return;
+        }
+        log.info("title:{}", title.getText());
+        log.info("content:{}",  contents.stream().map(WebElement::getText)
+                .collect(Collectors.joining("\n")));
     }
 }

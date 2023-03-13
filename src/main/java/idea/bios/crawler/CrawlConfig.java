@@ -99,6 +99,12 @@ public class CrawlConfig {
     private boolean chromeDriver = false;
 
     /**
+     * 是否加载phantomJs驱动
+     */
+    @Getter @Setter
+    private boolean phantomJsDriver = false;
+
+    /**
      * Politeness delay in milliseconds (delay between sending two requests to
      * the same host).
      */
