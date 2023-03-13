@@ -45,6 +45,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 最终的处理HTML页面函数
      * 此时网页最终解析成了HTML格式
      * @param html   html网页代码
+     * @see #visit(Page)
      */
     protected abstract Map<String, ?> getSingleHtmlInfo(String html);
 
