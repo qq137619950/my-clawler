@@ -144,10 +144,6 @@ public class CommonController extends CrawlController implements ControllerFacad
                 try {
                     T crawler = clazz.getDeclaredConstructor(ControllerFacade.class)
                             .newInstance(this);
-
-
-
-                    // T crawler = crawlerFactory.newInstance();
                     var thread = new Thread(crawler, crawlerThreadBuilder(i));
                     crawler.setMyThread(thread);
                     // 初始化crawler
@@ -175,7 +171,6 @@ public class CommonController extends CrawlController implements ControllerFacad
                                     if (!shuttingDown) {
                                         // 重新创建一个线程
                                         try {
-                                            // T crawler = crawlerFactory.newInstance();
                                             T crawler = clazz.getDeclaredConstructor(ControllerFacade.class)
                                                     .newInstance(this);
                                             thread = new Thread(crawler, crawlerThreadBuilder(i + 1));

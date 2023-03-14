@@ -241,6 +241,7 @@ public class PageFetcher {
         String toFetchURL = webUrl.getURL();
         HttpUriRequest request = null;
         try {
+            // GET 方法
             request = newHttpUriRequest(toFetchURL);
             if (config.getPolitenessDelay() > 0) {
                 // Applying Politeness delay
@@ -252,7 +253,6 @@ public class PageFetcher {
                     lastFetchTime = (new Date()).getTime();
                 }
             }
-
             CloseableHttpResponse response = httpClient.execute(request);
             fetchResult.setEntity(response.getEntity());
             fetchResult.setResponseHeaders(response.getAllHeaders());
@@ -268,7 +268,6 @@ public class PageFetcher {
                     statusCode == HttpStatus.SC_TEMPORARY_REDIRECT ||
                     statusCode == 308) { // todo follow
                 // https://issues.apache.org/jira/browse/HTTPCORE-389
-
                 Header header = response.getFirstHeader(HttpHeaders.LOCATION);
                 if (header != null) {
                     String movedToUrl =

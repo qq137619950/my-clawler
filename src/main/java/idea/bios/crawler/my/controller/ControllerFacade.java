@@ -17,4 +17,6 @@ public interface ControllerFacade {
      * 停止推送数据开关
      */
     void putQueueFinish();
+
+
 }

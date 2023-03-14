@@ -105,6 +105,12 @@ public class CrawlConfig {
     private boolean phantomJsDriver = false;
 
     /**
+     * 是否动态解析
+     */
+    @Getter @Setter
+    private boolean dynParse = false;
+
+    /**
      * Politeness delay in milliseconds (delay between sending two requests to
      * the same host).
      */

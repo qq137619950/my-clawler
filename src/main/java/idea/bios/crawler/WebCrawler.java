@@ -351,7 +351,13 @@ public class WebCrawler implements Runnable {
                         }
                         if (curURL != null) {
                             curURL = handleUrlBeforeProcess(curURL);
-                            processPage(curURL);
+                            // 处理page的函数，加入动态页面处理
+                            if (myController.getConfig().isDynParse()) {
+                                // attention 此时需要复写processDynPage方法
+                                processDynPage(curURL);
+                            } else {
+                                processCommonPage(curURL);
+                            }
                             frontier.setProcessed(curURL);
                         }
                     }
@@ -434,11 +440,18 @@ public class WebCrawler implements Runnable {
     }
 
     /**
-     * 处理网页
+     * 实现动态网页获取
+     * @param curURL    curURL
+     */
+    protected void processDynPage(WebURL curURL) {
+    }
+
+    /**
+     * 处理普通网页
      * @param curURL            页面URL
      * @throws ParseException   ParseException
      */
-    private void processPage(WebURL curURL) throws ParseException {
+    private void processCommonPage(WebURL curURL) throws ParseException {
         PageFetchResult fetchResult = null;
         var page = new Page(curURL);
         try {

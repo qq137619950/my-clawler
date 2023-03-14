@@ -9,7 +9,6 @@ import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.crawler.my.seed.SeedFetcher;
 import idea.bios.crawler.my.seed.SeedFetcherImpl;
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
 import idea.bios.url.WebURL;
@@ -33,12 +32,17 @@ import java.util.regex.Pattern;
 @Slf4j
 public abstract class AbsCommonCrawler extends WebCrawler {
 
+    /**
+     * 每一个Crawler操作controller的接口
+     */
     protected ControllerFacade controllerFacade;
     /**
-     * 启动器
+     * 计数器
      */
     protected static final AtomicInteger INT_FLAG = new AtomicInteger(0);
-
+    /**
+     * seed获取接口
+     */
     protected final SeedFetcher seedFetcher = new SeedFetcherImpl();
 
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
@@ -57,7 +61,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     protected abstract Map<String, ?> getSingleHtmlInfo(String html);
 
     /**
-     * 处理 page，可以封装成统一的逻辑，比如落库等
+     * 处理 page，可以封装成统一的逻辑，比如落库、使用PhantomJs Driver对网页处理等
      * This function is called when a page is fetched and ready
      * @param page  page
      */
