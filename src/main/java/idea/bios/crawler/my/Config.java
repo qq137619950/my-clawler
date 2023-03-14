@@ -21,12 +21,25 @@ public class Config {
     }
 
     public static CrawlConfig configBuilder(int maxDepthOfCrawling,
+                                            int politenessDelay) {
+        CrawlConfig config = Config.defaultConfigBuilder();
+        config.setMaxDepthOfCrawling(maxDepthOfCrawling);
+        config.setPolitenessDelay(politenessDelay);
+        // 使用代理
+        // config.setProxyHost("47.106.191.148");
+        // config.setProxyPort(43128);
+        return config;
+    }
+
+    public static CrawlConfig configBuilder(int maxDepthOfCrawling,
                                             int politenessDelay,
-                                            boolean chromeDriver) {
+                                            boolean chromeDriver,
+                                            boolean phantomJsDriver) {
         CrawlConfig config = Config.defaultConfigBuilder();
         config.setMaxDepthOfCrawling(maxDepthOfCrawling);
         config.setPolitenessDelay(politenessDelay);
         config.setChromeDriver(chromeDriver);
+        config.setPhantomJsDriver(phantomJsDriver);
         // 使用代理
          // config.setProxyHost("47.106.191.148");
          // config.setProxyPort(43128);

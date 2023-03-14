@@ -12,7 +12,7 @@ import static idea.bios.crawler.my.Config.configBuilder;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        new CommonCrawlerStarter(configBuilder(-1,
-                200, false)).run(CrawlerSiteEnum.yixue_baike);
+        new CommonCrawlerStarter(configBuilder(-1, 200))
+                .run(CrawlerSiteEnum.yixue_baike);
     }
 }

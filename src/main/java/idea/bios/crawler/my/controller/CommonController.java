@@ -129,8 +129,7 @@ public class CommonController extends CrawlController implements ControllerFacad
      * @param <T>                   T
      */
     @Override
-    public <T extends WebCrawler> void start(Class<T> clazz,
-                                             final int numberOfCrawlers) {
+    public <T extends WebCrawler> void start(Class<T> clazz, final int numberOfCrawlers) {
         final CrawlConfig config = super.getConfig();
         try {
             finished = false;
@@ -258,18 +257,6 @@ public class CommonController extends CrawlController implements ControllerFacad
             // waitUntilFinish();
         } catch (Exception e) {
             log.error("Error happened", e);
-        }
-    }
-
-    private static class CommonCrawlerFactory<T extends WebCrawler> implements WebCrawlerFactory<T> {
-        final Class<T> clazz;
-        CommonCrawlerFactory(Class<T> clazz) {
-            this.clazz = clazz;
-        }
-        @Override
-        public T newInstance() throws Exception {
-            return clazz.getDeclaredConstructor(CommonController.class)
-                    .newInstance(this);
         }
     }
 
