@@ -151,6 +151,7 @@ public class WebCrawler implements Runnable {
      * This function is called just before starting the crawl by this crawler
      * instance. It can be used for setting up the data structures or
      * initializations needed by this crawler instance.
+     * crawler线程启动函数
      */
     public void onStart() {
         // Do nothing by default
@@ -202,7 +203,6 @@ public class WebCrawler implements Runnable {
 
     /**
      * This function is called if the content of a url is bigger than allowed size.
-     *
      * @param urlStr - The URL which it's content is bigger than allowed size
      */
     protected void onPageBiggerThanMaxSize(String urlStr, long pageSize) {
@@ -335,6 +335,7 @@ public class WebCrawler implements Runnable {
                 isWaitingForNewURLs = false;
                 if (assignedURLs.isEmpty()) {
                     if (frontier.isFinished()) {
+                        // 队列中没有数据
                         return;
                     }
                     try {

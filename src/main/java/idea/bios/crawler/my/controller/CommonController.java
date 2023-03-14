@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * 重写Controller方法
@@ -134,18 +136,23 @@ public class CommonController extends CrawlController {
             final var threads = new ArrayList<Thread>();
             // 爬虫队列
             final var crawlers = new ArrayList<T>();
-            for (int i = 1; i <= numberOfCrawlers; i++) {
+            // 构造Crawler
+            IntStream.rangeClosed(1, numberOfCrawlers).forEach(i -> {
                 // 创建一个crawler
-                T crawler = crawlerFactory.newInstance();
-                var thread = new Thread(crawler, crawlerThreadBuilder(i));
-                crawler.setMyThread(thread);
-                // 初始化crawler
-                crawler.init(i, this);
-                thread.start();
-                crawlers.add(crawler);
-                threads.add(thread);
-                log.info("Crawler {} started", i);
-            }
+                try {
+                    T crawler = crawlerFactory.newInstance();
+                    var thread = new Thread(crawler, crawlerThreadBuilder(i));
+                    crawler.setMyThread(thread);
+                    // 初始化crawler
+                    crawler.init(i, this);
+                    thread.start();
+                    crawlers.add(crawler);
+                    threads.add(thread);
+                    log.info("Crawler {} started", i);
+                } catch (Exception e) {
+                    log.warn("Exception occurs.", e);
+                }
+            });
             // 监控时钟
             MONITOR_THREAD_EXECUTOR.execute(() -> {
                 try {
@@ -153,53 +160,55 @@ public class CommonController extends CrawlController {
                         while (true) {
                             // Wait this long before checking the status of the worker threads.
                             sleep(config.getThreadMonitoringDelaySeconds());
-                            boolean someoneIsWorking = false;
-                            for (int i = 0; i < threads.size(); i++) {
+                            AtomicBoolean someoneIsWorking = new AtomicBoolean(false);
+                            IntStream.range(0, threads.size()).forEach(i -> {
                                 Thread thread = threads.get(i);
                                 // 线程不存活
                                 if (!thread.isAlive()) {
                                     if (!shuttingDown) {
                                         // 重新创建一个线程
-                                        T crawler = crawlerFactory.newInstance();
-                                        thread = new Thread(crawler, crawlerThreadBuilder(i + 1));
-                                        Thread droppedThread = threads.remove(i);
-                                        log.warn("Thread {} is dropped. then new one:{}", droppedThread.getName(), thread.getName());
-                                        threads.add(i, thread);
-                                        crawler.setMyThread(thread);
-                                        crawler.init(i + 1, this);
-                                        thread.start();
-                                        // 更新crawler list
-                                        T droppedCrawler = crawlers.remove(i);
-                                        // 关闭驱动
-                                        if (config.isChromeDriver()) {
-                                            SeleniumBuilder.shutdownChromeDriver(
-                                                    droppedCrawler.getChromeDriver());
+                                        try {
+                                            T crawler = crawlerFactory.newInstance();
+                                            thread = new Thread(crawler, crawlerThreadBuilder(i + 1));
+                                            Thread droppedThread = threads.remove(i);
+                                            log.warn("Thread {} is dropped. then new one:{}", droppedThread.getName(), thread.getName());
+                                            threads.add(i, thread);
+                                            crawler.setMyThread(thread);
+                                            crawler.init(i + 1, this);
+                                            thread.start();
+                                            // 更新crawler list
+                                            T droppedCrawler = crawlers.remove(i);
+                                            // 关闭驱动
+                                            if (config.isChromeDriver()) {
+                                                SeleniumBuilder.shutdownChromeDriver(
+                                                        droppedCrawler.getChromeDriver());
+                                            }
+                                            if (config.isPhantomJsDriver()) {
+                                                SeleniumBuilder.shutdownPhantomJsDriver(
+                                                        droppedCrawler.getPhantomJsDriver());
+                                            }
+                                            crawlers.add(i, crawler);
+                                        } catch (Exception e) {
+                                           log.warn("Exception occurs.", e);
                                         }
-                                        if (config.isPhantomJsDriver()) {
-                                            SeleniumBuilder.shutdownPhantomJsDriver(
-                                                    droppedCrawler.getPhantomJsDriver());
-                                        }
-                                        crawlers.add(i, crawler);
+                                    } else if (!crawlers.get(i).isWaitingForNewURLs()){
+                                        someoneIsWorking.set(true);
                                     }
-                                } else if (!crawlers.get(i).isWaitingForNewURLs()){
-                                    someoneIsWorking = true;
                                 }
-                            }
+                            });
                             // 如果没有在执行，而且所有数据已经进入队列，则关闭程序
-                            if (!someoneIsWorking && isSchedulePutQueueFinish) {
+                            if (!someoneIsWorking.get() && isSchedulePutQueueFinish) {
                                 log.info("任务可能已经完成，等待几秒再进行第一次判断");
                                 sleep(config.getThreadShutdownDelaySeconds());
                                 // 再检测一下队列，如果还有数据，则不退出
-                                boolean firstCheck = false;
-                                for (int i = 0; i < threads.size(); i++) {
+                                var firstCheck = new AtomicBoolean(false);
+                                IntStream.range(0, threads.size()).forEach(i -> {
                                     Thread thread = threads.get(i);
-                                    if (thread.isAlive() &&
-                                            !crawlers.get(i).isWaitingForNewURLs()) {
-                                        firstCheck = true;
-                                        break;
+                                    if (thread.isAlive() && !crawlers.get(i).isWaitingForNewURLs()) {
+                                        firstCheck.set(true);
                                     }
-                                }
-                                if (firstCheck) {
+                                });
+                                if (firstCheck.get()) {
                                     continue;
                                 }
                                 log.info("任务可能已经完成，等待几秒再进行第二次判断");
@@ -210,7 +219,7 @@ public class CommonController extends CrawlController {
                                 // 此时确定已经完毕，关闭系统
                                 log.info("任务可能已经完成，系统即将关闭");
                                 frontier.finish();
-                                for (T crawler : crawlers) {
+                                crawlers.forEach(crawler -> {
                                     crawler.onBeforeExit();
                                     crawlersLocalData.add(crawler.getMyLocalData());
                                     if (config.isChromeDriver()) {
@@ -219,7 +228,7 @@ public class CommonController extends CrawlController {
                                     if (config.isPhantomJsDriver()) {
                                         SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
                                     }
-                                }
+                                });
                                 log.info("Waiting for {} seconds before final clean up...",
                                         config.getCleanupDelaySeconds());
                                 sleep(config.getCleanupDelaySeconds());
