@@ -51,7 +51,6 @@ import lombok.var;
  * @author Yasser Ganjisaffar
  */
 @Slf4j
-@Deprecated
 public class CrawlController {
     @Getter
     private final CrawlConfig config;

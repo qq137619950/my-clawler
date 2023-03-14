@@ -128,11 +128,6 @@ public class CommonController extends CrawlController implements ControllerFacad
      * @param numberOfCrawlers      爬虫线程池个数
      * @param <T>                   T
      */
-//    @Override
-//    public <T extends WebCrawler> void start(Class<T> clazz, int numberOfCrawlers) {
-//        this.start(new CommonCrawlerFactory<>(clazz), numberOfCrawlers, true);
-//    }
-
     @Override
     public <T extends WebCrawler> void start(Class<T> clazz,
                                              final int numberOfCrawlers) {
