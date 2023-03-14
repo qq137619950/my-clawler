@@ -34,12 +34,14 @@ public class Config {
     public static CrawlConfig configBuilder(int maxDepthOfCrawling,
                                             int politenessDelay,
                                             boolean chromeDriver,
-                                            boolean phantomJsDriver) {
+                                            boolean phantomJsDriver,
+                                            boolean isDynParse) {
         CrawlConfig config = Config.defaultConfigBuilder();
         config.setMaxDepthOfCrawling(maxDepthOfCrawling);
         config.setPolitenessDelay(politenessDelay);
         config.setChromeDriver(chromeDriver);
         config.setPhantomJsDriver(phantomJsDriver);
+        config.setDynParse(isDynParse);
         // 使用代理
          // config.setProxyHost("47.106.191.148");
          // config.setProxyPort(43128);
