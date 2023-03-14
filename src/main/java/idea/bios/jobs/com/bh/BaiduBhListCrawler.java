@@ -8,6 +8,7 @@ import idea.bios.url.WebURL;
 import idea.bios.util.JsoupUtils;
 import idea.bios.util.Schedule;
 import idea.bios.util.search.BaiduSfSearchLinks;
+import idea.bios.util.selenium.SeleniumUtils;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.jsoup.Jsoup;
@@ -123,8 +124,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
         commonHtmlPageVisit(page);
-        // TODO 在 visit 之后增加获取link
-        // listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
+        controllerFacade.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
 
     @Override
