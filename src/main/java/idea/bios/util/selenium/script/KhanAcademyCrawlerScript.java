@@ -15,6 +15,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,7 +27,7 @@ import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChro
  */
 @Slf4j
 public class KhanAcademyCrawlerScript {
-    private static final String MENU_SITE = "https://www.khanacademy.org/humanities";
+    private static final String MENU_SITE = "https://www.khanacademy.org/ela";
     /**
      * 最终数据存放在mongodb中
      */
@@ -144,8 +145,13 @@ public class KhanAcademyCrawlerScript {
                         return;
                     }
                     try {
+                        // 处理每行
+                        String originContent = contents.stream().map(WebElement::getText)
+                                .filter(s -> s.length() > 2)
+                                .collect(Collectors.joining("\n"));
                         COLLECTION.insertOne(new Document("title", title.getText())
-                                .append("content", contents.stream().map(WebElement::getText)
+                                .append("content",Arrays.stream(originContent.split("\n"))
+                                        .filter(s -> s.length() > 3)
                                         .collect(Collectors.joining("\n")))
                                 .append("site", f));
                     } catch (Exception e) {

@@ -18,16 +18,16 @@ public class ChromeDriverBuilder {
     private static final String CHROME_PATH =
             "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe";
     public static ChromeDriver buildScriptChromeDriver() {
-        System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
+        System.getProperties().setProperty("webdriver.chrome.driver", CHROME_PATH);
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
         // 设置代理
         var proxy = new Proxy();
-        var cap = new DesiredCapabilities();
-        cap.setCapability(CapabilityType.PROXY, proxy);
+//        var cap = new DesiredCapabilities();
+//        cap.setCapability(CapabilityType.PROXY, proxy);
         String proxyIpAndPort = "192.168.218.26:3128";
         String proxyIpAndPort2 = "192.168.218.37:13128";
-        proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+        proxy.setHttpProxy(proxyIpAndPort2).setFtpProxy(proxyIpAndPort2).setSslProxy(proxyIpAndPort2);
         chromeOptions.setProxy(proxy);
         // 配置参数优化
         // 无头模式
