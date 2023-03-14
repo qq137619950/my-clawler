@@ -3,7 +3,7 @@ package idea.bios.jobs.com.bh;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.url.WebURL;
 import idea.bios.util.JsoupUtils;
 import idea.bios.util.Schedule;
@@ -27,6 +27,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class BaiduBhListCrawler extends AbsCommonCrawler {
 
     private static final AtomicInteger START_INT = new AtomicInteger(60000);
+
+    public BaiduBhListCrawler(ControllerFacade controllerFacade) {
+        super(controllerFacade);
+    }
 
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
@@ -118,7 +122,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public void visit(Page page) {
         // 解析网页得到link url
         String url = page.getUrl().getURL();
-        commonPageVisit(page);
+        commonHtmlPageVisit(page);
         // TODO 在 visit 之后增加获取link
         // listStarter.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
     }
@@ -136,7 +140,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void prepareToRun(CommonCrawlerStarter listStarter) {
+    public void prepareToRun() {
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据
         Schedule.scheduleAtFixedRate(()-> {
@@ -150,7 +154,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
                 return;
             }
             List<String> links = searchLinks.getLinks(sUrls.get(0));
-            listStarter.addUrlsToQueue(links);
+            controllerFacade.addUrlsToQueue(links);
         }, 10);
     }
 

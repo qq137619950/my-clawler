@@ -5,6 +5,7 @@ import com.drew.lang.annotations.NotNull;
 import com.mongodb.client.MongoCollection;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.WebCrawler;
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.crawler.my.seed.SeedFetcher;
 import idea.bios.crawler.my.seed.SeedFetcherImpl;
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
@@ -31,6 +32,8 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public abstract class AbsCommonCrawler extends WebCrawler {
+
+    protected ControllerFacade controllerFacade;
     /**
      * 启动器
      */
@@ -41,11 +44,15 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     protected final static Pattern COMMON_FILTERS = Pattern.compile(
             ".*(\\.(css|js|mid|mp2|mp3|mp4|wav|avi|mov|mpeg|ram|m4v|pdf|rm|smil|wmv|swf|wma|zip|rar|gz|bmp|gif|jpeg|png|))$");
 
+    public AbsCommonCrawler(ControllerFacade controllerFacade) {
+        this.controllerFacade = controllerFacade;
+    }
+
     /**
      * 最终的处理HTML页面函数
      * 此时网页最终解析成了HTML格式
      * @param html   html网页代码
-     * @see #visit(Page)
+     * @see #commonHtmlPageVisit(Page)
      */
     protected abstract Map<String, ?> getSingleHtmlInfo(String html);
 
@@ -103,20 +110,20 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 启动器准备
      * public abstract void runner() throws Exception;
      */
-    public abstract void prepareToRun(CommonCrawlerStarter listStarter);
+    public abstract void prepareToRun();
 
 
     /**
-     * 处理page的通用方法
+     * 处理page的通用方法，处理已经解析好的html文本
      * @param page  page
      */
-    protected void commonPageVisit(@NotNull Page page) {
+    protected void commonHtmlPageVisit(@NotNull Page page) {
         String url = page.getUrl().getURL();
         if (!shouldParse(page.getUrl())) {
             log.info("this page should not be parse: {}", url);
             return;
         }
-        log.info("visit URL: {}", url);
+        log.info("common html page visit URL: {}", url);
         // 此处处理HTML格式的data
         if (page.getParseData() instanceof HtmlParseData) {
             var htmlParseData = (HtmlParseData) page.getParseData();

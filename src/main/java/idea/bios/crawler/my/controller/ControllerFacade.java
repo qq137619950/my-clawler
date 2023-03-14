@@ -3,10 +3,10 @@ package idea.bios.crawler.my.controller;
 import java.util.List;
 
 /**
- * 在crawler中操作接口
+ * 在crawler中controller暴露出的接口
  * @author 86153
  */
-public interface CrawlerController {
+public interface ControllerFacade {
     /**
      * 添加url到队列
      * @param pageUrls      url list
@@ -16,6 +16,5 @@ public interface CrawlerController {
     /**
      * 停止推送数据开关
      */
-    @Deprecated
     void putQueueFinish();
 }

@@ -2,7 +2,7 @@ package idea.bios.jobs.com.yixue;
 
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +22,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class YixueCrawler extends AbsCommonCrawler {
     private static final AtomicInteger START_INT = new AtomicInteger(0);
+
+    public YixueCrawler(ControllerFacade controllerFacade) {
+        super(controllerFacade);
+    }
+
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
         Document doc = Jsoup.parseBodyFragment(html);
@@ -46,7 +51,7 @@ public class YixueCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page);
+        super.commonHtmlPageVisit(page);
     }
 
     @Override
@@ -63,18 +68,18 @@ public class YixueCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void prepareToRun(CommonCrawlerStarter listStarter) {
+    public void prepareToRun() {
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     10,
                     term -> "https://www.yixue.com/" + term);
             if (!sUrls.isEmpty()) {
-                listStarter.addUrlsToQueue(sUrls);
+                controllerFacade.addUrlsToQueue(sUrls);
             }}, 10);
     }
 
     public static void main(String[] args) throws IOException {
-        new YixueCrawler().testGetHtmlInfo("https://www.yixue.com/%E4%BD%8E%E7%83%AD");
+        new YixueCrawler(null).testGetHtmlInfo("https://www.yixue.com/%E4%BD%8E%E7%83%AD");
     }
 }

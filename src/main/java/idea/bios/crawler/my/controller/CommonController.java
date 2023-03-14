@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
  * @author 86153
  */
 @Slf4j
-public class CommonController extends CrawlController {
+public class CommonController extends CrawlController implements ControllerFacade {
     private static final Executor MONITOR_THREAD_EXECUTOR = Executors.newFixedThreadPool(5);
     /**
      * 计划中的url是否插入完毕
@@ -43,6 +43,7 @@ public class CommonController extends CrawlController {
         return isSchedulePutQueueFinish;
     }
 
+    @Override
     public void putQueueFinish() {
        if (isSchedulePutQueueFinish) {
            log.warn("put queue already finished!");
@@ -57,6 +58,7 @@ public class CommonController extends CrawlController {
      * 持续加入队列接口
      * @param pageUrls   List
      */
+    @Override
     public void addUrlsToQueue(List<String> pageUrls) {
         if (pageUrls == null || pageUrls.isEmpty()) {
             log.warn("pageUrls empty!");
@@ -119,14 +121,20 @@ public class CommonController extends CrawlController {
         frontier.scheduleAll(urls);
     }
 
+
     /**
-     * 重写启动方法，不退出程序，持续性放入新的数据
-     * @param crawlerFactory        爬虫构造方法
+     * 重写启动方法
+     * @param clazz                 类型
      * @param numberOfCrawlers      爬虫线程池个数
      * @param <T>                   T
      */
+//    @Override
+//    public <T extends WebCrawler> void start(Class<T> clazz, int numberOfCrawlers) {
+//        this.start(new CommonCrawlerFactory<>(clazz), numberOfCrawlers, true);
+//    }
+
     @Override
-    public <T extends WebCrawler> void start(final WebCrawlerFactory<T> crawlerFactory,
+    public <T extends WebCrawler> void start(Class<T> clazz,
                                              final int numberOfCrawlers) {
         final CrawlConfig config = super.getConfig();
         try {
@@ -140,7 +148,12 @@ public class CommonController extends CrawlController {
             IntStream.rangeClosed(1, numberOfCrawlers).forEach(i -> {
                 // 创建一个crawler
                 try {
-                    T crawler = crawlerFactory.newInstance();
+                    T crawler = clazz.getDeclaredConstructor(ControllerFacade.class)
+                            .newInstance(this);
+
+
+
+                    // T crawler = crawlerFactory.newInstance();
                     var thread = new Thread(crawler, crawlerThreadBuilder(i));
                     crawler.setMyThread(thread);
                     // 初始化crawler
@@ -168,7 +181,9 @@ public class CommonController extends CrawlController {
                                     if (!shuttingDown) {
                                         // 重新创建一个线程
                                         try {
-                                            T crawler = crawlerFactory.newInstance();
+                                            // T crawler = crawlerFactory.newInstance();
+                                            T crawler = clazz.getDeclaredConstructor(ControllerFacade.class)
+                                                    .newInstance(this);
                                             thread = new Thread(crawler, crawlerThreadBuilder(i + 1));
                                             Thread droppedThread = threads.remove(i);
                                             log.warn("Thread {} is dropped. then new one:{}", droppedThread.getName(), thread.getName());
@@ -248,6 +263,18 @@ public class CommonController extends CrawlController {
             // waitUntilFinish();
         } catch (Exception e) {
             log.error("Error happened", e);
+        }
+    }
+
+    private static class CommonCrawlerFactory<T extends WebCrawler> implements WebCrawlerFactory<T> {
+        final Class<T> clazz;
+        CommonCrawlerFactory(Class<T> clazz) {
+            this.clazz = clazz;
+        }
+        @Override
+        public T newInstance() throws Exception {
+            return clazz.getDeclaredConstructor(CommonController.class)
+                    .newInstance(this);
         }
     }
 

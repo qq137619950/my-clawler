@@ -6,6 +6,7 @@ import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.CommonController;
 import idea.bios.crawler.my.Config;
 
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
@@ -105,17 +106,17 @@ public class CommonCrawlerStarter {
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
         controller = new CommonController(config, pageFetcher, robotsTxtServer);
-        CrawlController.WebCrawlerFactory<? extends AbsCommonCrawler> factory =
-                crawlerEnum.getCrawlerClass()::newInstance;
         // 阻塞
         if (!config.isContinuousPutSeeds()) {
             controller.putQueueFinish();
         }
         // 执行特定函数
-        AbsCommonCrawler crawlerTemp = crawlerEnum.getCrawlerClass().newInstance();
-        crawlerTemp.prepareToRun(this);
+        AbsCommonCrawler crawlerTemp = crawlerEnum.getCrawlerClass()
+                .getDeclaredConstructor(ControllerFacade.class)
+                        .newInstance(this.controller);
+        crawlerTemp.prepareToRun();
         // 开启
-        controller.start(factory, NUMBER_OF_CRAWLERS);
+        controller.start(crawlerEnum.getCrawlerClass(), NUMBER_OF_CRAWLERS);
 
         // 判断参数
         if (step <= 0 || start < 0 || start > end) {

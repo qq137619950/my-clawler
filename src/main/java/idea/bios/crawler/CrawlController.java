@@ -165,7 +165,13 @@ public class CrawlController {
         return parser;
     }
 
+    @FunctionalInterface
     public interface WebCrawlerFactory<T extends WebCrawler> {
+        /**
+         * 返回一个实例
+         * @return              T类型的实例
+         * @throws Exception    Exception
+         */
         T newInstance() throws Exception;
     }
 

@@ -3,8 +3,7 @@ package idea.bios.jobs.com.dxy;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
 import idea.bios.util.search.DxyDialogSearchLinks;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static idea.bios.crawler.my.Config.configBuilder;
 
 /**
  * 丁香园多轮问答  https://dxy.com/question/102688528
@@ -31,6 +29,10 @@ import static idea.bios.crawler.my.Config.configBuilder;
 @Slf4j
 public class DxyDialogCrawler extends AbsCommonCrawler {
     private static final AtomicInteger START_INT = new AtomicInteger(0);
+
+    public DxyDialogCrawler(ControllerFacade controllerFacade) {
+        super(controllerFacade);
+    }
 
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
@@ -74,7 +76,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page);
+        super.commonHtmlPageVisit(page);
     }
 
     @Override
@@ -84,7 +86,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void prepareToRun(CommonCrawlerStarter listStarter) {
+    public void prepareToRun() {
         var searchLinks = new DxyDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
@@ -92,12 +94,12 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
                     1,
                     DxyDialogCrawler::getSearchUrlPrefix);
             if (!sUrls.isEmpty()) {
-                listStarter.addUrlsToQueue(searchLinks.getAllLinks(sUrls.get(0)));
+                controllerFacade.addUrlsToQueue(searchLinks.getAllLinks(sUrls.get(0)));
             }}, 30);
     }
 
     public static void main(String[] args) throws IOException {
-        new DxyDialogCrawler().testGetHtmlInfo(
+        new DxyDialogCrawler(null).testGetHtmlInfo(
                 "https://dxy.com/question/54875205");
     }
 

@@ -3,8 +3,8 @@ package idea.bios.jobs.com.mfk;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
 import lombok.var;
@@ -26,6 +26,11 @@ import java.util.stream.Collectors;
  */
 public class MkfQaCrawler extends AbsCommonCrawler {
     private static final AtomicInteger START_INT = new AtomicInteger(0);
+
+    public MkfQaCrawler(ControllerFacade controllerFacade) {
+        super(controllerFacade);
+    }
+
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
         Document doc = Jsoup.parseBodyFragment(html);
@@ -84,7 +89,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page);
+        super.commonHtmlPageVisit(page);
     }
 
     @Override
@@ -94,12 +99,12 @@ public class MkfQaCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void prepareToRun(CommonCrawlerStarter listStarter) {
+    public void prepareToRun() {
         Schedule.scheduleAtFixedRateMi(()-> {
             // 直接拼接
             var seeds = new ArrayList<String>();
             seeds.add("https://www.mfk.com/ask/" + START_INT.incrementAndGet() + ".shtml");
-            listStarter.addUrlsToQueue(seeds);
+            controllerFacade.addUrlsToQueue(seeds);
         }, 100);
 //        Schedule.scheduleAtFixedRate(()-> {
 //            var searchLinks = new MfkQaSearchLinks();
@@ -120,14 +125,14 @@ public class MkfQaCrawler extends AbsCommonCrawler {
         // 半小时一次，拉取seed
         Schedule.scheduleAtFixedRate(()-> {
             // TODO 分布式锁
-            listStarter.addUrlsToQueue(seedFetcher.getSeedsFromPool(
+            controllerFacade.addUrlsToQueue(seedFetcher.getSeedsFromPool(
                     CrawlerSiteEnum.findCrawlerSiteEnumByClass(
                             this.getClass()).getSourceId()));
         }, 1800);
     }
 
     public static void main(String[] args) throws IOException {
-        new MkfQaCrawler().testGetHtmlInfo(
+        new MkfQaCrawler(null).testGetHtmlInfo(
                 "https://www.mfk.com/ask/11683454.shtml");
     }
 }

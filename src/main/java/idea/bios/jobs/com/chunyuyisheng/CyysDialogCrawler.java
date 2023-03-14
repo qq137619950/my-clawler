@@ -3,11 +3,9 @@ package idea.bios.jobs.com.chunyuyisheng;
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import idea.bios.crawler.my.controller.CommonController;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
-import idea.bios.util.search.BaiduSfSearchLinks;
 import idea.bios.util.search.CyysDialogSearchLinks;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -23,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static idea.bios.crawler.my.Config.configBuilder;
 
 /**
  * 春雨医生对话
@@ -32,6 +29,10 @@ import static idea.bios.crawler.my.Config.configBuilder;
 @Slf4j
 public class CyysDialogCrawler extends AbsCommonCrawler {
     private static final AtomicInteger START_INT = new AtomicInteger(0);
+
+    public CyysDialogCrawler(CommonController controllerFacade) {
+        super(controllerFacade);
+    }
 
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
@@ -74,7 +75,7 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page);
+        super.commonHtmlPageVisit(page);
     }
 
     @Override
@@ -84,7 +85,7 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void prepareToRun(CommonCrawlerStarter listStarter) {
+    public void prepareToRun() {
         var searchLinks = new CyysDialogSearchLinks();
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
@@ -92,12 +93,12 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
                     1,
                     term ->CyysDialogSearchLinks.CYYS_DIALOG_PREFIX + term);
             if (!sUrls.isEmpty()) {
-                listStarter.addUrlsToQueue(searchLinks.getLinks(sUrls.get(0)));
+                controllerFacade.addUrlsToQueue(searchLinks.getLinks(sUrls.get(0)));
             }}, 5);
     }
 
     public static void main(String[] args) throws IOException {
-        new CyysDialogCrawler().testGetHtmlInfo(
+        new CyysDialogCrawler(null).testGetHtmlInfo(
                 "https://www.chunyuyisheng.com/pc/qa/ZqwVbxyV62DKlViFMHtP8g/");
     }
 }

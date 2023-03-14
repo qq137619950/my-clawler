@@ -2,7 +2,7 @@ package idea.bios.jobs.com.ahospital;
 
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
-import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +17,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static idea.bios.crawler.my.Config.configBuilder;
-
 /**
  * http://www.a-hospital.com/w/医学电子书
  * @author 86153
  */
 @Slf4j
 public class HospitalBaikeCrawler extends AbsCommonCrawler {
+
+    public HospitalBaikeCrawler(ControllerFacade controllerFacade) {
+        super(controllerFacade);
+    }
 
     @Override
     protected Map<String, ?> getSingleHtmlInfo(String html) {
@@ -80,7 +82,7 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonPageVisit(page);
+        super.commonHtmlPageVisit(page);
     }
 
     @Override
@@ -91,19 +93,19 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    public void prepareToRun(CommonCrawlerStarter listStarter) {
+    public void prepareToRun() {
         Schedule.scheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
                     INT_FLAG.getAndIncrement(),
                     1,
                     term -> "http://www.a-hospital.com/w/" + term);
             if (!sUrls.isEmpty()) {
-                listStarter.addUrlsToQueue(sUrls);
+                controllerFacade.addUrlsToQueue(sUrls);
             }}, 5);
     }
 
     public static void main(String[] args) throws IOException {
-        new HospitalBaikeCrawler().testGetHtmlInfo(
+        new HospitalBaikeCrawler(null).testGetHtmlInfo(
                 "http://www.a-hospital.com/w/%E5%8F%A3%E8%85%94");
     }
 }
