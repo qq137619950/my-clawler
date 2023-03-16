@@ -598,7 +598,6 @@ public class WebCrawler implements Runnable {
                     ((HtmlParseData)page.getParseData())
                         .getMetaTagValue("robots").
                         contains("noindex");
-
                 if (!noIndex) {
                     visit(page);
                 }

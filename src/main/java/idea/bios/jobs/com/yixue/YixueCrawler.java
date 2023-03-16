@@ -80,6 +80,7 @@ public class YixueCrawler extends AbsCommonCrawler {
     }
 
     public static void main(String[] args) throws IOException {
-        new YixueCrawler(null).testGetHtmlInfo("https://www.yixue.com/%E4%BD%8E%E7%83%AD");
+        new YixueCrawler(null).testGetHtmlInfo(
+                "https://www.yixue.com/%E4%BD%8E%E7%83%AD");
     }
 }

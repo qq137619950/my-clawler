@@ -97,6 +97,12 @@ public class CommonCrawlerStarter {
                     URLSourceBuilder urlSourceBuilder,
                     // 分页参数
                     int step, final int start, final int end) throws Exception {
+        // check
+        if (config.getPolitenessDelay() < crawlerEnum.getMinPolitenessDelay()) {
+            log.error("politenessDelay too short. {} must be bigger than {}",
+                    config.getPolitenessDelay(), crawlerEnum.getMinPolitenessDelay());
+            return;
+        }
         config.setCrawlStorageFolder(CRAW_STORAGE_FOLDER);
         config.setRespectNoIndex(false);
         // 不关闭进程，而是从其他途径不断加入seed

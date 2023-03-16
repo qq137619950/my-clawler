@@ -8,67 +8,70 @@ import idea.bios.jobs.com.chunyuyisheng.CyysDialogCrawler;
 import idea.bios.jobs.com.dxy.DxyDialogCrawler;
 import idea.bios.jobs.com.mfk.MkfQaCrawler;
 import idea.bios.jobs.com.yixue.YixueCrawler;
+import idea.bios.jobs.net.health120.Health120DialogCrawler;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /**
+ * 原网站信息
  * @author 86153
  */
-
+@AllArgsConstructor
 public enum CrawlerSiteEnum {
     /**
      * 百度博禾医生
      */
-    baidu_bh_list(BaiduBhListCrawler.class, "com.baidu.bh.article.qa"),
+    baidu_bh_list(BaiduBhListCrawler.class, "com.baidu.bh.article.qa", 1000),
     /**
      * 丁香园 对话
      */
-    dxy_dialog(DxyDialogCrawler.class, "com.dxy.dialog"),
+    dxy_dialog(DxyDialogCrawler.class, "com.dxy.dialog", 1000),
     /**
      * a hospital
      */
-    a_hospital(HospitalBaikeCrawler.class, "com.a.hospital.baike"),
+    a_hospital(HospitalBaikeCrawler.class, "com.a.hospital.baike", 3000),
     /**
      * 民福康 问答
      */
-    mfk_qa(MkfQaCrawler.class, "com.mfk.qa"),
+    mfk_qa(MkfQaCrawler.class, "com.mfk.qa", 200),
     /**
      * 医学百科
      * https://www.yixue.com/
      */
-    yixue_baike(YixueCrawler.class, "com.yixue.baike"),
+    yixue_baike(YixueCrawler.class, "com.yixue.baike", 1000),
+    /**
+     * 120健康网
+     * https://www.120.net/post/9163705.html
+     */
+    health120_dialog(Health120DialogCrawler.class, "health120.dialog", 300),
     /**
      * 春雨医生 对话
      */
-    cyys_dialog(CyysDialogCrawler.class, "com.cyys.dialog");
+    cyys_dialog(CyysDialogCrawler.class, "com.cyys.dialog", 500);
 
+    /**
+     * job中的Class文件
+     */
+    @Getter
+    private final Class<? extends AbsCommonCrawler> crawlerClass;
 
+    /**
+     * 资源ID
+     */
+    @Getter
+    private final String sourceId;
 
-    private Class<? extends AbsCommonCrawler> crawlerClass;
+    /**
+     * 访问网页最小间隔
+     */
+    @Getter
+    private final int minPolitenessDelay;
 
-    public String getSourceId() {
-        return sourceId;
-    }
-
-    CrawlerSiteEnum(Class<? extends AbsCommonCrawler> crawlerClass, String sourceId) {
-        this.crawlerClass = crawlerClass;
-        this.sourceId = sourceId;
-    }
-
-    public void setSourceId(String sourceId) {
-        this.sourceId = sourceId;
-    }
-
-    private String sourceId;
-
-
-
-    public Class<? extends AbsCommonCrawler> getCrawlerClass() {
-        return crawlerClass;
-    }
-
-    public void setCrawlerClass(Class<? extends AbsCommonCrawler> crawlerClass) {
-        this.crawlerClass = crawlerClass;
-    }
-
+    /**
+     * 通过class找enum
+     * @param clazz     class
+     * @return          CrawlerSiteEnum
+     */
     public static CrawlerSiteEnum findCrawlerSiteEnumByClass(Class<? extends AbsCommonCrawler> clazz) {
         if (clazz == null) {
             return null;

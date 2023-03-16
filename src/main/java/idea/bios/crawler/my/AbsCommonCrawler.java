@@ -12,6 +12,8 @@ import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
 import idea.bios.url.WebURL;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.bson.Document;
