@@ -29,51 +29,6 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        var result = new HashMap<String, Object>();
-        Document doc = Jsoup.parseBodyFragment(html);
-        // 标题
-        String title = doc.selectFirst("#firstHeading").text();
-        result.put("title", title);
-        // 层级标签
-        Element nav = doc.selectFirst(
-                "#bodyContent > table.hierarchy-breadcrumb > tbody > tr > td > small");
-        if (nav == null) {
-            nav = doc.selectFirst("#bodyContent > table.nav > tbody > tr > td");
-        }
-        if (nav != null) {
-            var tagList = new ArrayList<String>();
-            for(String t : nav.text().split(">>")) {
-                if (t.contains("A+医学百科")) {
-                    continue;
-                }
-                tagList.add(t.replaceAll(" +",""));
-            }
-            result.put("tag", tagList);
-        }
-
-        // 正文
-        Element bodyContent = doc.selectFirst("#bodyContent");
-        var contentList = new ArrayList<String>();
-        for (Element e : bodyContent.children()) {
-            if (e.text() != null && e.text().contains("参看")) {
-                break;
-            }
-            if (e.is("h2") || e.is("h3") || e.is("p")
-                || e.is("ul")) {
-                contentList.add(e.text());
-            }
-        }
-        result.put("content", String.join("\n", contentList));
-        // 来源
-        Element info = doc.selectFirst("#footer-info-credits");
-        if (info != null) {
-            result.put("info", info.text());
-        }
-        return result;
-    }
-
-    @Override
     public boolean shouldAddLinkQueue(WebURL url) {
         return url.getURL().startsWith("http://www.a-hospital.com/w/") &&
                 !url.getURL().contains("%E7%89%B9%E6%AE%8A") &&
@@ -82,7 +37,49 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
 
     @Override
     public void visit(Page page) {
-        super.commonHtmlPageVisit(page);
+        super.commonHtmlPageVisit(page, html -> {
+            var result = new HashMap<String, Object>();
+            Document doc = Jsoup.parseBodyFragment(html);
+            // 标题
+            String title = doc.selectFirst("#firstHeading").text();
+            result.put("title", title);
+            // 层级标签
+            Element nav = doc.selectFirst(
+                    "#bodyContent > table.hierarchy-breadcrumb > tbody > tr > td > small");
+            if (nav == null) {
+                nav = doc.selectFirst("#bodyContent > table.nav > tbody > tr > td");
+            }
+            if (nav != null) {
+                var tagList = new ArrayList<String>();
+                for(String t : nav.text().split(">>")) {
+                    if (t.contains("A+医学百科")) {
+                        continue;
+                    }
+                    tagList.add(t.replaceAll(" +",""));
+                }
+                result.put("tag", tagList);
+            }
+
+            // 正文
+            Element bodyContent = doc.selectFirst("#bodyContent");
+            var contentList = new ArrayList<String>();
+            for (Element e : bodyContent.children()) {
+                if (e.text() != null && e.text().contains("参看")) {
+                    break;
+                }
+                if (e.is("h2") || e.is("h3") || e.is("p")
+                        || e.is("ul")) {
+                    contentList.add(e.text());
+                }
+            }
+            result.put("content", String.join("\n", contentList));
+            // 来源
+            Element info = doc.selectFirst("#footer-info-credits");
+            if (info != null) {
+                result.put("info", info.text());
+            }
+            return result;
+        });
     }
 
     @Override

@@ -35,47 +35,44 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        var result = new HashMap<String, Object>();
-        Document doc = Jsoup.parseBodyFragment(html);
-        String title = doc.selectFirst("div > span.title").text();
-        result.put("title", title);
-        // 医生信息
-        Elements docInfoElements = doc.select("div.bread-crumb-top > a.crumb-top-link");
-        String docSimpleInfo = null;
-        for (Element de : docInfoElements) {
-            docSimpleInfo = de.text();
-        }
-        var authorInfoMap = new HashMap<String, Object>();
-        String[] strings = docSimpleInfo.split(" ");
-        authorInfoMap.put("name", strings[1]);
-        authorInfoMap.put("hospital", strings[0]);
-        result.put("authorInfo", new Gson().toJson(authorInfoMap));
-        // 对话
-        Element dialog = doc.selectFirst("div.main-wrap > div.problem-detail-wrap");
-        if (dialog == null) {
-            return null;
-        }
-        Elements ds = dialog.getElementsByClass("block-line");
-        var dialogList = new ArrayList<String>();
-        ds.forEach(d -> {
-            Elements pa = d.select("div > div > p.blue");
-            if (pa != null && !pa.isEmpty()) {
-                // 患者
-                dialogList.add("Q:" + pa.text());
-            } else {
-                pa = d.select("div > div > p");
-                // 医生
-                dialogList.add("A:" + pa.text());
-            }
-        });
-        result.put("dialog", dialogList);
-        return result;
-    }
-
-    @Override
     public void visit(Page page) {
-        super.commonHtmlPageVisit(page);
+        super.commonHtmlPageVisit(page, html -> {
+            var result = new HashMap<String, Object>();
+            Document doc = Jsoup.parseBodyFragment(html);
+            String title = doc.selectFirst("div > span.title").text();
+            result.put("title", title);
+            // 医生信息
+            Elements docInfoElements = doc.select("div.bread-crumb-top > a.crumb-top-link");
+            String docSimpleInfo = null;
+            for (Element de : docInfoElements) {
+                docSimpleInfo = de.text();
+            }
+            var authorInfoMap = new HashMap<String, Object>();
+            String[] strings = docSimpleInfo.split(" ");
+            authorInfoMap.put("name", strings[1]);
+            authorInfoMap.put("hospital", strings[0]);
+            result.put("authorInfo", new Gson().toJson(authorInfoMap));
+            // 对话
+            Element dialog = doc.selectFirst("div.main-wrap > div.problem-detail-wrap");
+            if (dialog == null) {
+                return null;
+            }
+            Elements ds = dialog.getElementsByClass("block-line");
+            var dialogList = new ArrayList<String>();
+            ds.forEach(d -> {
+                Elements pa = d.select("div > div > p.blue");
+                if (pa != null && !pa.isEmpty()) {
+                    // 患者
+                    dialogList.add("Q:" + pa.text());
+                } else {
+                    pa = d.select("div > div > p");
+                    // 医生
+                    dialogList.add("A:" + pa.text());
+                }
+            });
+            result.put("dialog", dialogList);
+            return result;
+        });
     }
 
     @Override

@@ -57,14 +57,6 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     }
 
     /**
-     * 最终的处理HTML页面函数
-     * 此时网页最终解析成了HTML格式
-     * @param html   html网页代码
-     * @see #commonHtmlPageVisit(Page)
-     */
-    protected abstract Map<String, ?> getSingleHtmlInfo(String html);
-
-    /**
      * 处理 page，可以封装成统一的逻辑，比如落库、使用PhantomJs Driver对网页处理等
      * This function is called when a page is fetched and ready
      * @param page  page
@@ -156,7 +148,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 处理page的通用方法，处理已经解析好的html文本
      * @param page  page
      */
-    protected void commonHtmlPageVisit(@NotNull Page page) {
+    protected void commonHtmlPageVisit(Page page, Function<String, Map<String, Object>> mapSupplier) {
         String url = page.getUrl().getURL();
         if (!shouldParse(page.getUrl())) {
             log.info("this page should not be parse: {}", url);
@@ -168,7 +160,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             var htmlParseData = (HtmlParseData) page.getParseData();
             String html = htmlParseData.getHtml();
             // 解析html
-            Map<String, ?> result = this.getSingleHtmlInfo(html);
+            Map<String, ?> result = mapSupplier.apply(html);
             // 写数据库
             if (result == null) {
                 log.warn("get nothing from html.");
@@ -248,53 +240,6 @@ public abstract class AbsCommonCrawler extends WebCrawler {
     }
 
     /**
-     * 带过滤的page处理
-     * @param page      page
-     * @param func      filter function
-     */
-    protected void filteredPageVisit(@NotNull Page page,
-                                     Function<Map<String, ?>, Boolean> func) {
-        String url = page.getUrl().getURL();
-        if (!shouldParse(page.getUrl())) {
-            log.info("this page should not be parse: {}", url);
-            return;
-        }
-        log.info("visit URL: {}", url);
-        if (page.getParseData() instanceof HtmlParseData) {
-            var htmlParseData = (HtmlParseData) page.getParseData();
-            String html = htmlParseData.getHtml();
-            // 解析html
-            Map<String, ?> result = this.getSingleHtmlInfo(html);
-            // 写数据库
-            if (result == null) {
-                log.warn("get nothing from html.");
-                return;
-            }
-            // 不符合欧过滤规则
-            if (!func.apply(result)) {
-                log.warn("not applying filter rule.");
-                return;
-            }
-            MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(
-                            CrawlerSiteEnum.findCrawlerSiteEnumByClass(
-                                    this.getClass()).getSourceId());
-            var insertDoc = new Document();
-            result.forEach(insertDoc::append);
-            // url也记录下
-            insertDoc.append("src", url);
-            for (Object o : result.values()) {
-                if (o == null || "".equals(o)) {
-                    log.warn("some content empty.");
-                    return;
-                }
-            }
-            collection.insertOne(insertDoc);
-        }
-
-    }
-
-    /**
      * 构建知识图谱的数据
      * 爬取的对象必须是有效的三元组
      * @param page  page
@@ -326,7 +271,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             return;
         }
         // 输出
-        log.info(this.getSingleHtmlInfo(res.body()).toString());
+        // log.info(this.getSingleHtmlInfo(res.body()).toString());
     }
 
 //    public void testGetHtmlInfoWithJs(String url) throws IOException, InterruptedException {

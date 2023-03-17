@@ -32,99 +32,94 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     public BaiduBhListCrawler(ControllerFacade controllerFacade) {
         super(controllerFacade);
     }
-
-    @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        var result = new HashMap<String, Object>();
-        Document doc = Jsoup.parseBodyFragment(html);
-        // title不同的情况
-        Element title = doc.select(
-                "div.health-article-container > div.health-article-title > div > div").first();
-        if (title != null) {
-            // 文章
-            result.put("title", title.text());
-            Element content = doc.select(
-                            "div.health-article-container > div.health-article-content-small")
-                    .first();
-            if (content == null) {
-                return null;
-            }
-            String contentText = Objects.requireNonNull(JsoupUtils.getBeautifulText(content));
-            result.put("content", contentText);
-            result.put("imgs", JsoupUtils.getElementAllImgSrc(content));
-            result.put("type", "article");
-        } else {
-            // 问答
-            title = doc.select(
-                    "div.health-detail-body-ask > div.health-detail-question-title").first();
-            if (title == null) {
-                return null;
-            }
-            result.put("title", title.text());
-            Element content = doc.select(
-                            "div.health-answer-content > div.health-answer-content-analy > div.J-summary")
-                    .first();
-            if (content == null) {
-                return null;
-            }
-            result.put("content", content.text());
-            result.put("imgs", JsoupUtils.getElementAllImgSrc(content));
-            result.put("type", "qa");
-        }
-        // 作者
-        Element authorInfo = doc.selectFirst(
-                "div.health-article-title> div> div > div.health-doctor-info");
-
-        if (authorInfo == null) {
-            authorInfo = doc.selectFirst(" div > div.health-doctor-info");
-        }
-        if (authorInfo != null) {
-            var authorInfoMap = new LinkedHashMap<String, Object>();
-            Element img = authorInfo.selectFirst("div > img");
-            if (img != null) {
-                authorInfoMap.put("img", img.attr("src"));
-            }
-            Element name = authorInfo.selectFirst(
-                    "div.health-doctor-info-doc > p.health-doctor-name > .health-doctor-name-span");
-            if (name != null) {
-                authorInfoMap.put("name", name.text());
-            }
-            Element jobTitle = authorInfo.selectFirst(
-                    "div.health-doctor-info-doc > p.health-doctor-name > .health-doctor-info-job-title");
-            if (jobTitle != null) {
-                authorInfoMap.put("jobTitle", jobTitle.text());
-            }
-            Element department = authorInfo.selectFirst(
-                    "div.health-doctor-info-doc > p.health-doctor-name > .health-doctor-info-department");
-            if (department != null) {
-                authorInfoMap.put("department", department.text());
-            }
-            Element hospital = authorInfo.selectFirst(
-                    "div > span > .health-doctor-info-text");
-            if (hospital != null) {
-                authorInfoMap.put("hospital", hospital.text());
-            }
-            Element hospitalLabel = authorInfo.selectFirst(
-                    "div.health-doctor-location-info > p > span.health-doctor-info-tags-tag > span");
-            if (hospitalLabel != null) {
-                authorInfoMap.put("hospitalLabel", hospitalLabel.text());
-            }
-            result.put("authorInfo", new Gson().toJson(authorInfoMap));
-        }
-        // 时间
-        Element createTime = doc.selectFirst("div.health-answer-wrapped-content > div > div.health-question-tip-info");
-        if (createTime != null) {
-            result.put("createTime", createTime.text());
-        }
-        return result;
-    }
-
     @Override
     public void visit(Page page) {
-        // 解析网页得到link url
-        String url = page.getUrl().getURL();
-        commonHtmlPageVisit(page);
-        controllerFacade.addUrlsToQueue(SeleniumUtils.getLinks(url, this.getChromeDriver()));
+        // 解析网页得到link url TODO 可改为最新方式
+        commonHtmlPageVisit(page, html -> {
+            var result = new HashMap<String, Object>();
+            Document doc = Jsoup.parseBodyFragment(html);
+            // title不同的情况
+            Element title = doc.select(
+                    "div.health-article-container > div.health-article-title > div > div").first();
+            if (title != null) {
+                // 文章
+                result.put("title", title.text());
+                Element content = doc.select(
+                                "div.health-article-container > div.health-article-content-small")
+                        .first();
+                if (content == null) {
+                    return null;
+                }
+                String contentText = Objects.requireNonNull(JsoupUtils.getBeautifulText(content));
+                result.put("content", contentText);
+                result.put("imgs", JsoupUtils.getElementAllImgSrc(content));
+                result.put("type", "article");
+            } else {
+                // 问答
+                title = doc.select(
+                        "div.health-detail-body-ask > div.health-detail-question-title").first();
+                if (title == null) {
+                    return null;
+                }
+                result.put("title", title.text());
+                Element content = doc.select(
+                                "div.health-answer-content > div.health-answer-content-analy > div.J-summary")
+                        .first();
+                if (content == null) {
+                    return null;
+                }
+                result.put("content", content.text());
+                result.put("imgs", JsoupUtils.getElementAllImgSrc(content));
+                result.put("type", "qa");
+            }
+            // 作者
+            Element authorInfo = doc.selectFirst(
+                    "div.health-article-title> div> div > div.health-doctor-info");
+
+            if (authorInfo == null) {
+                authorInfo = doc.selectFirst(" div > div.health-doctor-info");
+            }
+            if (authorInfo != null) {
+                var authorInfoMap = new LinkedHashMap<String, Object>();
+                Element img = authorInfo.selectFirst("div > img");
+                if (img != null) {
+                    authorInfoMap.put("img", img.attr("src"));
+                }
+                Element name = authorInfo.selectFirst(
+                        "div.health-doctor-info-doc > p.health-doctor-name > .health-doctor-name-span");
+                if (name != null) {
+                    authorInfoMap.put("name", name.text());
+                }
+                Element jobTitle = authorInfo.selectFirst(
+                        "div.health-doctor-info-doc > p.health-doctor-name > .health-doctor-info-job-title");
+                if (jobTitle != null) {
+                    authorInfoMap.put("jobTitle", jobTitle.text());
+                }
+                Element department = authorInfo.selectFirst(
+                        "div.health-doctor-info-doc > p.health-doctor-name > .health-doctor-info-department");
+                if (department != null) {
+                    authorInfoMap.put("department", department.text());
+                }
+                Element hospital = authorInfo.selectFirst(
+                        "div > span > .health-doctor-info-text");
+                if (hospital != null) {
+                    authorInfoMap.put("hospital", hospital.text());
+                }
+                Element hospitalLabel = authorInfo.selectFirst(
+                        "div.health-doctor-location-info > p > span.health-doctor-info-tags-tag > span");
+                if (hospitalLabel != null) {
+                    authorInfoMap.put("hospitalLabel", hospitalLabel.text());
+                }
+                result.put("authorInfo", new Gson().toJson(authorInfoMap));
+            }
+            // 时间
+            Element createTime = doc.selectFirst("div.health-answer-wrapped-content > div > div.health-question-tip-info");
+            if (createTime != null) {
+                result.put("createTime", createTime.text());
+            }
+            return result;
+        });
+        controllerFacade.addUrlsToQueue(SeleniumUtils.getLinks(page.getUrl().getURL(), this.getChromeDriver()));
     }
 
     @Override

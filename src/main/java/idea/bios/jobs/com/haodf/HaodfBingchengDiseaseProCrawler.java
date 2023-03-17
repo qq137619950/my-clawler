@@ -41,12 +41,6 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        // 不需要这个函数
-        return null;
-    }
-
-    @Override
     public void visit(Page page) {
         super.driverPageVisit(page.getUrl(), () -> {
             PhantomJSDriver driver = getPhantomJsDriver();
@@ -142,7 +136,7 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
             return;
         }
         // 构建获取列表
-        list.forEach(e -> IntStream.rangeClosed(1, 100).
+        list.forEach(e -> IntStream.rangeClosed(51, 100).
                 forEach(i -> listUrls.add("https:" + e.attr("href") + "?p=" + i)));
         // 定时任务获取
         Schedule.scheduleAtFixedRate(()-> {

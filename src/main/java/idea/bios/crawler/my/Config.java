@@ -45,6 +45,8 @@ public class Config {
         // 使用代理
          // config.setProxyHost("47.106.191.148");
          // config.setProxyPort(43128);
+         config.setProxyHost("192.168.218.26");
+         config.setProxyPort(3128);
         return config;
     }
 

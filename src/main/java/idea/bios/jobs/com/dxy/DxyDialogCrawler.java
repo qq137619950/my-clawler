@@ -35,48 +35,45 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        // 只有医生信息和多轮问答
-        var result = new HashMap<String, Object>();
-        Document doc = Jsoup.parseBodyFragment(html);
-        // 医生信息
-        Element author = doc.selectFirst("div.doctor-info > div.doctor-detail");
-        if (author == null) {
-            log.warn("no author info.");
-            return null;
-        }
-        var authorInfoMap = new HashMap<String, Object>();
-        authorInfoMap.put("name", author.selectFirst("div.doctor-header > div").text());
-        authorInfoMap.put("jobTitle", author.selectFirst("div.doctor-body > div:nth-child(1)").text());
-        authorInfoMap.put("department", author.selectFirst("div.doctor-body > div:nth-child(2)").text());
-        authorInfoMap.put("hospital", author.selectFirst("div.doctor-body > div:nth-child(3)").text());
-        result.put("authorInfo", new Gson().toJson(authorInfoMap));
-        // 对话信息
-        Element dialog = doc.selectFirst("div.question-detail-dialogs > div.dialogs");
-        if (dialog == null) {
-            log.warn("no dialog info.");
-            return null;
-        }
-        Elements contents = dialog.select(".dialog-content");
-        var dialogList = new ArrayList<String>();
-        if (contents == null) {
-            log.warn("no dialog info.");
-            return null;
-        }
-        contents.forEach(c -> {
-            if (c.parent().is(".theme-white")) {
-                dialogList.add("A:" + c.text());
-            } else if (c.parent().is(".theme-dark")) {
-                dialogList.add("Q:" + c.text());
-            }
-        });
-        result.put("dialog", dialogList);
-        return result;
-    }
-
-    @Override
     public void visit(Page page) {
-        super.commonHtmlPageVisit(page);
+        super.commonHtmlPageVisit(page, html -> {
+            // 只有医生信息和多轮问答
+            var result = new HashMap<String, Object>();
+            Document doc = Jsoup.parseBodyFragment(html);
+            // 医生信息
+            Element author = doc.selectFirst("div.doctor-info > div.doctor-detail");
+            if (author == null) {
+                log.warn("no author info.");
+                return null;
+            }
+            var authorInfoMap = new HashMap<String, Object>();
+            authorInfoMap.put("name", author.selectFirst("div.doctor-header > div").text());
+            authorInfoMap.put("jobTitle", author.selectFirst("div.doctor-body > div:nth-child(1)").text());
+            authorInfoMap.put("department", author.selectFirst("div.doctor-body > div:nth-child(2)").text());
+            authorInfoMap.put("hospital", author.selectFirst("div.doctor-body > div:nth-child(3)").text());
+            result.put("authorInfo", new Gson().toJson(authorInfoMap));
+            // 对话信息
+            Element dialog = doc.selectFirst("div.question-detail-dialogs > div.dialogs");
+            if (dialog == null) {
+                log.warn("no dialog info.");
+                return null;
+            }
+            Elements contents = dialog.select(".dialog-content");
+            var dialogList = new ArrayList<String>();
+            if (contents == null) {
+                log.warn("no dialog info.");
+                return null;
+            }
+            contents.forEach(c -> {
+                if (c.parent().is(".theme-white")) {
+                    dialogList.add("A:" + c.text());
+                } else if (c.parent().is(".theme-dark")) {
+                    dialogList.add("Q:" + c.text());
+                }
+            });
+            result.put("dialog", dialogList);
+            return result;
+        });
     }
 
     @Override
