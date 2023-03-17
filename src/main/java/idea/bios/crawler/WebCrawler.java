@@ -443,10 +443,13 @@ public class WebCrawler implements Runnable {
      * 实现动态网页获取
      * @param curURL    curURL
      */
-    protected void processDynPage(WebURL curURL) {
+    protected void processDynPage(WebURL curURL) throws InterruptedException {
         curURL.setURL(curURL.getURL());
         curURL.setDocid(docIdServer.getNewDocId(curURL.getURL()));
         // 不在此处理links
+        if (myController.getConfig().getPolitenessDelay() > 0) {
+            pageFetcher.fetchNothing(curURL);
+        }
         visit(new Page(curURL));
     }
 

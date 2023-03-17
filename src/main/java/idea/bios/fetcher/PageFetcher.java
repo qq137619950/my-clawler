@@ -234,6 +234,26 @@ public class PageFetcher {
         }
     }
 
+    /**
+     * 什么都不做，就是为了卡时间
+     * @param webUrl    webUrl
+     * @return          nothing
+     * @throws InterruptedException InterruptedException
+     */
+    public PageFetchResult fetchNothing(WebURL webUrl) throws InterruptedException {
+        if (config.getPolitenessDelay() > 0) {
+            // Applying Politeness delay
+            synchronized (mutex) {
+                long now = (new Date()).getTime();
+                if ((now - lastFetchTime) < config.getPolitenessDelay()) {
+                    Thread.sleep(config.getPolitenessDelay() - (now - lastFetchTime));
+                }
+                lastFetchTime = (new Date()).getTime();
+            }
+        }
+        return null;
+    }
+
     public PageFetchResult fetchPage(WebURL webUrl)
             throws InterruptedException, IOException, PageBiggerThanMaxSizeException {
         // Getting URL, setting headers & content
