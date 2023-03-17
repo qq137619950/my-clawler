@@ -29,33 +29,30 @@ public class Health120DialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        Document doc = Jsoup.parseBodyFragment(html);
-        var result = new HashMap<String, Object>();
-        // title
-        Element titleInfo = doc.selectFirst("body > div > div > div.p_lbox1");
-        if (titleInfo == null) {
-            return null;
-        }
-        result.put("title", titleInfo.selectFirst("span > h1[itemprop=name]").text());
-        result.put("patientInfo", titleInfo.selectFirst("div > p.p_answer_usr").text());
-        result.put("desc", titleInfo.selectFirst("div > p.p_artcont").text());
-        // content
-        Element contentInfo = doc.selectFirst("body > div > div > div.p_lbox2");
-        if (contentInfo == null) {
-            return null;
-        }
-        result.put("authorInfo", contentInfo.selectFirst("div > dl > dd.d1").text());
-        // 处理content
-        result.put("content", contentInfo.selectFirst("div > p.answer_p").text()
-                .replaceAll("追问：", "\n追问：")
-                .replaceAll("回复：", "\n回复："));
-        return result;
-    }
-
-    @Override
     public void visit(Page page) {
-        super.commonHtmlPageVisit(page);
+        super.commonHtmlPageVisit(page, html -> {
+            Document doc = Jsoup.parseBodyFragment(html);
+            var result = new HashMap<String, Object>();
+            // title
+            Element titleInfo = doc.selectFirst("body > div > div > div.p_lbox1");
+            if (titleInfo == null) {
+                return null;
+            }
+            result.put("title", titleInfo.selectFirst("span > h1[itemprop=name]").text());
+            result.put("patientInfo", titleInfo.selectFirst("div > p.p_answer_usr").text());
+            result.put("desc", titleInfo.selectFirst("div > p.p_artcont").text());
+            // content
+            Element contentInfo = doc.selectFirst("body > div > div > div.p_lbox2");
+            if (contentInfo == null) {
+                return null;
+            }
+            result.put("authorInfo", contentInfo.selectFirst("div > dl > dd.d1").text());
+            // 处理content
+            result.put("content", contentInfo.selectFirst("div > p.answer_p").text()
+                    .replaceAll("追问：", "\n追问：")
+                    .replaceAll("回复：", "\n回复："));
+            return result;
+        });
     }
 
     @Override

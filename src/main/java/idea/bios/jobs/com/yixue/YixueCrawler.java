@@ -28,30 +28,27 @@ public class YixueCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        Document doc = Jsoup.parseBodyFragment(html);
-        var result = new HashMap<String, Object>();
-        // title
-        result.put("title", Objects.requireNonNull(doc.selectFirst(
-                "#firstHeading")).text());
-        // content
-        Element content = doc.selectFirst("#mw-content-text > div.mw-parser-output");
-        if (content == null) {
-            return null;
-        }
-        var contentList = new ArrayList<String>();
-        content.children().forEach(c -> {
-            if ((c.is("p") || c.is("h2")) && !"参看".equals(c.text())) {
-                contentList.add(c.text());
-            }
-        });
-        result.put("content", String.join("\n", contentList).trim());
-        return result;
-    }
-
-    @Override
     public void visit(Page page) {
-        super.commonHtmlPageVisit(page);
+        super.commonHtmlPageVisit(page, html -> {
+            Document doc = Jsoup.parseBodyFragment(html);
+            var result = new HashMap<String, Object>();
+            // title
+            result.put("title", Objects.requireNonNull(doc.selectFirst(
+                    "#firstHeading")).text());
+            // content
+            Element content = doc.selectFirst("#mw-content-text > div.mw-parser-output");
+            if (content == null) {
+                return null;
+            }
+            var contentList = new ArrayList<String>();
+            content.children().forEach(c -> {
+                if ((c.is("p") || c.is("h2")) && !"参看".equals(c.text())) {
+                    contentList.add(c.text());
+                }
+            });
+            result.put("content", String.join("\n", contentList).trim());
+            return result;
+        });
     }
 
     @Override

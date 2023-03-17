@@ -32,64 +32,61 @@ public class MkfQaCrawler extends AbsCommonCrawler {
     }
 
     @Override
-    protected Map<String, ?> getSingleHtmlInfo(String html) {
-        Document doc = Jsoup.parseBodyFragment(html);
-        var result = new HashMap<String, Object>();
-        // title
-        result.put("title", Objects.requireNonNull(doc.selectFirst(
-                "div.detailsBox > div.detailsTop > h1")).text());
-        // 时间
-        result.put("time", Objects.requireNonNull(doc.selectFirst(
-                "div.detailsBox > div.detailsTop > p")).text().substring(0, 10));
-        // 问题描述
-        result.put("question", Objects.requireNonNull(doc.selectFirst(
-                "div.askDetails_info > div > p")).text());
-        // 医生回答是一个list
-        Elements list = doc.select("div > div.selectedAskGuo > ul > li");
-        var answerList = new ArrayList<Map<String, String>>();
-        list.forEach(item -> {
-            var m = new LinkedHashMap<String, String>();
-            // 作者
-            Element authorInfo = item.selectFirst("a > dl > dd > p.docotrP1");
-            if (authorInfo != null) {
-                var authorInfoMap = new LinkedHashMap<String, Object>();
-                Element img = item.selectFirst("a > dl > dt > img");
-                if (img != null) {
-                    authorInfoMap.put("img", img.attr("src"));
-                }
-                Element name = authorInfo.selectFirst("b");
-                if (name != null) {
-                    authorInfoMap.put("name", name.text());
-                }
-                Element title = authorInfo.selectFirst("span");
-                if (name != null) {
-                    authorInfoMap.put("jobTitle", title.text());
-                }
-                Elements others = authorInfo.select("em");
-                if (others != null && others.size() == 2) {
-                    authorInfoMap.put("hospital", others.first().text());
-                    authorInfoMap.put("department", others.last().text());
-                }
-                m.put("authorInfo", new Gson().toJson(authorInfoMap));
-            }
-            // 问答
-            Elements answer = item.select("div.contJsUnfold > p");
-            if (answer == null || answer.isEmpty()) {
-                return;
-            }
-            m.put("answer", answer.stream().map(Element::text)
-                    .map(text -> text.replaceAll(" +",""))
-                    .filter(text -> !text.isEmpty())
-                    .collect(Collectors.joining("\n")));
-            answerList.add(m);
-        });
-        result.put("answerList", answerList);
-        return result;
-    }
-
-    @Override
     public void visit(Page page) {
-        super.commonHtmlPageVisit(page);
+        super.commonHtmlPageVisit(page, html -> {
+            Document doc = Jsoup.parseBodyFragment(html);
+            var result = new HashMap<String, Object>();
+            // title
+            result.put("title", Objects.requireNonNull(doc.selectFirst(
+                    "div.detailsBox > div.detailsTop > h1")).text());
+            // 时间
+            result.put("time", Objects.requireNonNull(doc.selectFirst(
+                    "div.detailsBox > div.detailsTop > p")).text().substring(0, 10));
+            // 问题描述
+            result.put("question", Objects.requireNonNull(doc.selectFirst(
+                    "div.askDetails_info > div > p")).text());
+            // 医生回答是一个list
+            Elements list = doc.select("div > div.selectedAskGuo > ul > li");
+            var answerList = new ArrayList<Map<String, String>>();
+            list.forEach(item -> {
+                var m = new LinkedHashMap<String, String>();
+                // 作者
+                Element authorInfo = item.selectFirst("a > dl > dd > p.docotrP1");
+                if (authorInfo != null) {
+                    var authorInfoMap = new LinkedHashMap<String, Object>();
+                    Element img = item.selectFirst("a > dl > dt > img");
+                    if (img != null) {
+                        authorInfoMap.put("img", img.attr("src"));
+                    }
+                    Element name = authorInfo.selectFirst("b");
+                    if (name != null) {
+                        authorInfoMap.put("name", name.text());
+                    }
+                    Element title = authorInfo.selectFirst("span");
+                    if (name != null) {
+                        authorInfoMap.put("jobTitle", title.text());
+                    }
+                    Elements others = authorInfo.select("em");
+                    if (others != null && others.size() == 2) {
+                        authorInfoMap.put("hospital", others.first().text());
+                        authorInfoMap.put("department", others.last().text());
+                    }
+                    m.put("authorInfo", new Gson().toJson(authorInfoMap));
+                }
+                // 问答
+                Elements answer = item.select("div.contJsUnfold > p");
+                if (answer == null || answer.isEmpty()) {
+                    return;
+                }
+                m.put("answer", answer.stream().map(Element::text)
+                        .map(text -> text.replaceAll(" +",""))
+                        .filter(text -> !text.isEmpty())
+                        .collect(Collectors.joining("\n")));
+                answerList.add(m);
+            });
+            result.put("answerList", answerList);
+            return result;
+        });
     }
 
     @Override
