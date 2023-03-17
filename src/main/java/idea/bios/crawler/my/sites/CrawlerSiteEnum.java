@@ -6,6 +6,7 @@ import idea.bios.jobs.com.ahospital.HospitalBaikeCrawler;
 import idea.bios.jobs.com.bh.BaiduBhListCrawler;
 import idea.bios.jobs.com.chunyuyisheng.CyysDialogCrawler;
 import idea.bios.jobs.com.dxy.DxyDialogCrawler;
+import idea.bios.jobs.com.haodf.HaodfBingchengDiseaseProCrawler;
 import idea.bios.jobs.com.mfk.MkfQaCrawler;
 import idea.bios.jobs.com.yixue.YixueCrawler;
 import idea.bios.jobs.net.health120.Health120DialogCrawler;
@@ -47,8 +48,12 @@ public enum CrawlerSiteEnum {
     /**
      * 春雨医生 对话
      */
-    cyys_dialog(CyysDialogCrawler.class, "com.cyys.dialog", 500);
-
+    cyys_dialog(CyysDialogCrawler.class, "com.cyys.dialog", 500),
+    /**
+     * 好大夫 病程
+     */
+    haodf_disease_process(HaodfBingchengDiseaseProCrawler.class, "com.haodf.disease.process",
+            2000);
     /**
      * job中的Class文件
      */

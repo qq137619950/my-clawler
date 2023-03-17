@@ -12,6 +12,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,31 +40,58 @@ public class TestPhantomJs {
         //创建无界面浏览器对象
         var driver = new PhantomJSDriver(dcaps);
         final String url =
-                "https://www.khanacademy.org/math/get-ready-for-algebra-ii/x6e4201668896ef07:get-ready-for-equations/x6e4201668896ef07:solving-systems-of-equations-with-substitution/a/substitution-method-review-systems-of-equations";
+                "https://www.haodf.com/bingcheng/8890840370.html";
         // 等待xx元素出现
         var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         driver.get(url);
-        WebElement body = wait.until((ExpectedCondition<WebElement>)
+        WebElement recommend = wait.until((ExpectedCondition<WebElement>)
                 d -> {
-            if (d != null) {
-                return d.findElement(By.cssSelector(
-                        "div[data-test-id='article-renderer-scroll-container']"));
-            }
-            return null;
-        });
-        if (body == null) {
+                    if (d != null) {
+                        return d.findElement(By.cssSelector("body > main > section.left-heart"));
+                    }
+                    return null;
+                });
+        if (recommend == null) {
             log.warn("找不到内容, url:{}", url);
             return;
         }
-        WebElement title = body.findElement(By.cssSelector("header"));
-        List<WebElement> contents = body.findElements(By.cssSelector(
-                "div > div > div.clearfix"));
-        if (title == null || contents == null || contents.isEmpty()) {
-            log.warn("找不到内容, url:{}", url);
+        var links = new ArrayList<String>();
+        // 个人推荐
+        List<WebElement> myRecommendList = recommend.findElements(By.cssSelector(
+                "#my-recommend > div.involved-recommend-list > a"));
+        myRecommendList.forEach(webElement -> links.add(webElement.getAttribute("href")));
+        // 更多推荐
+        List<WebElement> otherRecommendList = recommend.findElements(By.cssSelector(
+                "#involved-recommend > p.involved-recommend-list > a"));
+        otherRecommendList.forEach(webElement -> links.add(webElement.getAttribute("href")));
+
+        log.info(String.valueOf(links.stream().filter(u -> u.contains("bingcheng"))
+                        .distinct()
+                        .collect(Collectors.toList())));
+
+        // 病例信息和问诊建议
+        List<WebElement> diseaseInfo = driver.findElements(By.cssSelector("p.diseaseinfo > span"));
+        if (diseaseInfo == null || diseaseInfo.isEmpty()) {
+            log.warn("diseaseInfo is null");
             return;
         }
-        log.info("title:{}", title.getText());
-        log.info("content:{}",  contents.stream().map(WebElement::getText)
+        List<WebElement> suggestions = driver.findElements(By.cssSelector(
+                "section.suggestions > div.suggestions-text"));
+        if (suggestions == null) {
+            log.warn("suggestions is null");
+            return;
+        }
+        log.info(diseaseInfo.stream().map(WebElement::getText)
+                        .map(t -> t.endsWith("）") || t.endsWith(")") ? t.substring(0, t.length() - 14) : t)
+                    .collect(Collectors.joining("\n")));
+        log.info(suggestions.stream().map(WebElement::getText)
                 .collect(Collectors.joining("\n")));
+
+        // 多轮对话，先模拟点击"查看更多"
+//        WebElement moreDialog = driver.findElement(By.cssSelector(
+//                "div.msg-more-link > span.msg-more-link-text"));
+//        log.info(moreDialog.getText());
+//        moreDialog.click();
+//        List<WebElement> dialogList = driver.findElements(By.cssSelector("#msgboard > div.chunk"));
     }
 }

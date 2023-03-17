@@ -26,8 +26,8 @@ public class Config {
         config.setMaxDepthOfCrawling(maxDepthOfCrawling);
         config.setPolitenessDelay(politenessDelay);
         // 使用代理
-        // config.setProxyHost("47.106.191.148");
-        // config.setProxyPort(43128);
+         config.setProxyHost("47.106.191.148");
+         config.setProxyPort(43128);
         return config;
     }
 

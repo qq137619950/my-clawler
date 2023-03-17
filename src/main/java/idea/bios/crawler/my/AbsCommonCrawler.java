@@ -24,7 +24,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
@@ -118,6 +120,37 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      */
     public abstract void prepareToRun();
 
+
+    protected void driverPageVisit(WebURL url, Supplier<Map<String, Object>> mapSupplier) {
+        if (url == null || !shouldParse(url)) {
+            log.info("this page should not be parse: {}", url);
+            return;
+        }
+        // 写mongodb
+        MongoCollection<Document> collection = new MongoDb()
+                .getCrawlerDataCollection(
+                        CrawlerSiteEnum.findCrawlerSiteEnumByClass(
+                                this.getClass()).getSourceId());
+        // TODO 是否允许空值
+        for (Object o : mapSupplier.get().values()) {
+            if (o == null || "".equals(o)) {
+                log.warn("some content empty.");
+                return;
+            }
+        }
+        var insertDoc = new Document();
+        Map<String, Object> dataMap = mapSupplier.get();
+        if (dataMap == null) {
+            return;
+        }
+        dataMap.forEach(insertDoc::append);
+        // 页面url也记录下
+        insertDoc.append("site", url.getURL());
+        // 根据site生成唯一的docId
+        UUID uuid = UUID.nameUUIDFromBytes(url.getURL().getBytes());
+        insertDoc.append("docId", uuid.toString());
+        collection.insertOne(insertDoc);
+    }
 
     /**
      * 处理page的通用方法，处理已经解析好的html文本

@@ -12,7 +12,9 @@ import static idea.bios.crawler.my.Config.configBuilder;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-        new CommonCrawlerStarter(configBuilder(-1, 300))
-                .run(CrawlerSiteEnum.health120_dialog);
+        new CommonCrawlerStarter(configBuilder(
+                -1, 2000,
+                false, true, true))
+                .run(CrawlerSiteEnum.haodf_disease_process);
     }
 }

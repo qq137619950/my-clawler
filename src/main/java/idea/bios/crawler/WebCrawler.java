@@ -444,6 +444,10 @@ public class WebCrawler implements Runnable {
      * @param curURL    curURL
      */
     protected void processDynPage(WebURL curURL) {
+        curURL.setURL(curURL.getURL());
+        curURL.setDocid(docIdServer.getNewDocId(curURL.getURL()));
+        // 不在此处理links
+        visit(new Page(curURL));
     }
 
     /**
