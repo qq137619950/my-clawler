@@ -4,8 +4,14 @@ import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.url.WebURL;
+import idea.bios.util.Schedule;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
@@ -18,7 +24,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * 好大夫病程
@@ -27,6 +35,7 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
+    private static final AtomicInteger START_INT = new AtomicInteger(0);
     public HaodfBingchengDiseaseProCrawler(ControllerFacade controllerFacade) {
         super(controllerFacade);
     }
@@ -114,10 +123,39 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
 
     @Override
     public void prepareToRun() {
-        // 放几个即可
-        controllerFacade.addUrlsToQueue(seedFetcher.getSeedsPlain(
-                "https://www.haodf.com/bingcheng/8890840370.html",
-                "https://www.haodf.com/bingcheng/8890819561.html"));
+        // 通过列表页加载数据
+        var listUrls = new ArrayList<String>();
+        Connection connection = Jsoup.connect(
+                "https://www.haodf.com/bingcheng/list-xinxueguanneike.html");
+        Connection.Response res = null;
+        try {
+            res = connection.execute();
+        } catch (IOException e) {
+            log.warn("IOException", e);
+            return;
+        }
+        Document doc = Jsoup.parseBodyFragment(res.body());
+        Elements list = doc.select(
+                "ul > li.izixun-department-list > span > a");
+        if (list == null || list.isEmpty()) {
+            log.warn("list null");
+            return;
+        }
+        // 构建获取列表
+        list.forEach(e -> IntStream.rangeClosed(1, 100).
+                forEach(i -> listUrls.add("https:" + e.attr("href") + "?p=" + i)));
+        // 定时任务获取
+        Schedule.scheduleAtFixedRate(()-> {
+            Connection listConn = Jsoup.connect(listUrls.get(START_INT.getAndIncrement()));
+            try {
+                Connection.Response listRes = listConn.execute();
+                Document listDoc = Jsoup.parseBodyFragment(listRes.body());
+                Elements urls = listDoc.select("li.clearfix > span.fl > a");
+                controllerFacade.addUrlsToQueue(urls.eachAttr("href"));
+            } catch (IOException e) {
+                log.warn("IOException", e);
+            }
+        }, 10);
     }
 
 }
