@@ -109,6 +109,7 @@ public class SeleniumBuilder {
     }
 
     private static PhantomJSDriver buildPhantomJsDriver(CrawlConfig config) {
+        final String absoluteExePath = "C:/crawler/phantomjs-win.exe";
         //设置必要参数
         var dcaps = new DesiredCapabilities();
         //ssl证书支持
@@ -128,7 +129,7 @@ public class SeleniumBuilder {
         dcaps.setPlatform(Platform.WIN11);
         //驱动支持（第二参数表明的是你的phantomjs引擎所在的路径，使用whereis phantomjs可以查看）
         dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-                "driver/phantomjs/phantomjs-win.exe");
+                absoluteExePath);
         //创建无界面浏览器对象
         return new PhantomJSDriver(dcaps);
     }

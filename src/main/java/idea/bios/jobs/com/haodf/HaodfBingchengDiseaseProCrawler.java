@@ -136,7 +136,7 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
             return;
         }
         // 构建获取列表
-        list.forEach(e -> IntStream.rangeClosed(51, 100).
+        list.forEach(e -> IntStream.rangeClosed(76, 100).
                 forEach(i -> listUrls.add("https:" + e.attr("href") + "?p=" + i)));
         // 定时任务获取
         Schedule.scheduleAtFixedRate(()-> {
