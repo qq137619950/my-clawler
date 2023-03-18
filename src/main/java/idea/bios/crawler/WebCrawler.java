@@ -140,10 +140,10 @@ public class WebCrawler implements Runnable {
         this.isWaitingForNewURLs = false;
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
         if(myController.getConfig().isChromeDriver()) {
-            this.chromeDriver = SeleniumBuilder.getChromeDriver();
+            this.chromeDriver = SeleniumBuilder.getChromeDriver(myController.getConfig());
         }
         if(myController.getConfig().isPhantomJsDriver()) {
-            this.phantomJsDriver = SeleniumBuilder.getPhantomJsDriver();
+            this.phantomJsDriver = SeleniumBuilder.getPhantomJsDriver(myController.getConfig());
         }
     }
 
@@ -386,7 +386,7 @@ public class WebCrawler implements Runnable {
      * @return if the url should be included in the crawl it returns true,
      *         otherwise false is returned.
      */
-    public boolean shouldVisit(Page referringPage, WebURL url) {
+    protected boolean shouldVisit(Page referringPage, WebURL url) {
         if (myController.getConfig().isRespectNoFollow()) {
             return !((referringPage != null &&
                     referringPage.getContentType() != null &&
@@ -434,7 +434,7 @@ public class WebCrawler implements Runnable {
      * @param page
      *            the page object that is just fetched and parsed.
      */
-    public void visit(Page page) {
+    protected void visit(Page page) {
         // Do nothing by default
         // Sub-classed should override this to add their custom functionality
     }

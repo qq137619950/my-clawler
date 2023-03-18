@@ -1,13 +1,16 @@
 package idea.bios.util.selenium;
 
+import idea.bios.crawler.CrawlConfig;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 // import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.Platform;
+import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
+import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,14 +48,14 @@ public class SeleniumBuilder {
      * 谷歌浏览器的Driver
      * @return  ChromeDriver
      */
-    public static ChromeDriver getChromeDriver() {
+    public static ChromeDriver getChromeDriver(CrawlConfig config) {
         if (CUR_CHROME_PROCESS_COUNT.get() >= MAX_CHROME_DRIVER_PROCESS) {
             log.warn("Chrome driver limit.");
             return null;
         }
         ChromeDriver driver;
         try {
-            driver = buildChromeDriver();
+            driver = buildChromeDriver(config);
         } catch (Exception e) {
             log.warn("exception occurs.", e);
             return null;
@@ -77,14 +80,14 @@ public class SeleniumBuilder {
      * 获取一个Phantom Js Driver
      * @return PhantomJSDriver
      */
-    public static PhantomJSDriver getPhantomJsDriver() {
+    public static PhantomJSDriver getPhantomJsDriver(CrawlConfig config) {
         if (CUR_PHANTOM_JS_PROCESS_COUNT.get() >= MAX_PHANTOM_JS_DRIVER_PROCESS) {
             log.warn("PHANTOM JS driver limit.");
             return null;
         }
         PhantomJSDriver driver;
         try {
-            driver = buildPhantomJsDriver();
+            driver = buildPhantomJsDriver(config);
         } catch (Exception e) {
             log.warn("exception occurs.", e);
             return null;
@@ -105,7 +108,7 @@ public class SeleniumBuilder {
         CUR_PHANTOM_JS_PROCESS_COUNT.decrementAndGet();
     }
 
-    private static PhantomJSDriver buildPhantomJsDriver() {
+    private static PhantomJSDriver buildPhantomJsDriver(CrawlConfig config) {
         //设置必要参数
         var dcaps = new DesiredCapabilities();
         //ssl证书支持
@@ -114,6 +117,13 @@ public class SeleniumBuilder {
         dcaps.setCapability("cssSelectorsEnabled", false);
         //js支持
         // dcaps.setJavascriptEnabled(true);
+        if (config.getProxyHost() != null && !config.getProxyHost().isEmpty()) {
+            //设置代理
+            var proxy = new Proxy();
+            String proxyIpAndPort = config.getProxyHost() + ":" + config.getProxyPort();
+            proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+            dcaps.setCapability(CapabilityType.PROXY, proxy);
+        }
         dcaps.setAcceptInsecureCerts(true);
         dcaps.setPlatform(Platform.WIN11);
         //驱动支持（第二参数表明的是你的phantomjs引擎所在的路径，使用whereis phantomjs可以查看）
@@ -123,7 +133,7 @@ public class SeleniumBuilder {
         return new PhantomJSDriver(dcaps);
     }
 
-    private static ChromeDriver buildChromeDriver() {
+    private static ChromeDriver buildChromeDriver(CrawlConfig config) {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
         // chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
@@ -145,6 +155,15 @@ public class SeleniumBuilder {
         chromeOptions.addArguments("--ignore-certificate-errors");
         chromeOptions.addArguments("--allow-running-insecure-content");
         chromeOptions.addArguments("--disable-dev-shm-usage");
+        if (config.getProxyHost() != null && !config.getProxyHost().isEmpty()) {
+            // 设置代理
+            var proxy = new Proxy();
+//            String proxyIpAndPort = "192.168.218.26:3128";
+//            String proxyIpAndPort2 = "192.168.218.37:13128";
+            String proxyIpAndPort = config.getProxyHost() + ":" + config.getProxyPort();
+            proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+            chromeOptions.setProxy(proxy);
+        }
         return new ChromeDriver(chromeOptions);
     }
 }

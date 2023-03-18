@@ -238,7 +238,7 @@ public class PageFetcher {
      * 什么都不做，就是为了卡时间
      * @param webUrl    webUrl
      * @return          nothing
-     * @throws InterruptedException InterruptedException
+     * @throws InterruptedException 异常
      */
     public PageFetchResult fetchNothing(WebURL webUrl) throws InterruptedException {
         if (config.getPolitenessDelay() > 0) {
@@ -251,6 +251,7 @@ public class PageFetcher {
                 lastFetchTime = (new Date()).getTime();
             }
         }
+        log.info("fetch web url:{}, but do not get anything", webUrl.getURL());
         return null;
     }
 

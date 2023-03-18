@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -64,10 +65,8 @@ public class CommonController extends CrawlController implements ControllerFacad
             log.warn("pageUrls empty!");
             return;
         }
-        List<String> canonicalUrls = pageUrls.stream().filter(pageUrl -> {
-            if (pageUrl == null) {
-                return false;
-            }
+        List<String> canonicalUrls = pageUrls.stream()
+                .filter(Objects::nonNull).filter(pageUrl -> {
             try {
                 URLCanonicalizer.getCanonicalURL(pageUrl);
                 return true;
@@ -92,7 +91,7 @@ public class CommonController extends CrawlController implements ControllerFacad
             var webUrl = new WebURL();
             int docId = docIdServer.getDocId(url);
             if (docId > 0) {
-                log.trace("This URL is already seen.");
+                log.info("This URL is already seen. url:{}", url);
                 return;
             } else {
                 // 创建一个新的
