@@ -14,6 +14,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -43,7 +44,7 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
     @Override
     public void visit(Page page) {
         super.driverPageVisit(page.getUrl(), () -> {
-            PhantomJSDriver driver = getPhantomJsDriver();
+            ChromeDriver driver = getChromeDriver();
             // 等待xx元素出现
             var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
             driver.get(page.getUrl().getURL());
@@ -92,6 +93,46 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
             // 问诊建议
             result.put("suggestions", suggestions.stream().map(WebElement::getText)
                     .collect(Collectors.joining("\n")));
+            // 问诊过程
+            // 问诊过程
+            while (true) {
+                WebElement more = driver.findElement(By.cssSelector("div.msg-more"));
+                if (more.getText().contains("没有更多")) {
+                    break;
+                }
+                WebElement click = more.findElement(By.cssSelector("div.msg-more-link > span"));
+                click.click();
+                try {
+                    Thread.sleep(200);
+                } catch (InterruptedException e) {
+                    log.warn("InterruptedException:", e);
+                }
+            }
+            var conversation = new ArrayList<String>();
+            List<WebElement> diseaseProcess = driver.findElements(By.cssSelector(
+                    "#msgboard > div.chunk > div.msg-item > div.msg-block"));
+            for (WebElement item : diseaseProcess) {
+                String name;
+                String content;
+                if (item.getText().contains("本次问诊已到期结束")) {
+                    break;
+                }
+                try {
+                    // 称呼
+                    name = item.findElement(By.cssSelector("p > span.content-name")).getText();
+                    if ("小牛医助".equals(name)) {
+                        continue;
+                    }
+                    // 内容
+                    content = item.findElement(By.cssSelector("p > span.content-him")).getText();
+                } catch (Exception e) {
+                    log.info("Exception: item:{}", item.getText());
+                    continue;
+                }
+                conversation.add(name + ":" + content);
+            }
+            result.put("conversation", conversation);
+
             // 医生信息
             WebElement authorInfo = driver.findElement(By.cssSelector(
                     "#doctor-card > div.doctor-card-wrap > div.doctor-card-info"));

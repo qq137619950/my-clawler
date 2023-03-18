@@ -53,7 +53,7 @@ public enum CrawlerSiteEnum {
      * 好大夫 病程
      */
     haodf_disease_process(HaodfBingchengDiseaseProCrawler.class, "com.haodf.disease.process",
-            1000);
+            200);
     /**
      * job中的Class文件
      */

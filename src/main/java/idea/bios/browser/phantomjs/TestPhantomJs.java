@@ -1,5 +1,6 @@
 package idea.bios.browser.phantomjs;
 
+import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
@@ -23,22 +24,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TestPhantomJs {
     public static void main(String[] args) {
-        //设置必要参数
-        var dcaps = new DesiredCapabilities();
-        //ssl证书支持
-        dcaps.setCapability("acceptSslCerts", true);
-        //css搜索支持
-        dcaps.setCapability("cssSelectorsEnabled", true);
-        //js支持
-        // dcaps.setJavascriptEnabled(true);
-        dcaps.setAcceptInsecureCerts(true);
-        dcaps.setPlatform(Platform.WIN11);
-        //驱动支持（第二参数表明的是你的phantomjs引擎所在的路径，使用whereis phantomjs可以查看）
-        dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-                "./driver/phantomjs/phantomjs-win.exe");
-
-        //创建无界面浏览器对象
-        var driver = new PhantomJSDriver(dcaps);
+        PhantomJSDriver driver = SeleniumBuilder.getPhantomJsDriver();
         final String url =
                 "https://www.haodf.com/bingcheng/8890840370.html";
         // 等待xx元素出现

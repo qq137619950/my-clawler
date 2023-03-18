@@ -4,6 +4,7 @@ import idea.bios.crawler.proxypool.ProxyPoolFetcher;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 // import org.openqa.selenium.PageLoadStrategy;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.Platform;
 import org.openqa.selenium.Proxy;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -32,7 +33,7 @@ public class SeleniumBuilder {
      */
     private static final int MAX_CHROME_DRIVER_PROCESS = 10;
 
-    private static final int MAX_PHANTOM_JS_DRIVER_PROCESS = 50;
+    private static final int MAX_PHANTOM_JS_DRIVER_PROCESS = 10;
     /**
      * 当前已经创建的驱动进程数
      */
@@ -135,12 +136,13 @@ public class SeleniumBuilder {
     }
 
     private static ChromeDriver buildChromeDriver() {
-        System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
+        System.getProperties().setProperty("webdriver.chrome.driver",
+                DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
-        // chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
+        chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
         // 配置参数优化
         // 无头模式
-        chromeOptions.addArguments("--headless");
+        // chromeOptions.addArguments("--headless");
         // 禁用GPU和缓存
         chromeOptions.addArguments("--disable-gpu");
         chromeOptions.addArguments("--disable-gpu-program-cache");

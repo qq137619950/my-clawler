@@ -13,8 +13,8 @@ import static idea.bios.crawler.my.Config.configBuilder;
 public class Main {
     public static void main(String[] args) throws Exception {
         new CommonCrawlerStarter(configBuilder(
-                -1, 1000,
-                false, true, true))
+                -1, 200,
+                true, false, true))
                 .run(CrawlerSiteEnum.haodf_disease_process);
     }
 }
