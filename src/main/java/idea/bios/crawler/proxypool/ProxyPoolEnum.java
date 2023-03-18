@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public enum ProxyPoolEnum {
     /**
+     * 本地
+     */
+    local(0, "localhost", 0),
+    /**
      * 阿里云上的http代理
      */
     proxy_1(1, "47.106.191.148", 43128),

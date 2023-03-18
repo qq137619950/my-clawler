@@ -148,10 +148,11 @@ public class PageFetcher {
 //        }
         // 直接从代理池中获取算了
         String[] hostAndPort = ProxyPoolFetcher.simpleGetHostAndPort().split(":");
-        var proxy = new HttpHost(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
-        clientBuilder.setProxy(proxy);
-        log.debug("Working through Proxy: {}", proxy.getHostName());
-
+        if (!"localhost".equals(hostAndPort[0])) {
+            var proxy = new HttpHost(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+            clientBuilder.setProxy(proxy);
+            log.debug("Working through Proxy: {}", proxy.getHostName());
+        }
         List<AuthInfo> authInfos = config.getAuthInfos();
         if (authInfos != null) {
             for (AuthInfo authInfo : authInfos) {

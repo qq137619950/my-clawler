@@ -121,11 +121,13 @@ public class SeleniumBuilder {
         //js支持
         // dcaps.setJavascriptEnabled(true);
         // 从代理池中获取代理
-        var proxy = new Proxy();
-        String proxyIpAndPort = ProxyPoolFetcher.simpleGetHostAndPort();
-        proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
-        dcaps.setCapability(CapabilityType.PROXY, proxy);
 
+        String proxyIpAndPort = ProxyPoolFetcher.simpleGetHostAndPort();
+        if (!proxyIpAndPort.startsWith("localhost")) {
+            var proxy = new Proxy();
+            proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+            dcaps.setCapability(CapabilityType.PROXY, proxy);
+        }
         dcaps.setAcceptInsecureCerts(true);
         dcaps.setPlatform(Platform.WIN11);
         //驱动支持（第二参数表明的是你的phantomjs引擎所在的路径，使用whereis phantomjs可以查看）
@@ -159,10 +161,13 @@ public class SeleniumBuilder {
         chromeOptions.addArguments("--allow-running-insecure-content");
         chromeOptions.addArguments("--disable-dev-shm-usage");
         // 从代理池中获取代理
-        var proxy = new Proxy();
         String proxyIpAndPort = ProxyPoolFetcher.simpleGetHostAndPort();
-        proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
-        chromeOptions.setProxy(proxy);
+        if (!proxyIpAndPort.startsWith("localhost")) {
+            var proxy = new Proxy();
+            proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
+            chromeOptions.setProxy(proxy);
+        }
+
         return new ChromeDriver(chromeOptions);
     }
 }
