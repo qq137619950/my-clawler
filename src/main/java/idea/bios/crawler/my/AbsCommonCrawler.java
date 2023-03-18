@@ -123,19 +123,23 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                 .getCrawlerDataCollection(
                         CrawlerSiteEnum.findCrawlerSiteEnumByClass(
                                 this.getClass()).getSourceId());
+        Map<String, Object> res = null;
+        try {
+            res =  mapSupplier.get();
+        } catch (Exception e) {
+            log.warn("Exception:", e);
+            return;
+        }
+
         // TODO 是否允许空值
-        for (Object o : mapSupplier.get().values()) {
+        for (Object o : res.values()) {
             if (o == null || "".equals(o)) {
                 log.warn("some content empty.");
                 return;
             }
         }
         var insertDoc = new Document();
-        Map<String, Object> dataMap = mapSupplier.get();
-        if (dataMap == null) {
-            return;
-        }
-        dataMap.forEach(insertDoc::append);
+        res.forEach(insertDoc::append);
         // 页面url也记录下
         insertDoc.append("site", url.getURL());
         // 根据site生成唯一的docId
