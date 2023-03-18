@@ -38,6 +38,7 @@ import idea.bios.crawler.authentication.BasicAuthInfo;
 import idea.bios.crawler.authentication.FormAuthInfo;
 import idea.bios.crawler.authentication.NtAuthInfo;
 import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
+import idea.bios.crawler.proxypool.ProxyPoolFetcher;
 import idea.bios.url.URLCanonicalizer;
 import idea.bios.url.WebURL;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +73,7 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.ssl.SSLContexts;
 /**
- * @author Yasser Ganjisaffar
+ * @author 19106
  */
 @Slf4j
 public class PageFetcher {
@@ -87,7 +88,7 @@ public class PageFetcher {
     protected long lastFetchTime = 0;
     protected IdleConnectionMonitorThread connectionMonitorThread = null;
 
-    public PageFetcher(CrawlConfig config) throws NoSuchAlgorithmException, KeyManagementException, KeyStoreException {
+    public PageFetcher(CrawlConfig config)  {
         this.config = config;
         RequestConfig requestConfig = RequestConfig.custom()
                 .setExpectContinueEnabled(false)
@@ -110,7 +111,7 @@ public class PageFetcher {
                 connRegistryBuilder.register("https", sslsf);
             } catch (NoSuchAlgorithmException | KeyManagementException | KeyStoreException | RuntimeException e) {
                 if (config.isHaltOnError()) {
-                    throw e;
+                    // throw e;
                 } else {
                     log.warn("Exception thrown while trying to register https");
                     log.debug("Stacktrace", e);
@@ -134,17 +135,23 @@ public class PageFetcher {
         clientBuilder.setDefaultHeaders(config.getDefaultHeaders());
 
         var credentialsMap = new HashMap<AuthScope, Credentials>();
-        if (config.getProxyHost() != null) {
-            if (config.getProxyUsername() != null) {
-                var authScope = new AuthScope(config.getProxyHost(), config.getProxyPort());
-                var credentials = new UsernamePasswordCredentials(config.getProxyUsername(),
-                        config.getProxyPassword());
-                credentialsMap.put(authScope, credentials);
-            }
-            var proxy = new HttpHost(config.getProxyHost(), config.getProxyPort());
-            clientBuilder.setProxy(proxy);
-            log.debug("Working through Proxy: {}", proxy.getHostName());
-        }
+//        if (config.getProxyHost() != null) {
+//            if (config.getProxyUsername() != null) {
+//                var authScope = new AuthScope(config.getProxyHost(), config.getProxyPort());
+//                var credentials = new UsernamePasswordCredentials(config.getProxyUsername(),
+//                        config.getProxyPassword());
+//                credentialsMap.put(authScope, credentials);
+//            }
+//            var proxy = new HttpHost(config.getProxyHost(), config.getProxyPort());
+//            clientBuilder.setProxy(proxy);
+//            log.debug("Working through Proxy: {}", proxy.getHostName());
+//        }
+        // 直接从代理池中获取算了
+        String[] hostAndPort = ProxyPoolFetcher.simpleGetHostAndPort().split(":");
+        var proxy = new HttpHost(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+        clientBuilder.setProxy(proxy);
+        log.debug("Working through Proxy: {}", proxy.getHostName());
+
         List<AuthInfo> authInfos = config.getAuthInfos();
         if (authInfos != null) {
             for (AuthInfo authInfo : authInfos) {

@@ -72,9 +72,9 @@ public class MedSciPdfCrawlerScript {
         Thread.sleep(500);
         // 找到账号的输入框，并模拟输入账号
         WebElement nickname = driver.findElement(By.id("nickname"));
-        nickname.sendKeys(NICK_NAME_1);
+        nickname.sendKeys(NICK_NAME_7);
         WebElement password = driver.findElement(By.id("password"));
-        password.sendKeys(PASSWORD_1);
+        password.sendKeys(PASSWORD_7);
         WebElement check = driver.findElement(By.cssSelector("#loginForm > div > form > div.ms-checkbox.check-link > label"));
         check.click();
         WebElement login = driver.findElement(By.id("submit"));
@@ -96,7 +96,7 @@ public class MedSciPdfCrawlerScript {
         int start = (int) collection.countDocuments();
         // 先登录
         login(driver);
-        for (int type = 12; type <= 100; type++) {
+        for (int type = 42; type <= 100; type++) {
             // 循环100页，如果没有数据，则break
             for (int i = 1; i <= 100; i++) {
                 var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
@@ -176,7 +176,7 @@ public class MedSciPdfCrawlerScript {
                     }
                     download.click();
                     try {
-                        Thread.sleep(10000);
+                        Thread.sleep(5000);
                     } catch (InterruptedException ex) {
                         log.error("InterruptedException", ex);
                     }
@@ -184,21 +184,21 @@ public class MedSciPdfCrawlerScript {
                     String fileName = null;
                     for (int k = 0; k < 1; k++) {
                         fileName = getFileName(typeElement.getText());
-                        if (fileName == null) {
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        } else {
-                            break;
-                        }
+//                        if (fileName == null) {
+//                            try {
+//                                Thread.sleep(5000);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        } else {
+//                            break;
+//                        }
                     }
                     if (fileName != null) {
                         insertDoc.append("fileName", fileName);
                     } else {
                         log.warn("error.");
-                        return;
+                        // return;
                     }
                     collection.insertOne(insertDoc);
                 });

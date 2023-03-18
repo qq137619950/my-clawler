@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * @author 86153
  */
 public class MkfQaCrawler extends AbsCommonCrawler {
-    private static final AtomicInteger START_INT = new AtomicInteger(0);
+    private static final AtomicInteger START_INT = new AtomicInteger(5000000);
 
     public MkfQaCrawler(ControllerFacade controllerFacade) {
         super(controllerFacade);

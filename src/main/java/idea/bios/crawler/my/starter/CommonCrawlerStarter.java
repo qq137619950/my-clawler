@@ -8,6 +8,7 @@ import idea.bios.crawler.my.Config;
 
 import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.crawler.my.sites.CrawlerSiteEnum;
+import idea.bios.crawler.proxypool.ProxyPoolEnum;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
 import idea.bios.robotstxt.RobotsTxtServer;
@@ -24,10 +25,6 @@ import java.util.List;
  */
 @Slf4j
 public class CommonCrawlerStarter {
-    /**
-     * 并行线程数
-     */
-    private static final int NUMBER_OF_CRAWLERS = 5;
     /**
      * 爬虫配置
      */
@@ -108,6 +105,7 @@ public class CommonCrawlerStarter {
         // 不关闭进程，而是从其他途径不断加入seed
         config.setContinuousPutSeeds(true);
         // 先启动一个空队列的Controller
+        // 将pageFetcher放在crawler线程中
         var pageFetcher = new PageFetcher(config);
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
@@ -122,7 +120,7 @@ public class CommonCrawlerStarter {
                         .newInstance(this.controller);
         crawlerTemp.prepareToRun();
         // 开启
-        controller.start(crawlerEnum.getCrawlerClass(), NUMBER_OF_CRAWLERS);
+        controller.start(crawlerEnum.getCrawlerClass(), ProxyPoolEnum.values().length);
 
         // 判断参数
         if (step <= 0 || start < 0 || start > end) {
