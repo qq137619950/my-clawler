@@ -219,6 +219,7 @@ public class CommonController extends CrawlController implements ControllerFacad
             var msgAllList = new ArrayList<String>();
             msgAllList.add("【INFOS】");
             msgAllList.add("name: " + this.name);
+            msgAllList.add("work path: " + System.getProperty("user.dir"));
             msgAllList.add("work queue length: " + this.frontier.getQueueLength());
             msgAllList.add("collected length: " + new MongoDb()
                             .getCrawlerDataCollection(this.name).countDocuments());
