@@ -41,6 +41,7 @@ import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
 import idea.bios.crawler.proxypool.ProxyPoolFetcher;
 import idea.bios.url.URLCanonicalizer;
 import idea.bios.url.WebURL;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.apache.http.Header;
@@ -87,6 +88,8 @@ public class PageFetcher {
     protected CloseableHttpClient httpClient;
     protected long lastFetchTime = 0;
     protected IdleConnectionMonitorThread connectionMonitorThread = null;
+    @Getter
+    protected String proxyHost;
 
     public PageFetcher(CrawlConfig config)  {
         this.config = config;
@@ -147,9 +150,10 @@ public class PageFetcher {
 //            log.debug("Working through Proxy: {}", proxy.getHostName());
 //        }
         // 直接从代理池中获取算了
-        String[] hostAndPort = ProxyPoolFetcher.simpleGetHostAndPort().split(":");
-        if (!"localhost".equals(hostAndPort[0])) {
-            var proxy = new HttpHost(hostAndPort[0], Integer.parseInt(hostAndPort[1]));
+        proxyHost = ProxyPoolFetcher.simpleGetHostAndPort();
+        String[] hostAndPorts = proxyHost.split(":");
+        if (!"localhost".equals(hostAndPorts[0])) {
+            var proxy = new HttpHost(hostAndPorts[0], Integer.parseInt(hostAndPorts[1]));
             clientBuilder.setProxy(proxy);
             log.debug("Working through Proxy: {}", proxy.getHostName());
         }

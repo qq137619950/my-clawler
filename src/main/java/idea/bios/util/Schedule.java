@@ -19,7 +19,7 @@ public class Schedule {
      * 创建任务队列
      */
     private static final ScheduledExecutorService scheduledExecutorService =
-            Executors.newScheduledThreadPool(10);
+            Executors.newScheduledThreadPool(20);
 
     public static void scheduleAtFixedRate(Runnable command, long period) {
         scheduledExecutorService.scheduleAtFixedRate(command, period, period,

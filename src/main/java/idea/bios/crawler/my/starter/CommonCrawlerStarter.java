@@ -109,7 +109,8 @@ public class CommonCrawlerStarter {
         var pageFetcher = new PageFetcher(config);
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
-        controller = new CommonController(config, pageFetcher, robotsTxtServer);
+        controller = new CommonController(config, pageFetcher, robotsTxtServer,
+                crawlerEnum.getSourceId());
         // 阻塞
         if (!config.isContinuousPutSeeds()) {
             controller.putQueueFinish();
@@ -122,7 +123,7 @@ public class CommonCrawlerStarter {
         // 开启
         controller.start(crawlerEnum.getCrawlerClass(), ProxyPoolEnum.values().length);
 
-        // 判断参数
+        // 判断参数 遗留逻辑
         if (step <= 0 || start < 0 || start > end) {
             return;
         }

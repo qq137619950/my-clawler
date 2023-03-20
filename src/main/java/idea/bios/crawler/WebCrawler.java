@@ -22,6 +22,7 @@ import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import idea.bios.crawler.entity.CrawlerStaticsBo;
 import idea.bios.crawler.exceptions.ContentFetchException;
 import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
 import idea.bios.crawler.exceptions.ParseException;
@@ -122,6 +123,15 @@ public class WebCrawler implements Runnable {
     private PhantomJSDriver phantomJsDriver;
 
     /**
+     * 数据统计
+     */
+    @Getter
+    protected CrawlerStaticsBo staticsBo;
+
+    @Getter
+    protected String proxyInfo;
+
+    /**
      * Initializes the current instance of the crawler
      *
      * @param id
@@ -132,10 +142,12 @@ public class WebCrawler implements Runnable {
     public void init(int id, CrawlController crawlController) {
         this.init(id, crawlController, null, null);
         if (myController.getConfig().isChromeDriver()) {
-            this.chromeDriver = SeleniumBuilder.getChromeDriver();
+            this.chromeDriver = SeleniumBuilder.getChromeSeleniumBo().getChromeDriver();
+            this.proxyInfo = SeleniumBuilder.getChromeSeleniumBo().getProxyHostAndPort();
         }
         if (myController.getConfig().isPhantomJsDriver()) {
-            this.phantomJsDriver = SeleniumBuilder.getPhantomJsDriver();
+            this.phantomJsDriver = SeleniumBuilder.getPhantomJsSeleniumBo().getPhantomJSDriver();
+            this.proxyInfo = SeleniumBuilder.getChromeSeleniumBo().getProxyHostAndPort();
         }
     }
 
@@ -156,6 +168,8 @@ public class WebCrawler implements Runnable {
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
         this.chromeDriver = chromeDriver;
         this.phantomJsDriver = phantomJsDriver;
+        this.staticsBo = new CrawlerStaticsBo();
+        this.proxyInfo = this.pageFetcher.getProxyHost();
     }
 
     /**

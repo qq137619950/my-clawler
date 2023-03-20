@@ -12,8 +12,6 @@ import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
 import idea.bios.url.WebURL;
-import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.bson.Document;
@@ -24,7 +22,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -35,13 +32,12 @@ import java.util.regex.Pattern;
  */
 @Slf4j
 public abstract class AbsCommonCrawler extends WebCrawler {
-
     /**
      * 每一个Crawler操作controller的接口
      */
     protected ControllerFacade controllerFacade;
     /**
-     * 计数器
+     * 一个计数标记位
      */
     protected static final AtomicInteger INT_FLAG = new AtomicInteger(0);
     /**
@@ -123,14 +119,15 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                 .getCrawlerDataCollection(
                         CrawlerSiteEnum.findCrawlerSiteEnumByClass(
                                 this.getClass()).getSourceId());
-        Map<String, Object> res = null;
+        Map<String, Object> res;
         try {
             res =  mapSupplier.get();
         } catch (Exception e) {
             log.warn("Exception:", e);
             return;
         }
-
+        // 增加页面获取统计
+        staticsBo.increaseVisitNum();
         // TODO 是否允许空值
         for (Object o : res.values()) {
             if (o == null || "".equals(o)) {
@@ -165,6 +162,8 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             String html = htmlParseData.getHtml();
             // 解析html
             Map<String, ?> result = mapSupplier.apply(html);
+            // 增加页面获取统计
+            staticsBo.increaseVisitNum();
             // 写数据库
             if (result == null) {
                 log.warn("get nothing from html.");
@@ -222,6 +221,8 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             var htmlParseData = (HtmlParseData) page.getParseData();
             String html = htmlParseData.getHtml();
             Map<String, ?> result = function.apply(html);
+            // 增加页面获取统计
+            staticsBo.increaseVisitNum();
             // 写数据库
             if (result == null) {
                 log.warn("get nothing from html.");

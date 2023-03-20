@@ -1,24 +1,34 @@
 package idea.bios.crawler.my.controller;
 
+import com.google.gson.Gson;
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
+import idea.bios.crawler.entity.CrawlerStaticsBo;
+import idea.bios.crawler.my.sites.CrawlerSiteEnum;
+import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtServer;
 import idea.bios.url.URLCanonicalizer;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
 import idea.bios.util.selenium.SeleniumBuilder;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -35,9 +45,13 @@ public class CommonController extends CrawlController implements ControllerFacad
      */
     private boolean isSchedulePutQueueFinish = false;
 
+    @Getter
+    private final String name;
+
     public CommonController(CrawlConfig config, PageFetcher pageFetcher,
-                            RobotsTxtServer robotsTxtServer) throws Exception {
+                            RobotsTxtServer robotsTxtServer, String name) throws Exception {
         super(config, pageFetcher, robotsTxtServer);
+        this.name = name;
     }
 
     public boolean isSchedulePutQueueFinish() {
@@ -130,12 +144,12 @@ public class CommonController extends CrawlController implements ControllerFacad
     @Override
     public <T extends WebCrawler> void start(Class<T> clazz, final int numberOfCrawlers) {
         final CrawlConfig config = super.getConfig();
+        // 初始化crawler池
+        var crawlerPool = new CrawlerPool<T>();
+        crawlerPool.init(numberOfCrawlers, clazz, this);
         try {
             finished = false;
             crawlersLocalData.clear();
-            // 初始化crawler池
-            var crawlerPool = new CrawlerPool<T>();
-            crawlerPool.init(numberOfCrawlers, clazz, this);
             // 监控时钟
             Schedule.scheduleAtFixedRate(()-> {
                 try {
@@ -199,5 +213,57 @@ public class CommonController extends CrawlController implements ControllerFacad
         } catch (Exception e) {
             log.error("Error happened", e);
         }
+        // 开启一个频率为30 min的schedule，用来观测和处理各个线程的运行情况
+        final int staticRate = 1800;
+        Schedule.scheduleAtFixedRate(()-> {
+            var msgAllList = new ArrayList<String>();
+            msgAllList.add("【INFOS】");
+            msgAllList.add("name: " + this.name);
+            msgAllList.add("work queue length: " + this.frontier.getQueueLength());
+            msgAllList.add("collected length: " + new MongoDb()
+                            .getCrawlerDataCollection(this.name).countDocuments());
+            msgAllList.add("\n【CRAWLERS】");
+            crawlerPool.getCRAWLERS().forEach(crawler -> {
+                var msgList = new ArrayList<String>();
+                msgList.add("----------------------------");
+                CrawlerStaticsBo staticsBo = crawler.getStaticsBo();
+                msgList.add("\t[name: " + crawler.getMyThread().getName() + "]");
+                msgList.add("\t-proxy: " + crawler.getProxyInfo());
+                msgList.add("\t-num of visited: " + staticsBo.getCurVisitPageNum());
+                msgList.add("\t-rate: " +
+                        (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
+                                / (staticRate) + "/ min");
+                staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());
+                msgAllList.add(String.join("\n", msgList));
+            });
+            // 发送
+            final String wxUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=58cce18d-9306-449c-b9f9-eab09d459597";
+            // wxUrl += "&debug=1";
+            var reqMap = new HashMap<String, Object>();
+            var textMap = new HashMap<String, String>();
+            textMap.put("content", String.join("\n", msgAllList));
+            reqMap.put("msgtype", "text");
+            reqMap.put("text", textMap);
+            CloseableHttpClient client = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(wxUrl);
+            // 设置请求头信息
+            httpPost.setHeader("Content-Type", "application/json; charset=utf-8");
+            // 设置请求体参数
+            CloseableHttpResponse response = null;
+            try {
+                StringEntity entity = new StringEntity(
+                        new Gson().toJson(reqMap), ContentType.APPLICATION_JSON);
+                httpPost.setEntity(entity);
+                response = client.execute(httpPost);
+            } catch (Exception e) {
+                log.warn("Exception", e);
+            } finally {
+                try {
+                    response.close();
+                } catch (IOException e) {
+                    log.warn("IOException", e);
+                }
+            }
+        }, staticRate);
     }
 }

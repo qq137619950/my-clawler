@@ -88,4 +88,16 @@ public enum CrawlerSiteEnum {
         }
         return null;
     }
+
+    public static CrawlerSiteEnum findCrawlerSiteEnumById(String sourceId) {
+        if (sourceId == null) {
+            return null;
+        }
+        for(CrawlerSiteEnum cse : CrawlerSiteEnum.values()) {
+            if (cse.getSourceId().equals(sourceId)) {
+                return cse;
+            }
+        }
+        return null;
+    }
 }

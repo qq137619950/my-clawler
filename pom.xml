@@ -178,6 +178,12 @@
             <version>1.4.2</version>
         </dependency>
 
+        <!-- 发送企业微信 -->
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>4.5.15</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>crawler</finalName>

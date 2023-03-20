@@ -1,7 +1,6 @@
 package idea.bios.crawler.my.controller;
 
 import idea.bios.crawler.WebCrawler;
-import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;

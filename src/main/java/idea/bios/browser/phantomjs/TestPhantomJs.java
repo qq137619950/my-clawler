@@ -4,11 +4,8 @@ import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Platform;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -24,7 +21,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TestPhantomJs {
     public static void main(String[] args) {
-        PhantomJSDriver driver = SeleniumBuilder.getPhantomJsDriver();
+        PhantomJSDriver driver = SeleniumBuilder.getPhantomJsSeleniumBo().getPhantomJSDriver();
         final String url =
                 "https://www.haodf.com/bingcheng/8890840370.html";
         // 等待xx元素出现

@@ -15,6 +15,6 @@ public class Main {
         new CommonCrawlerStarter(configBuilder(
                 -1, 1000,
                 false, false, false))
-                .run(CrawlerSiteEnum.dxy_dialog);
+                .run(CrawlerSiteEnum.mfk_qa);
     }
 }

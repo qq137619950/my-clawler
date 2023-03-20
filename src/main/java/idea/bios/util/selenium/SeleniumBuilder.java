@@ -1,6 +1,7 @@
 package idea.bios.util.selenium;
 
 import idea.bios.crawler.proxypool.ProxyPoolFetcher;
+import idea.bios.util.selenium.entity.SeleniumDriverBo;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 // import org.openqa.selenium.PageLoadStrategy;
@@ -49,17 +50,17 @@ public class SeleniumBuilder {
      * 谷歌浏览器的Driver
      * @return  ChromeDriver
      */
-    public static ChromeDriver getChromeDriver() {
+    public static SeleniumDriverBo getChromeSeleniumBo() {
         if (CUR_CHROME_PROCESS_COUNT.get() >= MAX_CHROME_DRIVER_PROCESS) {
             log.warn("Chrome driver limit.");
-            return null;
+            return new SeleniumDriverBo();
         }
-        ChromeDriver driver;
+        SeleniumDriverBo driver;
         try {
             driver = buildChromeDriver();
         } catch (Exception e) {
             log.warn("exception occurs.", e);
-            return null;
+            return new SeleniumDriverBo();
         }
         CUR_CHROME_PROCESS_COUNT.getAndIncrement();
         return driver;
@@ -81,17 +82,17 @@ public class SeleniumBuilder {
      * 获取一个Phantom Js Driver
      * @return PhantomJSDriver
      */
-    public static PhantomJSDriver getPhantomJsDriver() {
+    public static SeleniumDriverBo getPhantomJsSeleniumBo() {
         if (CUR_PHANTOM_JS_PROCESS_COUNT.get() >= MAX_PHANTOM_JS_DRIVER_PROCESS) {
             log.warn("PHANTOM JS driver limit.");
-            return null;
+            return new SeleniumDriverBo();
         }
-        PhantomJSDriver driver;
+        SeleniumDriverBo driver;
         try {
             driver = buildPhantomJsDriver();
         } catch (Exception e) {
             log.warn("exception occurs.", e);
-            return null;
+            return new SeleniumDriverBo();
         }
         CUR_PHANTOM_JS_PROCESS_COUNT.getAndIncrement();
         return driver;
@@ -109,7 +110,7 @@ public class SeleniumBuilder {
         CUR_PHANTOM_JS_PROCESS_COUNT.decrementAndGet();
     }
 
-    private static PhantomJSDriver buildPhantomJsDriver() {
+    private static SeleniumDriverBo buildPhantomJsDriver() {
         // TODO 将执行文件打包起来
         final String absoluteExePath = "C:/crawler/phantomjs-win.exe";
         //设置必要参数
@@ -121,7 +122,6 @@ public class SeleniumBuilder {
         //js支持
         // dcaps.setJavascriptEnabled(true);
         // 从代理池中获取代理
-
         String proxyIpAndPort = ProxyPoolFetcher.simpleGetHostAndPort();
         if (!proxyIpAndPort.startsWith("localhost")) {
             var proxy = new Proxy();
@@ -134,10 +134,13 @@ public class SeleniumBuilder {
         dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
                 absoluteExePath);
         //创建无界面浏览器对象
-        return new PhantomJSDriver(dcaps);
+        return SeleniumDriverBo.builder()
+                .phantomJSDriver(new PhantomJSDriver(dcaps))
+                .proxyHostAndPort(proxyIpAndPort)
+                .build();
     }
 
-    private static ChromeDriver buildChromeDriver() {
+    private static SeleniumDriverBo buildChromeDriver() {
         System.getProperties().setProperty("webdriver.chrome.driver",
                 DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
@@ -167,7 +170,9 @@ public class SeleniumBuilder {
             proxy.setHttpProxy(proxyIpAndPort).setFtpProxy(proxyIpAndPort).setSslProxy(proxyIpAndPort);
             chromeOptions.setProxy(proxy);
         }
-
-        return new ChromeDriver(chromeOptions);
+        return SeleniumDriverBo.builder()
+                .chromeDriver(new ChromeDriver(chromeOptions))
+                .proxyHostAndPort(proxyIpAndPort)
+                .build();
     }
 }

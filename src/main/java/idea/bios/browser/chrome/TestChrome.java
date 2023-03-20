@@ -25,7 +25,7 @@ public class TestChrome {
             "https://www.haodf.com/bingcheng/8890858862.html";
 
     public static void main(String[] args) {
-        ChromeDriver driver = SeleniumBuilder.getChromeDriver();
+        ChromeDriver driver = SeleniumBuilder.getChromeSeleniumBo().getChromeDriver();
         // 等待xx元素出现
         assert driver != null;
         var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
