@@ -47,7 +47,7 @@ import lombok.var;
 /**
  * The controller that manages a crawling session. This class creates the
  * crawler threads and monitors their progress.
- *
+ * 废弃
  * @author Yasser Ganjisaffar
  */
 @Slf4j
@@ -72,6 +72,7 @@ public class CrawlController {
      */
     @Getter
     protected boolean finished;
+
     private Throwable error;
 
     /**
@@ -288,6 +289,7 @@ public class CrawlController {
             crawlersLocalData.clear();
             final var threads = new ArrayList<Thread>();
             final var crawlers = new ArrayList<T>();
+
             for (int i = 1; i <= numberOfCrawlers; i++) {
                 T crawler = crawlerFactory.newInstance();
                 var thread = new Thread(crawler, "Crawler " + i);

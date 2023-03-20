@@ -130,9 +130,22 @@ public class WebCrawler implements Runnable {
      *            the controller that manages this crawling session
      */
     public void init(int id, CrawlController crawlController) {
+        this.init(id, crawlController, null, null);
+        if (myController.getConfig().isChromeDriver()) {
+            this.chromeDriver = SeleniumBuilder.getChromeDriver();
+        }
+        if (myController.getConfig().isPhantomJsDriver()) {
+            this.phantomJsDriver = SeleniumBuilder.getPhantomJsDriver();
+        }
+    }
+
+    /**
+     *  线程挂了创建新的线程，能够继承一些属性
+     */
+    public void init(int id, CrawlController crawlController,
+                     ChromeDriver chromeDriver, PhantomJSDriver phantomJsDriver) {
         this.myId = id;
         // 改为每个crawler都有一个pageFetcher
-        // this.pageFetcher = crawlController.getPageFetcher();
         this.pageFetcher = new PageFetcher(crawlController.getConfig());
         this.robotstxtServer = crawlController.getRobotstxtServer();
         this.docIdServer = crawlController.getDocIdServer();
@@ -141,12 +154,8 @@ public class WebCrawler implements Runnable {
         this.myController = crawlController;
         this.isWaitingForNewURLs = false;
         this.batchReadSize = crawlController.getConfig().getBatchReadSize();
-        if(myController.getConfig().isChromeDriver()) {
-            this.chromeDriver = SeleniumBuilder.getChromeDriver();
-        }
-        if(myController.getConfig().isPhantomJsDriver()) {
-            this.phantomJsDriver = SeleniumBuilder.getPhantomJsDriver();
-        }
+        this.chromeDriver = chromeDriver;
+        this.phantomJsDriver = phantomJsDriver;
     }
 
     /**

@@ -1,17 +1,13 @@
 package idea.bios.util;
 
-import idea.bios.crawler.my.seed.SeedFetcher;
-import idea.bios.crawler.my.seed.SeedFetcherImpl;
-import idea.bios.util.search.BaiduSfSearchLinks;
-import idea.bios.util.search.SearchLinks;
+
 import lombok.extern.slf4j.Slf4j;
-import lombok.var;
+
 
 import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 单机简单定时器
@@ -23,7 +19,7 @@ public class Schedule {
      * 创建任务队列
      */
     private static final ScheduledExecutorService scheduledExecutorService =
-            Executors.newScheduledThreadPool(5);
+            Executors.newScheduledThreadPool(10);
 
     public static void scheduleAtFixedRate(Runnable command, long period) {
         scheduledExecutorService.scheduleAtFixedRate(command, period, period,

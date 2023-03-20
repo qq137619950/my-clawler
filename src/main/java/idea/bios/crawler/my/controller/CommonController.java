@@ -7,6 +7,7 @@ import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtServer;
 import idea.bios.url.URLCanonicalizer;
 import idea.bios.url.WebURL;
+import idea.bios.util.Schedule;
 import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -29,7 +30,6 @@ import java.util.stream.IntStream;
  */
 @Slf4j
 public class CommonController extends CrawlController implements ControllerFacade {
-    private static final Executor MONITOR_THREAD_EXECUTOR = Executors.newFixedThreadPool(5);
     /**
      * 计划中的url是否插入完毕
      */
@@ -133,128 +133,71 @@ public class CommonController extends CrawlController implements ControllerFacad
         try {
             finished = false;
             crawlersLocalData.clear();
-            // 线程列表
-            final var threads = new ArrayList<Thread>();
-            // 爬虫队列
-            final var crawlers = new ArrayList<T>();
-            // 构造Crawler
-            IntStream.rangeClosed(1, numberOfCrawlers).forEach(i -> {
-                // 创建一个crawler
-                try {
-                    T crawler = clazz.getDeclaredConstructor(ControllerFacade.class)
-                            .newInstance(this);
-                    var thread = new Thread(crawler, crawlerThreadBuilder(i));
-                    crawler.setMyThread(thread);
-                    // 初始化crawler
-                    crawler.init(i, this);
-                    thread.start();
-                    crawlers.add(crawler);
-                    threads.add(thread);
-                    log.info("Crawler {} started", i);
-                } catch (Exception e) {
-                    log.warn("Exception occurs.", e);
-                }
-            });
+            // 初始化crawler池
+            var crawlerPool = new CrawlerPool<T>();
+            crawlerPool.init(numberOfCrawlers, clazz, this);
             // 监控时钟
-            MONITOR_THREAD_EXECUTOR.execute(() -> {
+            Schedule.scheduleAtFixedRate(()-> {
                 try {
                     synchronized (waitingLock) {
-                        while (true) {
-                            // Wait this long before checking the status of the worker threads.
-                            sleep(config.getThreadMonitoringDelaySeconds());
-                            AtomicBoolean someoneIsWorking = new AtomicBoolean(false);
-                            IntStream.range(0, threads.size()).forEach(i -> {
-                                Thread thread = threads.get(i);
-                                // 线程不存活
-                                if (!thread.isAlive()) {
-                                    if (!shuttingDown) {
-                                        // 重新创建一个线程
-                                        try {
-                                            T crawler = clazz.getDeclaredConstructor(ControllerFacade.class)
-                                                    .newInstance(this);
-                                            thread = new Thread(crawler, crawlerThreadBuilder(i + 1));
-                                            Thread droppedThread = threads.remove(i);
-                                            log.warn("Thread {} is dropped. then new one:{}", droppedThread.getName(), thread.getName());
-                                            threads.add(i, thread);
-                                            crawler.setMyThread(thread);
-                                            crawler.init(i + 1, this);
-                                            thread.start();
-                                            // 更新crawler list
-                                            T droppedCrawler = crawlers.remove(i);
-                                            // 关闭驱动
-                                            if (config.isChromeDriver()) {
-                                                SeleniumBuilder.shutdownChromeDriver(
-                                                        droppedCrawler.getChromeDriver());
-                                            }
-                                            if (config.isPhantomJsDriver()) {
-                                                SeleniumBuilder.shutdownPhantomJsDriver(
-                                                        droppedCrawler.getPhantomJsDriver());
-                                            }
-                                            crawlers.add(i, crawler);
-                                        } catch (Exception e) {
-                                           log.warn("Exception occurs.", e);
-                                        }
-                                    } else if (!crawlers.get(i).isWaitingForNewURLs()){
-                                        someoneIsWorking.set(true);
-                                    }
+                        AtomicBoolean someoneIsWorking = new AtomicBoolean(false);
+                        IntStream.range(0, crawlerPool.getTHREADS().size()).forEach(i -> {
+                            // 线程不存活
+                            if (!crawlerPool.getTHREADS().get(i).isAlive()) {
+                                if (!shuttingDown) {
+                                    crawlerPool.rebuildCrawler(clazz, this, i);
+                                } else if (!crawlerPool.getCRAWLERS().get(i).isWaitingForNewURLs()){
+                                    someoneIsWorking.set(true);
+                                }
+                            }
+                        });
+                        // 如果没有在执行，而且所有数据已经进入队列，则关闭程序
+                        if (!someoneIsWorking.get() && isSchedulePutQueueFinish) {
+                            log.info("任务可能已经完成，等待几秒再进行第一次判断");
+                            sleep(config.getThreadShutdownDelaySeconds());
+                            // 再检测一下队列，如果还有数据，则不退出
+                            var firstCheck = new AtomicBoolean(false);
+                            IntStream.range(0, crawlerPool.getTHREADS().size()).forEach(i -> {
+                                Thread thread = crawlerPool.getTHREADS().get(i);
+                                if (thread.isAlive() && !crawlerPool.getCRAWLERS().get(i).isWaitingForNewURLs()) {
+                                    firstCheck.set(true);
                                 }
                             });
-                            // 如果没有在执行，而且所有数据已经进入队列，则关闭程序
-                            if (!someoneIsWorking.get() && isSchedulePutQueueFinish) {
-                                log.info("任务可能已经完成，等待几秒再进行第一次判断");
-                                sleep(config.getThreadShutdownDelaySeconds());
-                                // 再检测一下队列，如果还有数据，则不退出
-                                var firstCheck = new AtomicBoolean(false);
-                                IntStream.range(0, threads.size()).forEach(i -> {
-                                    Thread thread = threads.get(i);
-                                    if (thread.isAlive() && !crawlers.get(i).isWaitingForNewURLs()) {
-                                        firstCheck.set(true);
-                                    }
-                                });
-                                if (firstCheck.get()) {
-                                    continue;
-                                }
-                                log.info("任务可能已经完成，等待几秒再进行第二次判断");
-                                sleep(config.getThreadShutdownDelaySeconds());
-                                if (frontier.getQueueLength() > 0) {
-                                    continue;
-                                }
-                                // 此时确定已经完毕，关闭系统
-                                log.info("任务可能已经完成，系统即将关闭");
-                                frontier.finish();
-                                crawlers.forEach(crawler -> {
-                                    crawler.onBeforeExit();
-                                    crawlersLocalData.add(crawler.getMyLocalData());
-                                    if (config.isChromeDriver()) {
-                                        SeleniumBuilder.shutdownChromeDriver(crawler.getChromeDriver());
-                                    }
-                                    if (config.isPhantomJsDriver()) {
-                                        SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
-                                    }
-                                });
-                                log.info("Waiting for {} seconds before final clean up...",
-                                        config.getCleanupDelaySeconds());
-                                sleep(config.getCleanupDelaySeconds());
-                                frontier.close();
-                                docIdServer.close();
-                                pageFetcher.shutDown();
-                                finished = true;
-                                waitingLock.notifyAll();
-                                env.close();
+                            if (firstCheck.get()) {
+                                return;
                             }
+                            log.info("任务可能已经完成，等待几秒再进行第二次判断");
+                            sleep(config.getThreadShutdownDelaySeconds());
+                            if (frontier.getQueueLength() > 0) {
+                                return;
+                            }
+                            // 此时确定已经完毕，关闭系统
+                            log.info("任务可能已经完成，系统即将关闭");
+                            frontier.finish();
+                            crawlerPool.getCRAWLERS().forEach(crawler -> {
+                                crawler.onBeforeExit();
+                                crawlersLocalData.add(crawler.getMyLocalData());
+                                SeleniumBuilder.shutdownChromeDriver(crawler.getChromeDriver());
+                                SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
+                            });
+                            log.info("Waiting for {} seconds before final clean up...",
+                                    config.getCleanupDelaySeconds());
+                            sleep(config.getCleanupDelaySeconds());
+                            frontier.close();
+                            docIdServer.close();
+                            pageFetcher.shutDown();
+                            finished = true;
+                            waitingLock.notifyAll();
+                            env.close();
                         }
                     }
                 } catch (Exception e) {
                     log.error("Unexpected Error", e);
                 }
-            });
+            }, config.getThreadMonitoringDelaySeconds());
             // waitUntilFinish();
         } catch (Exception e) {
             log.error("Error happened", e);
         }
-    }
-
-    private static String crawlerThreadBuilder(int index) {
-        return "Crawler " + index;
     }
 }
