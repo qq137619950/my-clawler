@@ -5,7 +5,6 @@ import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
 import idea.bios.crawler.entity.CrawlerStaticsBo;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtServer;
@@ -218,10 +217,10 @@ public class CommonController extends CrawlController implements ControllerFacad
         Schedule.scheduleAtFixedRate(()-> {
             var msgAllList = new ArrayList<String>();
             msgAllList.add("【INFOS】");
-            msgAllList.add("name: " + this.name);
+            msgAllList.add("task name: " + this.name);
             msgAllList.add("work path: " + System.getProperty("user.dir"));
-            msgAllList.add("work queue length: " + this.frontier.getQueueLength());
-            msgAllList.add("collected length: " + new MongoDb()
+            msgAllList.add("work queue size: " + this.frontier.getQueueLength());
+            msgAllList.add("collected size: " + new MongoDb()
                             .getCrawlerDataCollection(this.name).countDocuments());
             msgAllList.add("\n【CRAWLERS】");
             crawlerPool.getCRAWLERS().forEach(crawler -> {
