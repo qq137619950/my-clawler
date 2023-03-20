@@ -227,10 +227,10 @@ public class CommonController extends CrawlController implements ControllerFacad
                 var msgList = new ArrayList<String>();
                 msgList.add("----------------------------");
                 CrawlerStaticsBo staticsBo = crawler.getStaticsBo();
-                msgList.add("\t[name: " + crawler.getMyThread().getName() + "]");
-                msgList.add("\t-proxy: " + crawler.getProxyInfo());
-                msgList.add("\t-num of visited: " + staticsBo.getCurVisitPageNum());
-                msgList.add("\t-rate: " +
+                msgList.add("[" + crawler.getMyThread().getName() + "]");
+                msgList.add("-proxy: " + crawler.getProxyInfo());
+                msgList.add("-num of visited: " + staticsBo.getCurVisitPageNum());
+                msgList.add("-rate: " +
                         (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
                                 / (staticRate) + "/ min");
                 staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());

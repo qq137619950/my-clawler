@@ -121,7 +121,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                                 this.getClass()).getSourceId());
         Map<String, Object> res;
         try {
-            res =  mapSupplier.get();
+            res = mapSupplier.get();
         } catch (Exception e) {
             log.warn("Exception:", e);
             return;
