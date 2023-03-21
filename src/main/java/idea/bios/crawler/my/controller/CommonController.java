@@ -213,7 +213,6 @@ public class CommonController extends CrawlController implements ControllerFacad
             log.error("Error happened", e);
         }
         // 开启一个频率为30 min的schedule，用来观测和处理各个线程的运行情况
-        final int staticRate = 1800;
         Schedule.controllerScheduleAtFixedRate(()-> {
             // TODO crawler失速后，移除该crawler
             var msgAllList = new ArrayList<String>();
@@ -233,7 +232,7 @@ public class CommonController extends CrawlController implements ControllerFacad
                 msgList.add("-num of visited: " + staticsBo.getCurVisitPageNum());
                 msgList.add("-rate: " +
                         (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
-                                / (staticRate) + "/ min");
+                                / config.getWxMessageDelaySeconds() + "/ min");
                 staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());
                 msgAllList.add(String.join("\n", msgList));
             });
@@ -265,6 +264,6 @@ public class CommonController extends CrawlController implements ControllerFacad
                     log.warn("IOException", e);
                 }
             }
-        }, staticRate);
+        }, config.getWxMessageDelaySeconds());
     }
 }

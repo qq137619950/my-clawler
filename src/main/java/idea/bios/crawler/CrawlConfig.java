@@ -193,6 +193,12 @@ public class CrawlConfig {
     private int threadMonitoringDelaySeconds = 10;
 
     /**
+     * Wait this long before checking the status of the worker threads.
+     */
+    @Getter
+    private final int wxMessageDelaySeconds = 1800;
+
+    /**
      * Wait this long to verify the crawler threads are finished working.
      */
     private int threadShutdownDelaySeconds = 10;

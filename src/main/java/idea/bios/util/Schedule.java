@@ -19,10 +19,10 @@ public class Schedule {
      * 创建任务队列
      */
     private static final ScheduledExecutorService CRAWLER_SCHEDULE_EXECUTOR =
-            Executors.newScheduledThreadPool(20);
+            Executors.newScheduledThreadPool(10);
 
     private static final ScheduledExecutorService CONTROLLER_SCHEDULE_EXECUTOR =
-            Executors.newScheduledThreadPool(20);
+            Executors.newScheduledThreadPool(10);
 
     public static void crawlerScheduleAtFixedRate(Runnable command, long period) {
         CRAWLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, period,
@@ -35,7 +35,7 @@ public class Schedule {
     }
 
     public static void controllerScheduleAtFixedRate(Runnable command, long period) {
-        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, 15,
+        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, 60,
                 TimeUnit.SECONDS);
     }
 

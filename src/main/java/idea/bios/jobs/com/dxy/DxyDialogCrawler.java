@@ -27,8 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class DxyDialogCrawler extends AbsCommonCrawler {
-    private static final AtomicInteger START_INT = new AtomicInteger(0);
-
     public DxyDialogCrawler(ControllerFacade controllerFacade) {
         super(controllerFacade);
     }
@@ -86,7 +84,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
         var searchLinks = new DxyDialogSearchLinks();
         Schedule.crawlerScheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
-                    START_INT.getAndIncrement(),
+                    INT_FLAG.getAndIncrement(),
                     1,
                     DxyDialogCrawler::getSearchUrlPrefix);
             if (!sUrls.isEmpty()) {

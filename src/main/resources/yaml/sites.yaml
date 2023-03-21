@@ -14,7 +14,6 @@ sites:
   - sourceId: com.mfk.qa
     className: com.mfk.MkfQaCrawler
     minPolitenessDelay: 200
-    run: true
 
   - sourceId: com.yixue.baike
     className: com.yixue.YixueCrawler
@@ -33,4 +32,10 @@ sites:
     minPolitenessDelay: 200
     dynParse: true
     chromeDriver: true
+
+  - sourceId: cn.youlai.article
+    className: cn.youlai.YoulaiArticleCrawler
+    minPolitenessDelay: 1000
+    run: true
+
 
