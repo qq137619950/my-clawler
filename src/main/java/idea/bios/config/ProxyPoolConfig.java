@@ -3,8 +3,6 @@ package idea.bios.config;
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
 import idea.bios.entity.HostAndPort;
 import idea.bios.entity.ProxyPoolYamlBo;
-import idea.bios.entity.SiteConfigYamlBo;
-import idea.bios.entity.SiteInfoBo;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
@@ -23,7 +21,7 @@ public class ProxyPoolConfig {
     static {
         // 读取配置
         try (InputStream in = CommonCrawlerStarter.class.getClassLoader()
-                .getResourceAsStream("proxy.yaml")) {
+                .getResourceAsStream("yaml/proxy.yaml")) {
             // 加载 YAML 文件
             ProxyPoolYamlBo config = new Yaml().loadAs(in, ProxyPoolYamlBo.class);
             proxyPoolList = config.getProxy();

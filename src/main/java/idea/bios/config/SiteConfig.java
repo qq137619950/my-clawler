@@ -21,7 +21,7 @@ public class SiteConfig {
     static {
         // 读取配置
         try (InputStream in = CommonCrawlerStarter.class.getClassLoader()
-                .getResourceAsStream("sites.yaml")) {
+                .getResourceAsStream("yaml/sites.yaml")) {
             // 加载 YAML 文件
             SiteConfigYamlBo configYamlBo = new Yaml().loadAs(in, SiteConfigYamlBo.class);
             // 找到run的网站，开始任务

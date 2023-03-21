@@ -23,14 +23,6 @@ import java.util.concurrent.Semaphore;
  */
 @Slf4j
 public class SeleniumUtils {
-    private static final double PASS_RATIO = 0.5;
-    private static final String DESKTOP_CHROME_PATH =
-            "C:/Program Files/Google/Chrome/Application/chromedriver.exe";
-    private static final String CHROME_PATH =
-            "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe";
-    private static final String CHROME_PATH_HYQ =
-            "C:/Users/IDEA/AppData/Local/Google/Chrome/Application/chromedriver.exe";
-
     private static final Semaphore SEMAPHORE = new Semaphore(10);
 
     public static List<String> getLinks(String url, ChromeDriver driver) {

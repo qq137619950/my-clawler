@@ -1,5 +1,6 @@
 package idea.bios.util.selenium;
 
+import idea.bios.config.GlobalConfig;
 import idea.bios.crawler.proxypool.ProxyPoolFetcher;
 import idea.bios.util.selenium.entity.SeleniumDriverBo;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +24,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Slf4j
 public class SeleniumBuilder {
-    private static final String DESKTOP_CHROME_PATH =
-            "C:/Program Files/Google/Chrome/Application/chromedriver.exe";
-    private static final String CHROME_PATH =
-            "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe";
-    private static final String CHROME_PATH_HYQ =
-            "C:/Users/IDEA/AppData/Local/Google/Chrome/Application/chromedriver.exe";
     /**
      * 最大chrome驱动进程，10个为上限，否则系统相当卡顿
      */
@@ -111,8 +106,6 @@ public class SeleniumBuilder {
     }
 
     private static SeleniumDriverBo buildPhantomJsDriver() {
-        // TODO 将执行文件打包起来
-        final String absoluteExePath = "C:/crawler/phantomjs-win.exe";
         //设置必要参数
         var dcaps = new DesiredCapabilities();
         //ssl证书支持
@@ -132,7 +125,7 @@ public class SeleniumBuilder {
         dcaps.setPlatform(Platform.WIN11);
         //驱动支持（第二参数表明的是你的phantomjs引擎所在的路径，使用whereis phantomjs可以查看）
         dcaps.setCapability(PhantomJSDriverService.PHANTOMJS_EXECUTABLE_PATH_PROPERTY,
-                absoluteExePath);
+                GlobalConfig.getPhantomJsDriverPath());
         //创建无界面浏览器对象
         return SeleniumDriverBo.builder()
                 .phantomJSDriver(new PhantomJSDriver(dcaps))
@@ -142,7 +135,7 @@ public class SeleniumBuilder {
 
     private static SeleniumDriverBo buildChromeDriver() {
         System.getProperties().setProperty("webdriver.chrome.driver",
-                DESKTOP_CHROME_PATH);
+                GlobalConfig.getChromeDriverPath());
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.EAGER);
         // 配置参数优化

@@ -1,0 +1,4 @@
+driver:
+  - chrome: "C:/Program Files/Google/Chrome/Application/chromedriver.exe"
+  # - chrome: "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe"
+  - phantomJs: "C:/crawler/phantomjs-win.exe"
