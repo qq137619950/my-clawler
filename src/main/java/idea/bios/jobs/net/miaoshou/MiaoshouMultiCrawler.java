@@ -179,11 +179,10 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
 
     @Override
     public void prepareToRun() {
-
+        controllerFacade.addUrlsToQueue(seedFetcher.getSeedsPlain("https://www.miaoshou.net/voice/77002.html",
+                "https://www.miaoshou.net/article/266640.html",
+                "https://www.miaoshou.net/question/RlG2KOwAQGn3vLnV.html"));
         Schedule.crawlerScheduleAtFixedRate(()-> {
-            controllerFacade.addUrlsToQueue(seedFetcher.getSeedsPlain("https://www.miaoshou.net/voice/77002.html",
-                    "https://www.miaoshou.net/article/266640.html",
-                    "https://www.miaoshou.net/question/RlG2KOwAQGn3vLnV.html"));
             var seeds = IntStream.range(0, 100).mapToObj(
                             i -> "https://www.miaoshou.net/article/" + (INT_FLAG.get() + i) + ".html")
                     .collect(Collectors.toCollection(ArrayList::new));

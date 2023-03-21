@@ -228,8 +228,11 @@ public abstract class AbsCommonCrawler extends WebCrawler {
                     .getCrawlerDataCollection(cName);
             var insertDoc = new Document();
             result.forEach(insertDoc::append);
-            // url也记录下
-            insertDoc.append("src", url);
+            // 页面url也记录下
+            insertDoc.append("site", url);
+            // 根据site生成唯一的docId
+            UUID uuid = UUID.nameUUIDFromBytes(url.getBytes());
+            insertDoc.append("docId", uuid.toString());
             for (Object o : result.values()) {
                 if (o == null || "".equals(o)) {
                     log.warn("some content empty.");
