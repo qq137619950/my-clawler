@@ -35,7 +35,11 @@ sites:
 
   - sourceId: cn.youlai.article
     className: cn.youlai.YoulaiArticleCrawler
-    minPolitenessDelay: 1000
+    minPolitenessDelay: 2000
+
+  - sourceId: net.miaoshou.article
+    className: net.miaoshou.MiaoshouMultiCrawler
+    minPolitenessDelay: 500
     run: true
 
 
