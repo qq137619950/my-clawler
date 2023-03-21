@@ -10,12 +10,10 @@ import lombok.var;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -24,7 +22,6 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -180,7 +177,7 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
         list.forEach(e -> IntStream.rangeClosed(76, 100).
                 forEach(i -> listUrls.add("https:" + e.attr("href") + "?p=" + i)));
         // 定时任务获取
-        Schedule.scheduleAtFixedRate(()-> {
+        Schedule.crawlerScheduleAtFixedRate(()-> {
             Connection listConn = Jsoup.connect(listUrls.get(START_INT.getAndIncrement()));
             try {
                 Connection.Response listRes = listConn.execute();

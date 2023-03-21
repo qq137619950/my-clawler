@@ -62,7 +62,7 @@ public class Health120DialogCrawler extends AbsCommonCrawler {
 
     @Override
     public void prepareToRun() {
-        Schedule.scheduleAtFixedRateMi(()-> {
+        Schedule.crawlerScheduleAtFixedRateMi(()-> {
             var seeds = new ArrayList<String>();
             seeds.add("https://www.120.net/post/" + START_INT.incrementAndGet() + ".html");
             controllerFacade.addUrlsToQueue(seeds);

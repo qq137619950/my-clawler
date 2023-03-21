@@ -1,4 +1,4 @@
-package idea.bios.util.selenium.entity;
+package idea.bios.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

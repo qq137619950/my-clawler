@@ -97,7 +97,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 
     @Override
     public void prepareToRun() {
-        Schedule.scheduleAtFixedRateMi(()-> {
+        Schedule.crawlerScheduleAtFixedRateMi(()-> {
             // 直接拼接
             var seeds = new ArrayList<String>();
             seeds.add("https://www.mfk.com/ask/" + START_INT.incrementAndGet() + ".shtml");
@@ -120,7 +120,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
 //                }
 //            }}, 6);
         // 半小时一次，拉取seed
-        Schedule.scheduleAtFixedRate(()-> {
+        Schedule.crawlerScheduleAtFixedRate(()-> {
             // TODO 分布式锁
             controllerFacade.addUrlsToQueue(seedFetcher.getSeedsFromPool(
                     SiteConfig.getCurSite().getSourceId()));

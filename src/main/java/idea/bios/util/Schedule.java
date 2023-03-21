@@ -18,22 +18,30 @@ public class Schedule {
     /**
      * 创建任务队列
      */
-    private static final ScheduledExecutorService scheduledExecutorService =
+    private static final ScheduledExecutorService CRAWLER_SCHEDULE_EXECUTOR =
             Executors.newScheduledThreadPool(20);
 
-    public static void scheduleAtFixedRate(Runnable command, long period) {
-        scheduledExecutorService.scheduleAtFixedRate(command, period, period,
+    private static final ScheduledExecutorService CONTROLLER_SCHEDULE_EXECUTOR =
+            Executors.newScheduledThreadPool(20);
+
+    public static void crawlerScheduleAtFixedRate(Runnable command, long period) {
+        CRAWLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, period,
                 TimeUnit.SECONDS);
     }
 
-    public static void scheduleAtFixedRateMi(Runnable command, long period) {
-        scheduledExecutorService.scheduleAtFixedRate(command, period, period,
+    public static void crawlerScheduleAtFixedRateMi(Runnable command, long period) {
+        CRAWLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, period,
                 TimeUnit.MILLISECONDS);
+    }
+
+    public static void controllerScheduleAtFixedRate(Runnable command, long period) {
+        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, 15,
+                TimeUnit.SECONDS);
     }
 
     public static void main(String[] args) {
         // 1s 后开始执行，每 3s 执行一次
-        scheduledExecutorService.scheduleAtFixedRate(() ->
+        CRAWLER_SCHEDULE_EXECUTOR.scheduleAtFixedRate(() ->
                 System.out.println("打印当前时间：" + new Date()),
                 1, 3, TimeUnit.SECONDS);
     }

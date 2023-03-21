@@ -150,7 +150,7 @@ public class CommonController extends CrawlController implements ControllerFacad
             finished = false;
             crawlersLocalData.clear();
             // 监控时钟
-            Schedule.scheduleAtFixedRate(()-> {
+            Schedule.controllerScheduleAtFixedRate(()-> {
                 try {
                     synchronized (waitingLock) {
                         AtomicBoolean someoneIsWorking = new AtomicBoolean(false);
@@ -214,7 +214,8 @@ public class CommonController extends CrawlController implements ControllerFacad
         }
         // 开启一个频率为30 min的schedule，用来观测和处理各个线程的运行情况
         final int staticRate = 1800;
-        Schedule.scheduleAtFixedRate(()-> {
+        Schedule.controllerScheduleAtFixedRate(()-> {
+            // TODO crawler失速后，移除该crawler
             var msgAllList = new ArrayList<String>();
             msgAllList.add("【INFOS】");
             msgAllList.add("task name: " + this.name);

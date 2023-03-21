@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * http://www.a-hospital.com/w/医学电子书
@@ -91,7 +90,7 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
 
     @Override
     public void prepareToRun() {
-        Schedule.scheduleAtFixedRate(()-> {
+        Schedule.crawlerScheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
                     INT_FLAG.getAndIncrement(),
                     1,

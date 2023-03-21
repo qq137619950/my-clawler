@@ -11,7 +11,6 @@ import org.bson.Document;
  * @author 86153
  */
 public class MongoDb {
-    private static final String LOCAL_HOST = "localhost";
     private static final String REMOTE_HOST = "192.168.76.11";
     private static final int PORT = 37017;
     private static final String DB_NAME = "CRAWLER";

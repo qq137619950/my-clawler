@@ -2,7 +2,7 @@ package idea.bios.util.selenium;
 
 import idea.bios.config.GlobalConfig;
 import idea.bios.crawler.proxypool.ProxyPoolFetcher;
-import idea.bios.util.selenium.entity.SeleniumDriverBo;
+import idea.bios.entity.SeleniumDriverBo;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 // import org.openqa.selenium.PageLoadStrategy;

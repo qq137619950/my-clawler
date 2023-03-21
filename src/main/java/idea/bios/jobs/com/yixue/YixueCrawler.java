@@ -66,7 +66,7 @@ public class YixueCrawler extends AbsCommonCrawler {
 
     @Override
     public void prepareToRun() {
-        Schedule.scheduleAtFixedRate(()-> {
+        Schedule.crawlerScheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     10,

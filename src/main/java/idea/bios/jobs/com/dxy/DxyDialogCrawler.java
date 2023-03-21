@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
@@ -85,7 +84,7 @@ public class DxyDialogCrawler extends AbsCommonCrawler {
     @Override
     public void prepareToRun() {
         var searchLinks = new DxyDialogSearchLinks();
-        Schedule.scheduleAtFixedRate(()-> {
+        Schedule.crawlerScheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
                     START_INT.getAndIncrement(),
                     1,
