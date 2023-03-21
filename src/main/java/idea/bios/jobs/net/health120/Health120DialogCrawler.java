@@ -61,6 +61,11 @@ public class Health120DialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void prepareToRun() {
         Schedule.crawlerScheduleAtFixedRateMi(()-> {
             var seeds = new ArrayList<String>();

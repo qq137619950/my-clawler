@@ -96,6 +96,11 @@ public class MkfQaCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void prepareToRun() {
         Schedule.crawlerScheduleAtFixedRateMi(()-> {
             // 直接拼接

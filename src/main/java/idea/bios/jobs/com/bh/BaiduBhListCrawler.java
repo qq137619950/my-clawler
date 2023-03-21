@@ -135,6 +135,11 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void prepareToRun() {
         var searchLinks = new BaiduSfSearchLinks();
         // 创建一个定时任务，10s从数据库拿1条数据

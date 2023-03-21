@@ -81,6 +81,11 @@ public class CyysDialogCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void prepareToRun() {
         var searchLinks = new CyysDialogSearchLinks();
         Schedule.crawlerScheduleAtFixedRate(()-> {

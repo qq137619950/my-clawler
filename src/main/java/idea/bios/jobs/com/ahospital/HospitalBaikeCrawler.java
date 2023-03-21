@@ -35,6 +35,11 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void visit(Page page) {
         super.commonHtmlPageVisit(page, html -> {
             var result = new HashMap<String, Object>();

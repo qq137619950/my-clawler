@@ -154,6 +154,11 @@ public class HaodfBingchengDiseaseProCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void prepareToRun() {
         // 通过列表页加载数据
         var listUrls = new ArrayList<String>();

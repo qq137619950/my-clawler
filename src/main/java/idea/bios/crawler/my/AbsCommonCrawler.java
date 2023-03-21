@@ -96,10 +96,9 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * 页面是否需要Parse
      * 一些网页需要Fetch但是不需要解析
      * @param url url
+     * @return should parse
      */
-    protected boolean shouldParse(WebURL url) {
-        return true;
-    }
+    protected abstract boolean shouldParse(WebURL url);
 
     /**
      * 启动器准备

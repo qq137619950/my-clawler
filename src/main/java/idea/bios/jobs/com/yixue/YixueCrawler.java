@@ -65,6 +65,11 @@ public class YixueCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return true;
+    }
+
+    @Override
     public void prepareToRun() {
         Schedule.crawlerScheduleAtFixedRate(()-> {
             List<String> sUrls = seedFetcher.getSeedsFromDb(
