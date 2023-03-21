@@ -212,7 +212,7 @@ public class CommonController extends CrawlController implements ControllerFacad
         } catch (Exception e) {
             log.error("Error happened", e);
         }
-        // 开启一个频率为30 min的schedule，用来观测和处理各个线程的运行情况
+        // 开启一个频率为15 min的schedule，用来观测和处理各个线程的运行情况
         Schedule.controllerScheduleAtFixedRate(()-> {
             // TODO crawler失速后，移除该crawler
             var msgAllList = new ArrayList<String>();

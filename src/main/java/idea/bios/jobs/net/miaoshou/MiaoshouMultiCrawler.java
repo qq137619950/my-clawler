@@ -32,7 +32,7 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
 
     @Override
     protected boolean shouldParse(WebURL url) {
-        return Pattern.matches("https://www.miaoshou.net/[a-z]/[0-9A-Za-z]+.html",
+        return Pattern.matches("https://www.miaoshou.net/[a-z]+/[0-9A-Za-z]+.html",
                         url.getURL());
     }
 

@@ -35,7 +35,7 @@ public class Schedule {
     }
 
     public static void controllerScheduleAtFixedRate(Runnable command, long period) {
-        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, 60,
+        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, 30, period,
                 TimeUnit.SECONDS);
     }
 
