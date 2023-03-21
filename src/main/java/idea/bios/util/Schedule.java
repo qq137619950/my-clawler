@@ -34,8 +34,13 @@ public class Schedule {
                 TimeUnit.MILLISECONDS);
     }
 
+    public static void wxSenderScheduleAtFixedRate(Runnable command, long period) {
+        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, 60, period,
+                TimeUnit.SECONDS);
+    }
+
     public static void controllerScheduleAtFixedRate(Runnable command, long period) {
-        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, 30, period,
+        CONTROLLER_SCHEDULE_EXECUTOR.scheduleWithFixedDelay(command, period, period,
                 TimeUnit.SECONDS);
     }
 
