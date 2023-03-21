@@ -3,12 +3,12 @@ package idea.bios.crawler.my;
 
 import com.drew.lang.annotations.NotNull;
 import com.mongodb.client.MongoCollection;
+import idea.bios.config.SiteConfig;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.WebCrawler;
 import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.crawler.my.seed.SeedFetcher;
 import idea.bios.crawler.my.seed.SeedFetcherImpl;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.parser.HtmlParseData;
 import idea.bios.url.WebURL;
@@ -116,9 +116,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
         }
         // 写mongodb
         MongoCollection<Document> collection = new MongoDb()
-                .getCrawlerDataCollection(
-                        CrawlerSiteEnum.findCrawlerSiteEnumByClass(
-                                this.getClass()).getSourceId());
+                .getCrawlerDataCollection(SiteConfig.getCurSite().getSourceId());
         Map<String, Object> res;
         try {
             res = mapSupplier.get();
@@ -171,9 +169,7 @@ public abstract class AbsCommonCrawler extends WebCrawler {
             }
             // 将格式化的数据写入MongoDb
             MongoCollection<Document> collection = new MongoDb()
-                    .getCrawlerDataCollection(
-                            CrawlerSiteEnum.findCrawlerSiteEnumByClass(
-                                    this.getClass()).getSourceId());
+                    .getCrawlerDataCollection(SiteConfig.getCurSite().getSourceId());
             var insertDoc = new Document();
             result.forEach(insertDoc::append);
             // 页面url也记录下

@@ -1,0 +1,12 @@
+proxy:
+  - host: localhost
+    port: 0
+
+  - host: 47.106.191.148
+    port: 43128
+
+  - host: 192.168.218.26
+    port: 3128
+
+  - host: 192.168.218.37
+    port: 13128

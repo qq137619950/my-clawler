@@ -1,10 +1,10 @@
 package idea.bios.jobs.com.mfk;
 
 import com.google.gson.Gson;
+import idea.bios.config.SiteConfig;
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.ControllerFacade;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
 import idea.bios.url.WebURL;
 import idea.bios.util.Schedule;
 import lombok.var;
@@ -123,8 +123,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
         Schedule.scheduleAtFixedRate(()-> {
             // TODO 分布式锁
             controllerFacade.addUrlsToQueue(seedFetcher.getSeedsFromPool(
-                    CrawlerSiteEnum.findCrawlerSiteEnumByClass(
-                            this.getClass()).getSourceId()));
+                    SiteConfig.getCurSite().getSourceId()));
         }, 1800);
     }
 

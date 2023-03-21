@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
-import idea.bios.crawler.entity.CrawlerStaticsBo;
+import idea.bios.entity.CrawlerStaticsBo;
 import idea.bios.datasource.mongodb.MongoDb;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtServer;

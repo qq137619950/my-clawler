@@ -184,6 +184,13 @@
             <artifactId>hutool-all</artifactId>
             <version>4.5.15</version>
         </dependency>
+
+        <!-- yaml -->
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.28</version>
+        </dependency>
     </dependencies>
     <build>
         <finalName>crawler</finalName>

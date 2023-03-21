@@ -1,21 +1,19 @@
 package idea.bios.crawler.my.starter;
 
+import idea.bios.config.SiteConfig;
 import idea.bios.crawler.CrawlConfig;
-import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.CommonController;
-import idea.bios.crawler.my.Config;
+import idea.bios.crawler.my.ConfigBuilder;
 
 import idea.bios.crawler.my.controller.ControllerFacade;
-import idea.bios.crawler.my.sites.CrawlerSiteEnum;
-import idea.bios.crawler.proxypool.ProxyPoolEnum;
+import idea.bios.crawler.proxypool.ProxyPoolFetcher;
 import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtConfig;
 import idea.bios.robotstxt.RobotsTxtServer;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
-
 import java.util.List;
 
 
@@ -43,9 +41,9 @@ public class CommonCrawlerStarter {
      */
     private static final String CRAW_STORAGE_FOLDER = "./crawl/root";
 
-    public CommonCrawlerStarter(CrawlConfig config) {
-        this.config = config;
-        this.robotsTxtConfig = Config.defaultRobotsBuilder();
+    public CommonCrawlerStarter() {
+        this.config = ConfigBuilder.defaultConfigBuilder();
+        this.robotsTxtConfig = ConfigBuilder.defaultRobotsBuilder();
     }
 
     /**
@@ -62,46 +60,30 @@ public class CommonCrawlerStarter {
 
     /**
      * 启动一个没有初始seed的crawler
-     * @param crawlerEnum   crawlerEnum
      * @throws Exception    Exception
      */
-    public void run(CrawlerSiteEnum crawlerEnum) throws Exception {
-        this.run(crawlerEnum, (offset, limit)-> null, 0, 0, 0);
+    public void run() throws Exception {
+        this.run((offset, limit)-> null, 0, 0, 0);
     }
 
     /**
      * 直接加载seed的crawler
-     * @param crawlerEnum   crawlerEnum
      * @param originalUrls  初始的seeds
      * @throws Exception    Exception
      */
-    public void run(CrawlerSiteEnum crawlerEnum,
-                    List<String> originalUrls) throws Exception {
-        if (crawlerEnum == null) {
-            log.error("crawlerEnum not pointed.");
-            return;
-        }
-        this.run(crawlerEnum, (offset, limit)-> originalUrls,
+    public void run(List<String> originalUrls) throws Exception {
+        this.run((offset, limit)-> originalUrls,
                 originalUrls.size(), 0, originalUrls.size());
     }
 
     /**
      * 爬虫crawler启动类（支持分页）
-     * @param crawlerEnum           crawler枚举
      * @param urlSourceBuilder      urlSourceBuilder
      */
-    public void run(CrawlerSiteEnum crawlerEnum,
-                    URLSourceBuilder urlSourceBuilder,
+    public void run(URLSourceBuilder urlSourceBuilder,
                     // 分页参数
                     int step, final int start, final int end) throws Exception {
-        // check
-        if (config.getPolitenessDelay() < crawlerEnum.getMinPolitenessDelay()) {
-            log.error("politenessDelay too short. {} must be bigger than {}",
-                    config.getPolitenessDelay(), crawlerEnum.getMinPolitenessDelay());
-            return;
-        }
-        config.setCrawlStorageFolder(CRAW_STORAGE_FOLDER);
-        config.setRespectNoIndex(false);
+
         // 不关闭进程，而是从其他途径不断加入seed
         config.setContinuousPutSeeds(true);
         // 先启动一个空队列的Controller
@@ -110,18 +92,19 @@ public class CommonCrawlerStarter {
         var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
         // controller.start是阻塞的，按循环次序进行
         controller = new CommonController(config, pageFetcher, robotsTxtServer,
-                crawlerEnum.getSourceId());
+                SiteConfig.getCurSite().getSourceId());
         // 阻塞
         if (!config.isContinuousPutSeeds()) {
             controller.putQueueFinish();
         }
         // 执行特定函数
-        AbsCommonCrawler crawlerTemp = crawlerEnum.getCrawlerClass()
-                .getDeclaredConstructor(ControllerFacade.class)
-                        .newInstance(this.controller);
+        Class<? extends AbsCommonCrawler> crawlerClass = (Class<? extends AbsCommonCrawler>)
+                Class.forName("idea.bios.jobs." + SiteConfig.getCurSite().getClassName());
+        AbsCommonCrawler crawlerTemp = crawlerClass.getDeclaredConstructor(ControllerFacade.class)
+                .newInstance(this.controller);
         crawlerTemp.prepareToRun();
         // 开启
-        controller.start(crawlerEnum.getCrawlerClass(), ProxyPoolEnum.values().length);
+        controller.start(crawlerClass, ProxyPoolFetcher.getCurProxyPoolSize());
 
         // 判断参数 遗留逻辑
         if (step <= 0 || start < 0 || start > end) {

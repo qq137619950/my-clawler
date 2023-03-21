@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import idea.bios.crawler.authentication.AuthInfo;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.Header;

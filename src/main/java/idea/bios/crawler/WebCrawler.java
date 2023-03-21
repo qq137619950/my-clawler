@@ -22,7 +22,7 @@ import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import idea.bios.crawler.entity.CrawlerStaticsBo;
+import idea.bios.entity.CrawlerStaticsBo;
 import idea.bios.crawler.exceptions.ContentFetchException;
 import idea.bios.crawler.exceptions.PageBiggerThanMaxSizeException;
 import idea.bios.crawler.exceptions.ParseException;

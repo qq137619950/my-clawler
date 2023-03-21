@@ -1,0 +1,36 @@
+sites:
+  - sourceId: com.baidu.bh.article.qa
+    className: com.bh.BaiduBhListCrawler
+    minPolitenessDelay: 200
+
+  - sourceId: com.dxy.dialog
+    className: com.dxy.DxyDialogCrawler
+    minPolitenessDelay: 1000
+
+  - sourceId: com.a.hospital.baike
+    className: com.ahospital.HospitalBaikeCrawler
+    minPolitenessDelay: 3000
+
+  - sourceId: com.mfk.qa
+    className: com.mfk.MkfQaCrawler
+    minPolitenessDelay: 200
+    run: true
+
+  - sourceId: com.yixue.baike
+    className: com.yixue.YixueCrawler
+    minPolitenessDelay: 1000
+
+  - sourceId: health120.dialog
+    className: net.health120.Health120DialogCrawler
+    minPolitenessDelay: 300
+
+  - sourceId: com.cyys.dialog
+    className: com.chunyuyisheng.CyysDialogCrawler
+    minPolitenessDelay: 500
+
+  - sourceId: com.haodf.disease.process.v2
+    className: com.haodf.HaodfBingchengDiseaseProCrawler
+    minPolitenessDelay: 200
+    dynParse: true
+    chromeDriver: true
+
