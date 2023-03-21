@@ -5,6 +5,7 @@ import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;
 import idea.bios.crawler.my.controller.ControllerFacade;
 import idea.bios.url.WebURL;
+import idea.bios.util.JsoupUtils;
 import idea.bios.util.Schedule;
 import lombok.var;
 import org.jsoup.Jsoup;
@@ -30,6 +31,12 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
     }
 
     @Override
+    protected boolean shouldParse(WebURL url) {
+        return Pattern.matches("https://www.miaoshou.net/[a-z]/[0-9A-Za-z]+.html",
+                        url.getURL());
+    }
+
+    @Override
     public void visit(Page page) {
         // Pattern
         final String pattern1 = "https://www.miaoshou.net/article/[0-9A-Za-z]+.html";
@@ -44,17 +51,21 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
             var result = new HashMap<String, Object>();
             Document doc = Jsoup.parseBodyFragment(html);
             result.put("title", Objects.requireNonNull(
-                    doc.select("#main > div.card.content-card > div > h2 > span").first()).text());
+                    doc.selectFirst("#main > div.card.content-card > div > h2 > span")).text());
             result.put("time", Objects.requireNonNull(
                     doc.select("#main > div.card.content-card > div.content-card__head > div > p").first()).text().substring(0, 10));
 
             // 内容
-            Elements contentList = doc.select("#main > div.card.content-card > div.content-card__body > div > div > div.article-section");
+            Elements contentList = doc.select(
+                    "#main > div.card.content-card > div.content-card__body > div > div > div.article-section");
             if (contentList == null || contentList.isEmpty()) {
-                return null;
+                result.put("content", JsoupUtils.getBeautifulText(doc.selectFirst(
+                        "#main > div.card.content-card > div.content-card__body > div > div > div.article-content")));
+
+            } else {
+                result.put("content", contentList.stream().map(Element::text)
+                        .collect(Collectors.joining("\n")));
             }
-            result.put("content", contentList.stream().map(Element::text)
-                    .collect(Collectors.joining("\n")));
             // 作者
             Element author = doc.select("#main > div.card.content-card > div > div > a").first();
             if (author != null) {
@@ -174,14 +185,17 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
     @Override
     public boolean shouldVisit(Page referringPage, WebURL url) {
         return !COMMON_FILTERS.matcher(url.getURL()).matches() &&
+//                Pattern.matches("https://www.miaoshou.net/[a-z]/[0-9A-Za-z]+.html",
+//                        url.getURL()) &&
                 url.getURL().startsWith("https://www.miaoshou.net");
     }
 
     @Override
     public void prepareToRun() {
-        controllerFacade.addUrlsToQueue(seedFetcher.getSeedsPlain("https://www.miaoshou.net/voice/77002.html",
-                "https://www.miaoshou.net/article/266640.html",
-                "https://www.miaoshou.net/question/RlG2KOwAQGn3vLnV.html"));
+        controllerFacade.addUrlsToQueue(seedFetcher.getSeedsPlain(
+                "https://www.miaoshou.net/voice/77002.html",
+                "https://www.miaoshou.net/article/rpoQ52LxoRX2EWZL.html",
+                "https://www.miaoshou.net/question/M4Npd3X4mV3m2x7w.html"));
         Schedule.crawlerScheduleAtFixedRate(()-> {
             var seeds = IntStream.range(0, 100).mapToObj(
                             i -> "https://www.miaoshou.net/article/" + (INT_FLAG.get() + i) + ".html")

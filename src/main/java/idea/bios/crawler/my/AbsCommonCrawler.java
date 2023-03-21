@@ -1,7 +1,6 @@
 package idea.bios.crawler.my;
 
 
-import com.drew.lang.annotations.NotNull;
 import com.mongodb.client.MongoCollection;
 import idea.bios.config.SiteConfig;
 import idea.bios.crawler.Page;
@@ -196,9 +195,13 @@ public abstract class AbsCommonCrawler extends WebCrawler {
      * @param switchByUrlRule  通过规则选择对应的db college
      * @param chMap     K: db collection name  V: 对应的方法，参考 this.getHtmlInfo(html)
      */
-    protected void multiPageVisit(@NotNull Page page,
+    protected void multiPageVisit(Page page,
                                   Function<String, String> switchByUrlRule,
                                   Map<String, Function<String, Map<String, ?>>> chMap) {
+        if (!shouldParse(page.getUrl())) {
+            log.info("this page should not be parse: {}", page.getUrl());
+            return;
+        }
         String url = page.getUrl().getURL();
         log.info("visit URL: {}", url);
         // 通过规则判断爬取类型
