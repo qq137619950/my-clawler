@@ -1,3 +1,7 @@
+# job所在包的位置
+jobRoot: "idea.bios.jobs"
+
+# sites
 sites:
   - sourceId: com.baidu.bh.article.qa
     className: com.bh.BaiduBhListCrawler

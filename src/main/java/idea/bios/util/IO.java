@@ -19,21 +19,21 @@ package idea.bios.util;
 
 import java.io.File;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * @author Yasser Ganjisaffar
  */
+@Slf4j
 public class IO {
-    private static final Logger logger = LoggerFactory.getLogger(IO.class);
-
     public static boolean deleteFolder(File folder) {
         return deleteFolderContents(folder) && folder.delete();
     }
 
     public static boolean deleteFolderContents(File folder) {
-        logger.debug("Deleting content of: " + folder.getAbsolutePath());
+        log.debug("Deleting content of: " + folder.getAbsolutePath());
         File[] files = folder.listFiles();
         for (File file : files) {
             if (file.isFile()) {

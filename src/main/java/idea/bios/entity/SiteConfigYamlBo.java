@@ -16,5 +16,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class SiteConfigYamlBo {
+    String jobRoot;
     List<SiteInfoBo> sites;
 }

@@ -18,6 +18,9 @@ public class SiteConfig {
     @Getter
     private static SiteInfoBo curSite = new SiteInfoBo();
 
+    @Getter
+    private static String jobRoot = "";
+
     static {
         // 读取配置
         try (InputStream in = CommonCrawlerStarter.class.getClassLoader()
@@ -27,6 +30,7 @@ public class SiteConfig {
             // 找到run的网站，开始任务
             curSite = configYamlBo.getSites().stream()
                     .filter(SiteInfoBo::isRun).findFirst().get();
+            jobRoot = configYamlBo.getJobRoot();
         } catch (Exception e) {
             log.warn("Exception", e);
         }

@@ -99,7 +99,7 @@ public class CommonCrawlerStarter {
         }
         // 执行特定函数
         Class<? extends AbsCommonCrawler> crawlerClass = (Class<? extends AbsCommonCrawler>)
-                Class.forName("idea.bios.jobs." + SiteConfig.getCurSite().getClassName());
+                Class.forName(SiteConfig.getJobRoot() + "." + SiteConfig.getCurSite().getClassName());
         AbsCommonCrawler crawlerTemp = crawlerClass.getDeclaredConstructor(ControllerFacade.class)
                 .newInstance(this.controller);
         crawlerTemp.prepareToRun();

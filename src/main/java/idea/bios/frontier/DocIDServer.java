@@ -31,7 +31,7 @@ import com.sleepycat.je.OperationStatus;
 
 /**
  * 文档ID Server
- * @author Yasser Ganjisaffar
+ * @author 86153
  */
 
 @Slf4j
@@ -75,7 +75,6 @@ public class DocIDServer {
             try {
                 var key = new DatabaseEntry(url.getBytes());
                 result = docIDsDB.get(null, key, value, null);
-
             } catch (RuntimeException e) {
                 if (config.isHaltOnError()) {
                     throw e;

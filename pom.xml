@@ -192,6 +192,56 @@
             <version>1.28</version>
         </dependency>
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>local private nexus releases</name>
+            <url>http://repo.team.idea.edu.cn/repository/maven-releases/</url>
+            <uniqueVersion>true</uniqueVersion>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <name>local private nexus snapshots</name>
+            <url>http://repo.team.idea.edu.cn/repository/maven-snapshots/</url>
+            <uniqueVersion>true</uniqueVersion>
+        </snapshotRepository>
+    </distributionManagement>
+    <repositories>
+        <repository>
+            <id>nexus</id>
+            <name>local private nexus public</name>
+            <url>http://repo.team.idea.edu.cn/repository/maven-public</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>nexus-releases</id>
+            <name>local private nexus releases</name>
+            <url>http://repo.team.idea.edu.cn/repository/maven-releases</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+        <repository>
+            <id>nexus-snapshots</id>
+            <name>local private nexus snapshots</name>
+            <url>http://repo.team.idea.edu.cn/repository/maven-snapshots</url>
+            <snapshots>
+                <updatePolicy>interval:10</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>nexus-central</id>
+            <name>local private nexus central</name>
+            <url>http://repo.team.idea.edu.cn/repository/maven-central</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+        </repository>
+    </repositories>
+
     <build>
         <finalName>crawler</finalName>
         <resources>
