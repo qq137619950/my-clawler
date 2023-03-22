@@ -196,6 +196,7 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
                 "https://www.miaoshou.net/voice/77002.html",
                 "https://www.miaoshou.net/article/rpoQ52LxoRX2EWZL.html",
                 "https://www.miaoshou.net/question/M4Npd3X4mV3m2x7w.html"));
+        INT_FLAG.addAndGet(10000);
         Schedule.crawlerScheduleAtFixedRate(()-> {
             var seeds = IntStream.range(0, 100).mapToObj(
                             i -> "https://www.miaoshou.net/article/" + (INT_FLAG.get() + i) + ".html")
@@ -205,6 +206,6 @@ public class MiaoshouMultiCrawler extends AbsCommonCrawler {
                     .collect(Collectors.toCollection(ArrayList::new));
             controllerFacade.addUrlsToQueue(seeds);
             INT_FLAG.addAndGet(100);
-        }, 2);
+        }, 2 * 60);
     }
 }
