@@ -6,3 +6,9 @@ driver:
 
 # 发送微信机器人的key
 wxKey: "58cce18d-9306-449c-b9f9-eab09d459597"
+
+# 结构化数据落地，当前选用mongodb
+mongodb:
+  host: 192.168.76.11
+  port: 37017
+  database: CRAWLER

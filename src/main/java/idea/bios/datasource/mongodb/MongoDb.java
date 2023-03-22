@@ -3,6 +3,7 @@ package idea.bios.datasource.mongodb;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
+import idea.bios.config.GlobalConfig;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 
@@ -11,14 +12,12 @@ import org.bson.Document;
  * @author 86153
  */
 public class MongoDb {
-    private static final String REMOTE_HOST = "192.168.76.11";
-    private static final int PORT = 37017;
-    private static final String DB_NAME = "CRAWLER";
+    private static final MongoClient MONGO_CLIENT = new MongoClient(
+            GlobalConfig.getMongoBo().getHost(), GlobalConfig.getMongoBo().getPort());
 
-    private static final MongoClient MONGO_CLIENT = new MongoClient(REMOTE_HOST, PORT);
-
-    private static final MongoCollection<Document> FILTER_COLLECTION
-            = MONGO_CLIENT.getDatabase(DB_NAME).getCollection("Tools.Filter");
+    private static final MongoCollection<Document> FILTER_COLLECTION = MONGO_CLIENT.getDatabase(
+            GlobalConfig.getMongoBo().getDatabase()).getCollection(
+                    "Tools.Filter");
 
     @Deprecated
     public static synchronized boolean filter(String url, boolean addToFilterList) {
@@ -47,7 +46,8 @@ public class MongoDb {
         if (colName == null || colName.isEmpty()) {
             return null;
         }
-        return MONGO_CLIENT.getDatabase(DB_NAME).getCollection(colName);
+        return MONGO_CLIENT.getDatabase(GlobalConfig.getMongoBo().getDatabase())
+                .getCollection(colName);
     }
 
 }

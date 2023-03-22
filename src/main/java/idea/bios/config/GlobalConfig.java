@@ -1,6 +1,7 @@
 package idea.bios.config;
 
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import idea.bios.entity.MongoBo;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
@@ -19,6 +20,9 @@ public class GlobalConfig {
     @Getter
     private static String wxKey;
 
+    @Getter
+    private static MongoBo mongoBo;
+
     static {
         // 读取配置
         try (InputStream in = CommonCrawlerStarter.class.getClassLoader()
@@ -26,6 +30,12 @@ public class GlobalConfig {
             // 加载 YAML 文件
             globalConfig = new Yaml().loadAs(in, Map.class);
             wxKey = (String) globalConfig.get("wxKey");
+            Map<String, Object> mongoMap = (Map<String, Object>) globalConfig.get("mongodb");
+            mongoBo = MongoBo.builder()
+                    .host((String) mongoMap.get("host"))
+                    .port((Integer) mongoMap.get("port"))
+                    .database((String) mongoMap.get("database"))
+                    .build();
         } catch (Exception e) {
             log.warn("Exception", e);
         }
