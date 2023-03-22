@@ -1,4 +1,4 @@
-package idea.bios.jobs.net.miaoshou;
+package idea.bios.jobs.example.net.miaoshou;
 
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;

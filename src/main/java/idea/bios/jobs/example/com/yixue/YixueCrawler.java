@@ -1,4 +1,4 @@
-package idea.bios.jobs.com.yixue;
+package idea.bios.jobs.example.com.yixue;
 
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;

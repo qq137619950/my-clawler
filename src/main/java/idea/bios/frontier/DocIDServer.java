@@ -31,6 +31,7 @@ import com.sleepycat.je.OperationStatus;
 
 /**
  * 文档ID Server
+ * TODO 使用roaring bitmap进行过滤，减少IO
  * @author 86153
  */
 

@@ -1,4 +1,4 @@
-package idea.bios.jobs.com.dxy;
+package idea.bios.jobs.example.com.dxy;
 
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;
@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**

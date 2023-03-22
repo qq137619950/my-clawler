@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import idea.bios.crawler.authentication.AuthInfo;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.Header;
@@ -196,7 +195,7 @@ public class CrawlConfig {
      * Wait this long before checking the status of the worker threads.
      */
     @Getter
-    private final int wxMessageDelaySeconds = 1800;
+    private final int wxMessageDelaySeconds = 3600;
 
     /**
      * Wait this long to verify the crawler threads are finished working.

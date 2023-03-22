@@ -1,4 +1,4 @@
-package idea.bios.jobs.com.ahospital;
+package idea.bios.jobs.example.com.ahospital;
 
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;

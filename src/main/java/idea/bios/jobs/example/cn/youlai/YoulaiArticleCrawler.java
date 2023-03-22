@@ -1,4 +1,4 @@
-package idea.bios.jobs.cn.youlai;
+package idea.bios.jobs.example.cn.youlai;
 
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;

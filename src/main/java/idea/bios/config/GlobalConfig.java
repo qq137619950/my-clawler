@@ -1,6 +1,7 @@
 package idea.bios.config;
 
 import idea.bios.crawler.my.starter.CommonCrawlerStarter;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.yaml.snakeyaml.Yaml;
 
@@ -15,6 +16,8 @@ import java.util.Map;
 @Slf4j
 public class GlobalConfig {
     private static Map<String, Object> globalConfig = null;
+    @Getter
+    private static String wxKey;
 
     static {
         // 读取配置
@@ -22,6 +25,7 @@ public class GlobalConfig {
                 .getResourceAsStream("yaml/global.yaml")) {
             // 加载 YAML 文件
             globalConfig = new Yaml().loadAs(in, Map.class);
+            wxKey = (String) globalConfig.get("wxKey");
         } catch (Exception e) {
             log.warn("Exception", e);
         }

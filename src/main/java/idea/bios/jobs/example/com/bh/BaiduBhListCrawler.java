@@ -1,4 +1,4 @@
-package idea.bios.jobs.com.bh;
+package idea.bios.jobs.example.com.bh;
 
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;

@@ -1,4 +1,4 @@
-package idea.bios.jobs.test;
+package idea.bios.jobs.example.test;
 
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;

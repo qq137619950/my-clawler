@@ -1,6 +1,7 @@
 package idea.bios.crawler.my.controller;
 
 import com.google.gson.Gson;
+import idea.bios.config.GlobalConfig;
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
@@ -237,7 +238,8 @@ public class CommonController extends CrawlController implements ControllerFacad
                 msgAllList.add(String.join("\n", msgList));
             });
             // 发送
-            final String wxUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=58cce18d-9306-449c-b9f9-eab09d459597";
+            final String wxUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
+                    + GlobalConfig.getWxKey();
             // wxUrl += "&debug=1";
             var reqMap = new HashMap<String, Object>();
             var textMap = new HashMap<String, String>();

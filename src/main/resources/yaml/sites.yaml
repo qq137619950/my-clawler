@@ -1,5 +1,5 @@
 # job所在包的位置
-jobRoot: "idea.bios.jobs"
+jobRoot: "idea.bios.jobs.example"
 
 # sites
 sites:

@@ -1,4 +1,4 @@
-package idea.bios.jobs.net.health120;
+package idea.bios.jobs.example.net.health120;
 
 import idea.bios.crawler.Page;
 import idea.bios.crawler.my.AbsCommonCrawler;

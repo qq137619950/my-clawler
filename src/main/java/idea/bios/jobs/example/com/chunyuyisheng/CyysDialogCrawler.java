@@ -1,4 +1,4 @@
-package idea.bios.jobs.com.chunyuyisheng;
+package idea.bios.jobs.example.com.chunyuyisheng;
 
 import com.google.gson.Gson;
 import idea.bios.crawler.Page;

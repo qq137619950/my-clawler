@@ -1,4 +1,4 @@
-package idea.bios.jobs.com.mfk;
+package idea.bios.jobs.example.com.mfk;
 
 import com.google.gson.Gson;
 import idea.bios.config.SiteConfig;
