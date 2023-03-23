@@ -19,6 +19,7 @@ package idea.bios.frontier;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
@@ -29,6 +30,7 @@ import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 import idea.bios.url.WebURL;
 import idea.bios.util.Util;
+import lombok.Getter;
 import lombok.var;
 
 
@@ -42,6 +44,12 @@ public class WorkQueues {
     private final boolean resumable;
 
     private final WebURLTupleBinding webURLBinding;
+
+    /**
+     * 使用AtomicLong进行计数
+     */
+    @Getter
+    protected AtomicLong queueSize;
 
     protected final Object mutex = new Object();
 
@@ -107,6 +115,7 @@ public class WorkQueues {
                 int matches = 0;
                 while ((matches < count) && (result == OperationStatus.SUCCESS)) {
                     cursor.delete();
+                    queueSize.decrementAndGet();
                     matches++;
                     result = cursor.getNext(key, value, null);
                 }
@@ -141,6 +150,7 @@ public class WorkQueues {
         webURLBinding.objectToEntry(url, value);
         Transaction txn = beginTransaction();
         urlsDB.put(txn, getDatabaseEntryKey(url), value);
+        queueSize.incrementAndGet();
         commit(txn);
     }
 

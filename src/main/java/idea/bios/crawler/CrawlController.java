@@ -127,7 +127,7 @@ public class CrawlController {
         URLCanonicalizer.setHaltOnError(config.isHaltOnError());
 
         boolean resumable = config.isResumableCrawling();
-
+        // 配置队列数据库
         var envConfig = new EnvironmentConfig();
         envConfig.setAllowCreate(true);
         envConfig.setTransactional(resumable);

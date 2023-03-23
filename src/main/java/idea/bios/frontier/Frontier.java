@@ -19,12 +19,14 @@ package idea.bios.frontier;
 
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.url.WebURL;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * @author Yasser Ganjisaffar
@@ -178,6 +180,10 @@ public class Frontier {
         }
     }
 
+    /**
+     * 需要扫描，比较耗时
+     * @return  length
+     */
     public long getQueueLength() {
         return workQueues.getLength();
     }

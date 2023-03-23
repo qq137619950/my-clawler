@@ -121,10 +121,10 @@ public class PageFetcher {
                 }
             }
         }
-
         Registry<ConnectionSocketFactory> connRegistry = connRegistryBuilder.build();
         connectionManager =
                 new SniPoolingHttpClientConnectionManager(connRegistry, config.getDnsResolver());
+        // 设定最大连接数
         connectionManager.setMaxTotal(config.getMaxTotalConnections());
         connectionManager.setDefaultMaxPerRoute(config.getMaxConnectionsPerHost());
 

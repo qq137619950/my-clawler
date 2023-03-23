@@ -25,10 +25,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -45,6 +42,8 @@ public class CommonController extends CrawlController implements ControllerFacad
      */
     private boolean isSchedulePutQueueFinish = false;
 
+    private static final Date START_TIME = new Date();
+
     @Getter
     private final String name;
 
@@ -52,10 +51,6 @@ public class CommonController extends CrawlController implements ControllerFacad
                             RobotsTxtServer robotsTxtServer, String name) throws Exception {
         super(config, pageFetcher, robotsTxtServer);
         this.name = name;
-    }
-
-    public boolean isSchedulePutQueueFinish() {
-        return isSchedulePutQueueFinish;
     }
 
     @Override
@@ -217,12 +212,23 @@ public class CommonController extends CrawlController implements ControllerFacad
         Schedule.wxSenderScheduleAtFixedRate(()-> {
             // TODO crawler失速后，移除该crawler
             var msgAllList = new ArrayList<String>();
+            // task基本信息
             msgAllList.add("【INFOS】");
             msgAllList.add("task name: " + this.name);
             msgAllList.add("work path: " + System.getProperty("user.dir"));
             msgAllList.add("work queue size: " + this.frontier.getQueueLength());
             msgAllList.add("collected size: " + new MongoDb()
                             .getCrawlerDataCollection(this.name).countDocuments());
+            msgAllList.add("start time: " + START_TIME.toString());
+            // runtime
+            msgAllList.add("【RUNTIME】");
+            Runtime runtime = Runtime.getRuntime();
+            long totalMemory = runtime.totalMemory() / (1024 * 1024);
+            long freeMemory = runtime.freeMemory() / (1024 * 1024);
+            long maxMemory = runtime.maxMemory() / (1024 * 1024);
+            msgAllList.add("Memory: total(" + totalMemory + "M), free:("
+                    + freeMemory + "M), max:(" + maxMemory + "M)");
+            // Crawlers
             msgAllList.add("\n【CRAWLERS】");
             crawlerPool.getCRAWLERS().forEach(crawler -> {
                 var msgList = new ArrayList<String>();
