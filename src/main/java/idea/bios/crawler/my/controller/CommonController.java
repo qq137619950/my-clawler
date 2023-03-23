@@ -43,6 +43,8 @@ public class CommonController extends CrawlController implements ControllerFacad
      */
     private boolean isSchedulePutQueueFinish = false;
 
+    private final Date startTime = new Date();
+
     @Getter
     private final String name;
 
@@ -219,7 +221,7 @@ public class CommonController extends CrawlController implements ControllerFacad
             msgAllList.add("collected size: " + new MongoDb()
                             .getCrawlerDataCollection(this.name).countDocuments());
             var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            msgAllList.add("start time: " +  formatter.format(new Date()));
+            msgAllList.add("start time: " +  formatter.format(startTime));
             // runtime
             msgAllList.add("【RUNTIME】");
             Runtime runtime = Runtime.getRuntime();
