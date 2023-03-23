@@ -49,7 +49,7 @@ public class WorkQueues {
      * 使用AtomicLong进行计数
      */
     @Getter
-    protected AtomicLong queueSize;
+    protected final AtomicLong queueSize = new AtomicLong(0);
 
     protected final Object mutex = new Object();
 
