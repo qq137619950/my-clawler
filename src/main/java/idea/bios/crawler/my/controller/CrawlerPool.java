@@ -1,6 +1,7 @@
 package idea.bios.crawler.my.controller;
 
 import idea.bios.crawler.WebCrawler;
+import idea.bios.util.selenium.SeleniumBuilder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
@@ -84,6 +85,17 @@ public class CrawlerPool<T extends WebCrawler> {
             CRAWLERS.add(index, crawler);
         } catch (Exception e) {
             log.warn("rebuild crawler exception occurs.", e);
+        }
+    }
+
+    public synchronized void removeCrawler(T crawler) {
+        if (CRAWLERS.contains(crawler)) {
+            int index = CRAWLERS.indexOf(crawler);
+            CRAWLERS.remove(index);
+            THREADS.remove(index);
+            crawler.onBeforeExit();
+            SeleniumBuilder.shutdownChromeDriver(crawler.getChromeDriver());
+            SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
         }
     }
 

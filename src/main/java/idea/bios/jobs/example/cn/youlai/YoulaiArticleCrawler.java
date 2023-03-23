@@ -92,12 +92,12 @@ public class YoulaiArticleCrawler extends AbsCommonCrawler {
     public void prepareToRun() {
         Schedule.crawlerScheduleAtFixedRate(()-> {
             // 直接拼接
-            var seeds = IntStream.range(0, 100).mapToObj(
+            List<String> seeds = IntStream.range(0, 100).mapToObj(
                     i -> "https://www.youlai.cn/yyk/article/" + (INT_FLAG.get() + i) + ".html")
                     .collect(Collectors.toCollection(ArrayList::new));
             controllerFacade.addUrlsToQueue(seeds);
             INT_FLAG.addAndGet(100);
-        }, 2);
+        }, 10);
     }
 
     private static List<String> getSpecialImgSrc(Element element) {

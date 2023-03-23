@@ -230,6 +230,7 @@ public class CommonController extends CrawlController implements ControllerFacad
                     + freeMemory + "M), max:(" + maxMemory + "M)");
             // Crawlers
             msgAllList.add("\n【CRAWLERS】");
+            var readyToRemove = new ArrayList<T>();
             crawlerPool.getCRAWLERS().forEach(crawler -> {
                 var msgList = new ArrayList<String>();
                 msgList.add("----------------------------");
@@ -237,12 +238,22 @@ public class CommonController extends CrawlController implements ControllerFacad
                 msgList.add("[" + crawler.getMyThread().getName() + "]");
                 msgList.add("-proxy: " + crawler.getProxyInfo());
                 msgList.add("-num of visited: " + staticsBo.getCurVisitPageNum());
+                staticsBo.setCurTimeStamp((int) (System.currentTimeMillis() / 100));
+                int interval = staticsBo.getLastTimeStamp() == 0 ? 60 :
+                        config.getWxMessageDelaySeconds();
                 msgList.add("-rate: " +
                         (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
-                                / config.getWxMessageDelaySeconds() + "/ min");
+                                / interval + "/ min");
                 staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());
+                staticsBo.setLastTimeStamp(staticsBo.getCurTimeStamp());
+                // 如果第一分钟检测没有速率，则关闭此crawler
+                if (staticsBo.getCurVisitPageNum() == 0) {
+                    readyToRemove.add(crawler);
+                    msgList.add("【attention】this bad crawler has dropped.");
+                }
                 msgAllList.add(String.join("\n", msgList));
             });
+            readyToRemove.forEach(crawlerPool::removeCrawler);
             // 发送
             final String wxUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
                     + GlobalConfig.getWxKey();

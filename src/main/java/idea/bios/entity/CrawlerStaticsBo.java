@@ -17,6 +17,9 @@ public class CrawlerStaticsBo {
     private int lastVisitPageNum;
     private int curVisitPageNum;
 
+    private int lastTimeStamp;
+    private int curTimeStamp;
+
     public void increaseVisitNum() {
         curVisitPageNum++;
     }
