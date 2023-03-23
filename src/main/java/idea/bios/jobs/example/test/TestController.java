@@ -23,10 +23,9 @@ public class TestController {
         config.setProxyPort(43128);
 
         // Instantiate the controller for this crawl.
-        var pageFetcher = new PageFetcher(config);
         var robotsTxtConfig = new RobotsTxtConfig();
-        var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
-        var controller = new CrawlController(config, pageFetcher, robotsTxtServer);
+        var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, new PageFetcher(config));
+        var controller = new CrawlController(config, robotsTxtServer);
 
         // For each crawl, you need to add some seed urls. These are the first
         // URLs that are fetched and then the crawler starts following links

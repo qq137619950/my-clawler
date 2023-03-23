@@ -47,18 +47,6 @@ public class CommonCrawlerStarter {
     }
 
     /**
-     * 在执行的过程中，有需要写入队列的
-     * @param pageUrls  urls
-     */
-    public void addUrlsToQueue(List<String> pageUrls) {
-        if (controller == null || pageUrls == null || pageUrls.isEmpty()) {
-            log.warn("add nothing to queue.");
-            return;
-        }
-        controller.addUrlsToQueue(pageUrls);
-    }
-
-    /**
      * 启动一个没有初始seed的crawler
      * @throws Exception    Exception
      */
@@ -88,10 +76,9 @@ public class CommonCrawlerStarter {
         config.setContinuousPutSeeds(true);
         // 先启动一个空队列的Controller
         // 将pageFetcher放在crawler线程中
-        var pageFetcher = new PageFetcher(config);
-        var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, pageFetcher);
+        var robotsTxtServer = new RobotsTxtServer(robotsTxtConfig, new PageFetcher(config));
         // controller.start是阻塞的，按循环次序进行
-        controller = new CommonController(config, pageFetcher, robotsTxtServer,
+        controller = new CommonController(config, robotsTxtServer,
                 SiteConfig.getCurSite().getSourceId());
         // 阻塞
         if (!config.isContinuousPutSeeds()) {

@@ -82,7 +82,8 @@ public class WebCrawler implements Runnable {
     /**
      * The fetcher that is used by this crawler instance to fetch the content of pages from the web.
      */
-    private PageFetcher pageFetcher;
+    @Getter
+    protected PageFetcher pageFetcher;
 
     /**
      * The RobotsTxtServer instance that is used by this crawler instance to

@@ -1,6 +1,6 @@
 proxy:
   - host: localhost
-    port: 0
+    port: 80
 
   - host: 47.106.191.148
     port: 43128

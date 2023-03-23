@@ -26,7 +26,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import idea.bios.fetcher.PageFetcher;
 import idea.bios.frontier.DocIDServer;
 import idea.bios.frontier.Frontier;
 import idea.bios.parser.Parser;
@@ -53,7 +52,8 @@ import lombok.var;
 @Slf4j
 public class CrawlController {
     @Getter
-    private final CrawlConfig config;
+    protected final CrawlConfig config;
+
     private static final Executor MONITOR_THREAD_EXECUTOR = Executors.newFixedThreadPool(5);
     /**
      * The 'customData' object can be used for passing custom crawl-related
@@ -81,9 +81,6 @@ public class CrawlController {
      */
     @Getter
     protected boolean shuttingDown;
-
-    @Getter @Setter
-    protected PageFetcher pageFetcher;
     @Getter @Setter
     protected RobotsTxtServer robotstxtServer;
     @Getter @Setter
@@ -98,17 +95,16 @@ public class CrawlController {
 
     protected Parser parser;
 
-    public CrawlController(CrawlConfig config, PageFetcher pageFetcher,
-                           RobotsTxtServer robotstxtServer) throws Exception {
-        this(config, pageFetcher, null, robotstxtServer, null);
+    public CrawlController(CrawlConfig config, RobotsTxtServer robotstxtServer) throws Exception {
+        this(config, null, robotstxtServer, null);
     }
 
-    public CrawlController(CrawlConfig config, PageFetcher pageFetcher,
-                           RobotsTxtServer robotstxtServer, TLDList tldList) throws Exception {
-        this(config, pageFetcher, null, robotstxtServer, tldList);
+    public CrawlController(CrawlConfig config, RobotsTxtServer robotstxtServer,
+                           TLDList tldList) throws Exception {
+        this(config, null, robotstxtServer, tldList);
     }
 
-    public CrawlController(CrawlConfig config, PageFetcher pageFetcher, Parser parser,
+    public CrawlController(CrawlConfig config, Parser parser,
                            RobotsTxtServer robotstxtServer, TLDList tldList) throws Exception {
         config.validate();
         this.config = config;
@@ -153,7 +149,6 @@ public class CrawlController {
         docIdServer = new DocIDServer(env, config);
         frontier = new Frontier(env, config);
 
-        this.pageFetcher = pageFetcher;
         this.parser = parser == null ? new Parser(config, tldList) : parser;
         this.robotstxtServer = robotstxtServer;
         finished = false;
@@ -373,13 +368,13 @@ public class CrawlController {
                                     for (T crawler : crawlers) {
                                         crawler.onBeforeExit();
                                         crawlersLocalData.add(crawler.getMyLocalData());
+                                        crawler.getPageFetcher().shutDown();
                                     }
                                     log.info("Waiting for {} seconds before final clean up...",
                                             config.getCleanupDelaySeconds());
                                     sleep(config.getCleanupDelaySeconds());
                                     frontier.close();
                                     docIdServer.close();
-                                    pageFetcher.shutDown();
                                     finished = true;
                                     waitingLock.notifyAll();
                                     env.close();
@@ -395,7 +390,6 @@ public class CrawlController {
                             frontier.finish();
                             frontier.close();
                             docIdServer.close();
-                            pageFetcher.shutDown();
                             waitingLock.notifyAll();
                             env.close();
                         }
@@ -602,7 +596,6 @@ public class CrawlController {
     public void shutdown() {
         log.info("Shutting down...");
         this.shuttingDown = true;
-        pageFetcher.shutDown();
         frontier.finish();
     }
     protected synchronized Throwable getError() {

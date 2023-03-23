@@ -48,9 +48,9 @@ public class CommonController extends CrawlController implements ControllerFacad
     @Getter
     private final String name;
 
-    public CommonController(CrawlConfig config, PageFetcher pageFetcher,
-                            RobotsTxtServer robotsTxtServer, String name) throws Exception {
-        super(config, pageFetcher, robotsTxtServer);
+    public CommonController(CrawlConfig config, RobotsTxtServer robotsTxtServer,
+                            String name) throws Exception {
+        super(config, robotsTxtServer);
         this.name = name;
     }
 
@@ -62,6 +62,11 @@ public class CommonController extends CrawlController implements ControllerFacad
        }
         log.info("put queue finished!");
         isSchedulePutQueueFinish = true;
+    }
+
+    @Override
+    public CrawlConfig getCrawlConfig() {
+        return super.config;
     }
 
     /**
@@ -139,7 +144,6 @@ public class CommonController extends CrawlController implements ControllerFacad
      */
     @Override
     public <T extends WebCrawler> void start(Class<T> clazz, final int numberOfCrawlers) {
-        final CrawlConfig config = super.getConfig();
         // 初始化crawler池
         var crawlerPool = new CrawlerPool<T>();
         crawlerPool.init(numberOfCrawlers, clazz, this);
@@ -195,7 +199,6 @@ public class CommonController extends CrawlController implements ControllerFacad
                             sleep(config.getCleanupDelaySeconds());
                             frontier.close();
                             docIdServer.close();
-                            pageFetcher.shutDown();
                             finished = true;
                             waitingLock.notifyAll();
                             env.close();

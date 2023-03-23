@@ -1,5 +1,7 @@
 package idea.bios.crawler.my.controller;
 
+import idea.bios.crawler.CrawlConfig;
+
 import java.util.List;
 
 /**
@@ -18,5 +20,9 @@ public interface ControllerFacade {
      */
     void putQueueFinish();
 
-
+    /**
+     * 获取config
+     * @return  CrawlConfig
+     */
+    CrawlConfig getCrawlConfig();
 }
