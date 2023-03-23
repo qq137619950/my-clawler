@@ -25,6 +25,7 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
@@ -41,8 +42,6 @@ public class CommonController extends CrawlController implements ControllerFacad
      * 计划中的url是否插入完毕
      */
     private boolean isSchedulePutQueueFinish = false;
-
-    private static final Date START_TIME = new Date();
 
     @Getter
     private final String name;
@@ -219,7 +218,8 @@ public class CommonController extends CrawlController implements ControllerFacad
             msgAllList.add("work queue size: " + this.frontier.getQueueLength());
             msgAllList.add("collected size: " + new MongoDb()
                             .getCrawlerDataCollection(this.name).countDocuments());
-            msgAllList.add("start time: " + START_TIME.toString());
+            var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            msgAllList.add("start time: " +  formatter.format(new Date()));
             // runtime
             msgAllList.add("【RUNTIME】");
             Runtime runtime = Runtime.getRuntime();
