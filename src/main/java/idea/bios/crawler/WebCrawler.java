@@ -65,8 +65,7 @@ public class WebCrawler implements Runnable {
      * reference to the controller can be used for getting configurations of the
      * current crawl or adding new seeds during runtime.
      */
-    @Getter
-    protected CrawlController myController;
+    private CrawlController myController;
 
     /**
      * The thread within which this crawler instance is running.
