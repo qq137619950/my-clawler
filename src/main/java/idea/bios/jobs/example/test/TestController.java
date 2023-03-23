@@ -13,7 +13,7 @@ import lombok.var;
  */
 public class TestController {
     public static void main(String[] args) throws Exception {
-        String crawlStorageFolder = "/data/crawl/root";
+        String crawlStorageFolder = "./data/crawl/root";
         int numberOfCrawlers = 3;
 
         var config = new CrawlConfig();

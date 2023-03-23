@@ -12,7 +12,7 @@ import java.util.HashSet;
  * @author 86153
  */
 public class ConfigBuilder {
-    private static final String CRAW_STORAGE_FOLDER = "/data/crawl/root";
+    private static final String CRAW_STORAGE_FOLDER = "./data/crawl/root";
 
     public static RobotsTxtConfig defaultRobotsBuilder() {
         var robotsTxtConfig = new RobotsTxtConfig();
