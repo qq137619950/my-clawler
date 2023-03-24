@@ -289,11 +289,11 @@ public class CommonController extends CrawlController implements ControllerFacad
         CloseableHttpResponse response = null;
         try {
             CloseableHttpClient client = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(wxUrl);
+            var httpPost = new HttpPost(wxUrl);
             // 设置请求头信息
             httpPost.setHeader("Content-Type",
                     "application/json; charset=utf-8");
-            StringEntity entity = new StringEntity(
+            var entity = new StringEntity(
                     new Gson().toJson(reqMap), ContentType.APPLICATION_JSON);
             httpPost.setEntity(entity);
             response = client.execute(httpPost);
@@ -301,7 +301,9 @@ public class CommonController extends CrawlController implements ControllerFacad
             log.warn("Exception", e);
         } finally {
             try {
-                response.close();
+                if (response != null) {
+                    response.close();
+                }
             } catch (IOException e) {
                 log.warn("IOException", e);
             }
