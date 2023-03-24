@@ -31,6 +31,10 @@ sites:
     className: com.chunyuyisheng.CyysDialogCrawler
     minPolitenessDelay: 500
 
+  - sourceId: com.cyys.article
+    className: com.chunyuyisheng.CyysArticleCrawler
+    minPolitenessDelay: 300
+
   - sourceId: com.haodf.disease.process.v2
     className: com.haodf.HaodfBingchengDiseaseProCrawler
     minPolitenessDelay: 200

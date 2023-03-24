@@ -102,7 +102,7 @@ public class HospitalBaikeCrawler extends AbsCommonCrawler {
                     term -> "http://www.a-hospital.com/w/" + term);
             if (!sUrls.isEmpty()) {
                 controllerFacade.addUrlsToQueue(sUrls);
-            }}, 5);
+            }}, 1);
     }
 
     public static void main(String[] args) throws IOException {

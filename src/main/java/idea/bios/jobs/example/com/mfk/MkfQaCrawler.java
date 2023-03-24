@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
  * @author 86153
  */
 public class MkfQaCrawler extends AbsCommonCrawler {
-    private static final AtomicInteger START_INT = new AtomicInteger(5000000);
-
     public MkfQaCrawler(ControllerFacade controllerFacade) {
         super(controllerFacade);
     }
@@ -105,7 +103,7 @@ public class MkfQaCrawler extends AbsCommonCrawler {
         Schedule.crawlerScheduleAtFixedRateMi(()-> {
             // 直接拼接
             var seeds = new ArrayList<String>();
-            seeds.add("https://www.mfk.com/ask/" + START_INT.incrementAndGet() + ".shtml");
+            seeds.add("https://www.mfk.com/ask/" + INT_FLAG.incrementAndGet() + ".shtml");
             controllerFacade.addUrlsToQueue(seeds);
         }, 100);
 //        Schedule.scheduleAtFixedRate(()-> {
