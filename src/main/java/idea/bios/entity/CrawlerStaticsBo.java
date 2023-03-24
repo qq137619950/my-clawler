@@ -20,6 +20,9 @@ public class CrawlerStaticsBo {
     private int lastTimeStamp;
     private int curTimeStamp;
 
+    /**
+     * 线程安全increase
+     */
     public void increaseVisitNum() {
         curVisitPageNum++;
     }

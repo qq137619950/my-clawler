@@ -7,7 +7,6 @@ import idea.bios.crawler.CrawlController;
 import idea.bios.crawler.WebCrawler;
 import idea.bios.entity.CrawlerStaticsBo;
 import idea.bios.datasource.mongodb.MongoDb;
-import idea.bios.fetcher.PageFetcher;
 import idea.bios.robotstxt.RobotsTxtServer;
 import idea.bios.url.URLCanonicalizer;
 import idea.bios.url.WebURL;
@@ -28,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -213,82 +213,98 @@ public class CommonController extends CrawlController implements ControllerFacad
             log.error("Error happened", e);
         }
         // 开启一个频率为15 min的schedule，用来观测和处理各个线程的运行情况
+        var lastDataSetSum = new AtomicInteger();
         Schedule.wxSenderScheduleAtFixedRate(()-> {
             // TODO crawler失速后，移除该crawler
             var msgAllList = new ArrayList<String>();
-            // task基本信息
-            msgAllList.add("【INFOS】");
-            msgAllList.add("task name: " + this.name);
-            msgAllList.add("work path: " + System.getProperty("user.dir"));
-            msgAllList.add("work queue size: " + this.frontier.getQueueLength());
-            msgAllList.add("collected size: " + new MongoDb()
-                            .getCrawlerDataCollection(this.name).countDocuments());
-            var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            msgAllList.add("start time: " +  formatter.format(startTime));
-            // runtime
-            msgAllList.add("【RUNTIME】");
-            Runtime runtime = Runtime.getRuntime();
-            long totalMemory = runtime.totalMemory() / (1024 * 1024);
-            long freeMemory = runtime.freeMemory() / (1024 * 1024);
-            long maxMemory = runtime.maxMemory() / (1024 * 1024);
-            msgAllList.add("Memory: total(" + totalMemory + "M), free:("
-                    + freeMemory + "M), max:(" + maxMemory + "M)");
-            // Crawlers
-            msgAllList.add("\n【CRAWLERS】");
-            var readyToRemove = new ArrayList<T>();
-            crawlerPool.getCRAWLERS().forEach(crawler -> {
-                var msgList = new ArrayList<String>();
-                msgList.add("----------------------------");
-                CrawlerStaticsBo staticsBo = crawler.getStaticsBo();
-                msgList.add("[" + crawler.getMyThread().getName() + "]");
-                msgList.add("-proxy: " + crawler.getProxyInfo());
-                msgList.add("-num of visited: " + staticsBo.getCurVisitPageNum());
-                staticsBo.setCurTimeStamp((int) (System.currentTimeMillis() / 100));
-                int interval = staticsBo.getLastTimeStamp() == 0 ? 60 :
-                        config.getWxMessageDelaySeconds();
-                msgList.add("-rate: " +
-                        (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
-                                / interval + "/ min");
-                staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());
-                staticsBo.setLastTimeStamp(staticsBo.getCurTimeStamp());
-                // 如果第一分钟检测没有速率，则关闭此crawler
-                if (staticsBo.getCurVisitPageNum() == 0) {
-                    readyToRemove.add(crawler);
-                    msgList.add("【attention】this bad crawler has dropped.");
-                }
-                msgAllList.add(String.join("\n", msgList));
-            });
-            readyToRemove.forEach(crawlerPool::removeCrawler);
-            // 发送
-            final String wxUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
-                    + GlobalConfig.getWxKey();
-            // wxUrl += "&debug=1";
-            var reqMap = new HashMap<String, Object>();
-            var textMap = new HashMap<String, String>();
-            textMap.put("content", String.join("\n", msgAllList));
-            reqMap.put("msgtype", "text");
-            reqMap.put("text", textMap);
-            CloseableHttpClient client = HttpClients.createDefault();
-            HttpPost httpPost = new HttpPost(wxUrl);
-            // 设置请求头信息
-            httpPost.setHeader("Content-Type", "application/json; charset=utf-8");
-            // 设置请求体参数
-            CloseableHttpResponse response = null;
             try {
-                StringEntity entity = new StringEntity(
-                        new Gson().toJson(reqMap), ContentType.APPLICATION_JSON);
-                httpPost.setEntity(entity);
-                response = client.execute(httpPost);
+                // task基本信息
+                msgAllList.add("【INFOS】");
+                msgAllList.add("task name: " + this.name);
+                msgAllList.add("work path: " + System.getProperty("user.dir"));
+                msgAllList.add("work queue size: " + this.frontier.getQueueLength());
+                int curDataSetSum = (int) new MongoDb()
+                        .getCrawlerDataCollection(this.name).countDocuments();
+                msgAllList.add("collected size: " + curDataSetSum + " (+" +
+                        (curDataSetSum - lastDataSetSum.get()) + ")");
+                lastDataSetSum.set(curDataSetSum);
+                var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                msgAllList.add("start time: " +  formatter.format(startTime));
+                // runtime
+                msgAllList.add("【RUNTIME】");
+                Runtime runtime = Runtime.getRuntime();
+                long totalMemory = runtime.totalMemory() / (1024 * 1024);
+                long freeMemory = runtime.freeMemory() / (1024 * 1024);
+                long maxMemory = runtime.maxMemory() / (1024 * 1024);
+                msgAllList.add("Memory: total(" + totalMemory + "M), free:("
+                        + freeMemory + "M), max:(" + maxMemory + "M)");
+                // Crawlers
+                msgAllList.add("\n【CRAWLERS】");
+                var readyToRemove = new ArrayList<T>();
+                crawlerPool.getCRAWLERS().forEach(crawler -> {
+                    var msgList = new ArrayList<String>();
+                    msgList.add("----------------------------");
+                    CrawlerStaticsBo staticsBo = crawler.getStaticsBo();
+                    msgList.add("[" + crawler.getMyThread().getName() + "]");
+                    msgList.add("-proxy: " + crawler.getProxyInfo());
+                    msgList.add("-num of visited: " + staticsBo.getCurVisitPageNum());
+                    staticsBo.setCurTimeStamp((int) (System.currentTimeMillis() / 100));
+                    int interval = staticsBo.getLastTimeStamp() == 0 ? 60 :
+                            config.getWxMessageDelaySeconds();
+                    msgList.add("-rate: " +
+                            (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
+                                    / interval + "/ min");
+                    staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());
+                    staticsBo.setLastTimeStamp(staticsBo.getCurTimeStamp());
+                    // 如果第一分钟检测没有速率，则关闭此crawler
+                    if (staticsBo.getCurVisitPageNum() == 0) {
+                        readyToRemove.add(crawler);
+                        msgList.add("【attention】this bad crawler has dropped.");
+                    }
+                    msgAllList.add(String.join("\n", msgList));
+                });
+                readyToRemove.forEach(crawlerPool::removeCrawler);
             } catch (Exception e) {
-                log.warn("Exception", e);
-            } finally {
-                try {
-                    response.close();
-                } catch (IOException e) {
-                    log.warn("IOException", e);
-                }
+                log.warn("Exception occurs.", e);
+                msgAllList.add("[" + this.name + "] Exception occurs: " + e.getMessage());
             }
+            // 发送
+            sendWxMessage(msgAllList);
         }, config.getWxMessageDelaySeconds());
     }
 
+    /**
+     * send weixin message
+     * @param msgAllList    msgAllList
+     */
+    private void sendWxMessage(List<String> msgAllList) {
+        final String wxUrl = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key="
+                + GlobalConfig.getWxKey();
+        // wxUrl += "&debug=1";
+        var reqMap = new HashMap<String, Object>();
+        var textMap = new HashMap<String, String>();
+        textMap.put("content", String.join("\n", msgAllList));
+        reqMap.put("msgtype", "text");
+        reqMap.put("text", textMap);
+        CloseableHttpResponse response = null;
+        try {
+            CloseableHttpClient client = HttpClients.createDefault();
+            HttpPost httpPost = new HttpPost(wxUrl);
+            // 设置请求头信息
+            httpPost.setHeader("Content-Type",
+                    "application/json; charset=utf-8");
+            StringEntity entity = new StringEntity(
+                    new Gson().toJson(reqMap), ContentType.APPLICATION_JSON);
+            httpPost.setEntity(entity);
+            response = client.execute(httpPost);
+        } catch (Exception e) {
+            log.warn("Exception", e);
+        } finally {
+            try {
+                response.close();
+            } catch (IOException e) {
+                log.warn("IOException", e);
+            }
+        }
+    }
 }
