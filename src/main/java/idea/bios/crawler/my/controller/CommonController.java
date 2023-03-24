@@ -154,7 +154,7 @@ public class CommonController extends CrawlController implements ControllerFacad
             Schedule.controllerScheduleAtFixedRate(()-> {
                 try {
                     synchronized (waitingLock) {
-                        AtomicBoolean someoneIsWorking = new AtomicBoolean(false);
+                        var someoneIsWorking = new AtomicBoolean(false);
                         IntStream.range(0, crawlerPool.getTHREADS().size()).forEach(i -> {
                             // 线程不存活
                             if (!crawlerPool.getTHREADS().get(i).isAlive()) {
@@ -215,7 +215,6 @@ public class CommonController extends CrawlController implements ControllerFacad
         // 开启一个频率为15 min的schedule，用来观测和处理各个线程的运行情况
         var lastDataSetSum = new AtomicInteger();
         Schedule.wxSenderScheduleAtFixedRate(()-> {
-            // TODO crawler失速后，移除该crawler
             var msgAllList = new ArrayList<String>();
             try {
                 // task基本信息

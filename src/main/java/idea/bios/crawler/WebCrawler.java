@@ -18,6 +18,7 @@
 package idea.bios.crawler;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,6 +46,8 @@ import org.apache.http.HttpStatus;
 import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriver;
+
+import javax.net.ssl.SSLException;
 
 
 /**
@@ -638,7 +641,7 @@ public class WebCrawler implements Runnable {
             onPageBiggerThanMaxSize(curURL.getURL(), e.getPageSize());
         } catch (ParseException pe) {
             onParseError(curURL, pe);
-        } catch (ContentFetchException | SocketTimeoutException cfe) {
+        } catch (ContentFetchException | SocketException | SSLException cfe) {
             onContentFetchError(curURL);
             onContentFetchError(page);
         } catch (NotAllowedContentException nace) {
