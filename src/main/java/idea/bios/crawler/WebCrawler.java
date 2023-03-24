@@ -285,6 +285,12 @@ public class WebCrawler implements Runnable {
         log.warn("Can't fetch content of: {}", webUrl.getURL());
         // Do nothing by default (except basic logging)
         // Sub-classed can override this to add their custom functionality
+        // 挂起一下
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            log.warn("InterruptedException: ", e);
+        }
     }
 
     /**
@@ -313,6 +319,12 @@ public class WebCrawler implements Runnable {
             // Do nothing by default (except basic logging)
             // Sub-classed can override this to add their custom functionality
         }
+        // 挂起
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            log.warn("InterruptedException: ", ex);
+        }
     }
 
     /**
@@ -335,6 +347,12 @@ public class WebCrawler implements Runnable {
         log.warn("Parsing error of: {}", webUrl.getURL());
         // Do nothing by default (Except logging)
         // Sub-classed can override this to add their custom functionality
+        // 挂起
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.warn("InterruptedException: ", e);
+        }
     }
 
     /**
