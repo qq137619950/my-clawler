@@ -123,12 +123,13 @@ public class CrawlController {
         URLCanonicalizer.setHaltOnError(config.isHaltOnError());
 
         boolean resumable = config.isResumableCrawling();
+
         // 配置队列数据库
-        var envConfig = new EnvironmentConfig();
-        envConfig.setAllowCreate(true);
-        envConfig.setTransactional(resumable);
-        envConfig.setLocking(resumable);
-        envConfig.setLockTimeout(config.getDbLockTimeout(), TimeUnit.MILLISECONDS);
+        EnvironmentConfig envConfig = new EnvironmentConfig()
+                .setAllowCreate(true)
+                .setTransactional(resumable)
+                .setLocking(resumable)
+                .setLockTimeout(config.getDbLockTimeout(), TimeUnit.MILLISECONDS);
 
         var envHome = new File(config.getCrawlStorageFolder() + "/frontier");
         if (!envHome.exists()) {

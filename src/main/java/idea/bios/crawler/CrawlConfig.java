@@ -142,17 +142,17 @@ public class CrawlConfig {
     /**
      * Maximum total connections
      */
-    private int maxTotalConnections = 100;
+    private int maxTotalConnections = 200;
 
     /**
      * Socket timeout in milliseconds
      */
-    private int socketTimeout = 20000;
+    private int socketTimeout = 10000;
 
     /**
      * Connection timeout in milliseconds
      */
-    private int connectionTimeout = 30000;
+    private int connectionTimeout = 15000;
 
     /**
      * Max number of outgoing links which are processed from a page
