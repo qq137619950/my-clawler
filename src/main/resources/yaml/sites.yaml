@@ -52,6 +52,10 @@ sites:
   - sourceId: cn.com.familydoctor.article
     className: com.familydoctor.FamilyDoctorCrawler
     minPolitenessDelay: 300
+
+  - sourceId: net.miaoshou.dialog
+    className: net.miaoshou.MiaoshouDialogCrawler
+    minPolitenessDelay: 500
     run: true
 
 
