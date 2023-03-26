@@ -166,6 +166,7 @@ public class CommonController extends CrawlController implements ControllerFacad
                             }
                         });
                         // 如果没有在执行，而且所有数据已经进入队列，则关闭程序
+                        // TODO 评估是否有必要
                         if (!someoneIsWorking.get() && isSchedulePutQueueFinish) {
                             log.info("任务可能已经完成，等待几秒再进行第一次判断");
                             sleep(config.getThreadShutdownDelaySeconds());
@@ -186,22 +187,8 @@ public class CommonController extends CrawlController implements ControllerFacad
                                 return;
                             }
                             // 此时确定已经完毕，关闭系统
-                            log.info("任务可能已经完成，系统即将关闭");
-                            frontier.finish();
-                            crawlerPool.getCRAWLERS().forEach(crawler -> {
-                                crawler.onBeforeExit();
-                                crawlersLocalData.add(crawler.getMyLocalData());
-                                SeleniumBuilder.shutdownChromeDriver(crawler.getChromeDriver());
-                                SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
-                            });
-                            log.info("Waiting for {} seconds before final clean up...",
-                                    config.getCleanupDelaySeconds());
-                            sleep(config.getCleanupDelaySeconds());
-                            frontier.close();
-                            docIdServer.close();
-                            finished = true;
+                            autoShutdown(crawlerPool);
                             waitingLock.notifyAll();
-                            env.close();
                         }
                     }
                 } catch (Exception e) {
@@ -216,6 +203,7 @@ public class CommonController extends CrawlController implements ControllerFacad
         var lastDataSetSum = new AtomicInteger();
         Schedule.wxSenderScheduleAtFixedRate(()-> {
             var msgAllList = new ArrayList<String>();
+            var visitSum = new AtomicInteger();
             try {
                 // task基本信息
                 msgAllList.add("【INFOS】");
@@ -230,7 +218,7 @@ public class CommonController extends CrawlController implements ControllerFacad
                 var formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 msgAllList.add("start time: " +  formatter.format(startTime));
                 // runtime
-                msgAllList.add("【RUNTIME】");
+                msgAllList.add("\n【RUNTIME】");
                 Runtime runtime = Runtime.getRuntime();
                 long totalMemory = runtime.totalMemory() / (1024 * 1024);
                 long freeMemory = runtime.freeMemory() / (1024 * 1024);
@@ -254,6 +242,7 @@ public class CommonController extends CrawlController implements ControllerFacad
                             (staticsBo.getCurVisitPageNum() - staticsBo.getLastVisitPageNum()) * 60
                                     / interval + "/ min");
                     staticsBo.setLastVisitPageNum(staticsBo.getCurVisitPageNum());
+                    visitSum.addAndGet(staticsBo.getCurVisitPageNum());
                     staticsBo.setLastTimeStamp(staticsBo.getCurTimeStamp());
                     // 如果第一分钟检测没有速率，则关闭此crawler
                     if (staticsBo.getCurVisitPageNum() == 0) {
@@ -267,9 +256,40 @@ public class CommonController extends CrawlController implements ControllerFacad
                 log.warn("Exception occurs.", e);
                 msgAllList.add("[" + this.name + "] Exception occurs: " + e.getMessage());
             }
+            // 判断是否退出程序
+            if (this.frontier.getQueueLength() == 0 && visitSum.get() == 0
+                    || crawlerPool.getCRAWLERS().isEmpty()) {
+                // 此时确定已经完毕，关闭系统
+                autoShutdown(crawlerPool);
+                msgAllList.add("\n【Attention】 Crawler project exit.");
+                // 发送
+                sendWxMessage(msgAllList);
+                // 退出
+                System.exit(0);
+            }
             // 发送
             sendWxMessage(msgAllList);
+            // GC
+            System.gc();
         }, config.getWxMessageDelaySeconds());
+    }
+
+    private <T extends WebCrawler> void autoShutdown(CrawlerPool<T> crawlerPool) {
+        log.info("任务可能已经完成，系统即将关闭");
+        frontier.finish();
+        crawlerPool.getCRAWLERS().forEach(crawler -> {
+            crawler.onBeforeExit();
+            crawlersLocalData.add(crawler.getMyLocalData());
+            SeleniumBuilder.shutdownChromeDriver(crawler.getChromeDriver());
+            SeleniumBuilder.shutdownPhantomJsDriver(crawler.getPhantomJsDriver());
+        });
+        log.info("Waiting for {} seconds before final clean up...",
+                config.getCleanupDelaySeconds());
+        sleep(config.getCleanupDelaySeconds());
+        frontier.close();
+        docIdServer.close();
+        finished = true;
+        env.close();
     }
 
     /**
