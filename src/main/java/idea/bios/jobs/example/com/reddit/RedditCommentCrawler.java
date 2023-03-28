@@ -148,7 +148,7 @@ public class RedditCommentCrawler extends AbsCommonCrawler {
     @Override
     public void prepareToRun() {
         controllerFacade.addUrlsToQueue(seedFetcher.getSeedsFromTxt(
-                ""));
+                "./reddit.txt"));
     }
 
     private static DataDao buildTextDataDao(WebElement element) {
