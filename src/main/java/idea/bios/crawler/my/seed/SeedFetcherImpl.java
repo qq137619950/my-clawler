@@ -10,11 +10,13 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -58,8 +60,16 @@ public class SeedFetcherImpl implements SeedFetcher {
 
     @Override
     public List<String> getSeedsFromTxt(String filePath) {
-        // TODO
-        return null;
+        var res = new ArrayList<String>();
+        try (var sc = new Scanner(new FileReader(filePath))) {
+            while (sc.hasNextLine()) {
+                String line = sc.nextLine();
+                if (!line.isEmpty()) {
+                    res.add(line);
+                }
+            }
+        } catch (Exception ignored) {}
+        return res;
     }
 
     @Override

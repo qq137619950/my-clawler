@@ -58,4 +58,10 @@ sites:
     minPolitenessDelay: 500
     run: true
 
+  - sourceId: com.reddit.comment
+    className: com.reddit.RedditCommentCrawler
+    minPolitenessDelay: 20000
+    dynParse: true
+    chromeDriver: true
+    run: true
 

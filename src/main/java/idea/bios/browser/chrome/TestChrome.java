@@ -1,6 +1,10 @@
 package idea.bios.browser.chrome;
 
+import com.google.gson.Gson;
 import idea.bios.util.selenium.SeleniumBuilder;
+import idea.bios.util.selenium.script.ChromeDriverBuilder;
+import lombok.Builder;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
 import org.openqa.selenium.By;
@@ -12,8 +16,11 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Chrome引擎测试
@@ -22,112 +29,135 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TestChrome {
     private static final String URL =
-            "https://www.haodf.com/bingcheng/8890858862.html";
+            "https://www.reddit.com/r/CryptoCurrency/comments/122f6cq/exactly_10_years_ago_the_cyprus_government/";
 
-    public static void main(String[] args) {
-        ChromeDriver driver = SeleniumBuilder.getChromeSeleniumBo().getChromeDriver();
-        // 等待xx元素出现
-        assert driver != null;
-        var wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        driver.get(URL);
-        WebElement recommend = wait.until((ExpectedCondition<WebElement>)
-                d -> {
-                    if (d != null) {
-                        return d.findElement(By.cssSelector("body > main > section.left-heart"));
-                    }
-                    return null;
-                });
-        if (recommend == null) {
-            log.warn("找不到内容, url:{}", URL);
-            return;
-        }
-        var links = new ArrayList<String>();
-        // 个人推荐
-        List<WebElement> myRecommendList = recommend.findElements(By.cssSelector(
-                "#my-recommend > div.involved-recommend-list > a"));
-        myRecommendList.forEach(webElement -> links.add(webElement.getAttribute("href")));
-        // 更多推荐
-        List<WebElement> otherRecommendList = recommend.findElements(By.cssSelector(
-                "#involved-recommend > p.involved-recommend-list > a"));
-        otherRecommendList.forEach(webElement -> links.add(webElement.getAttribute("href")));
-        // 加入队列
-//        controllerFacade.addUrlsToQueue(links.stream().filter(u -> u.contains("bingcheng"))
-//                .distinct()
-//                .collect(Collectors.toList()));
-        System.out.println(links);
-
-        // 病例信息和问诊建议
-        var result = new HashMap<String, Object>();
-        List<WebElement> diseaseInfo = driver.findElements(By.cssSelector("p.diseaseinfo > span"));
-        if (diseaseInfo == null || diseaseInfo.isEmpty()) {
-            log.warn("diseaseInfo is null");
-            return;
-        }
-        List<WebElement> suggestions = driver.findElements(By.cssSelector(
-                "section.suggestions > div.suggestions-text"));
-        if (suggestions == null) {
-            log.warn("suggestions is null");
-            return;
-        }
-        // 病例信息
-        result.put("diseaseInfo", diseaseInfo.stream().map(WebElement::getText)
-                .map(t -> t.endsWith("）") || t.endsWith(")") ? t.substring(0, t.length() - 14) : t)
-                .collect(Collectors.joining("\n")));
-        // 问诊建议
-        result.put("suggestions", suggestions.stream().map(WebElement::getText)
-                .collect(Collectors.joining("\n")));
-        // 问诊过程
-        while (true) {
-            WebElement more = driver.findElement(By.cssSelector("div.msg-more"));
-            if (more.getText().contains("没有更多")) {
-                break;
+    public static void main(String[] args) throws InterruptedException {
+        var result = new LinkedHashMap<String, Object>();
+        ChromeDriver driver = null;
+        // driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
+        List<WebElement> dataParentElement = new ArrayList<>();
+        while (dataParentElement.isEmpty()) {
+            if (driver != null) {
+                driver.close();
             }
-            WebElement click = more.findElement(By.cssSelector("div.msg-more-link > span"));
-            click.click();
-            try {
-                Thread.sleep(200);
-            } catch (InterruptedException e) {
-                log.warn("InterruptedException:", e);
-            }
+            driver = ChromeDriverBuilder.buildScriptChromeDriver();
+            driver.get(URL);
+            Thread.sleep(10000);
+            dataParentElement = driver.findElements(By.xpath(
+                    "//div[@data-scroller-first]/parent::div"));
         }
-        var conversation = new ArrayList<String>();
-        List<WebElement> diseaseProcess = driver.findElements(By.cssSelector(
-                "#msgboard > div.chunk > div.msg-item > div.msg-block"));
-        for (WebElement item : diseaseProcess) {
-            String name;
-            String content;
-            if (item.getText().contains("本次问诊已到期结束")) {
-                break;
+        // 先获取标题等基础信息
+        WebElement postContent = driver.findElement(By.cssSelector(
+                "div > div > div[data-test-id='post-content']"));
+        result.put("title", postContent.findElement(By.cssSelector("div > div > h1")).getText());
+        List<WebElement> content = postContent.findElements(By.cssSelector(" div > h3"));
+        if (content.isEmpty()) {
+            content = postContent.findElements(By.cssSelector(" div[data-click-id='text']"));
+        }
+        if (!content.isEmpty()) {
+            result.put("content", content.get(0).getText().trim());
+        }
+        // 评论数
+        WebElement commentNum = postContent.findElement(By.xpath(
+                "//button[@aria-label='upvote']/following-sibling::div[1]"));
+        result.put("commentNum", commentNum.getText());
+        // comments
+        List<WebElement> dataElement = dataParentElement.get(0)
+                .findElements(By.xpath("./div"));
+        // 点击所有expand
+//        List<WebElement> expandList = dataParentElement.findElements(By.cssSelector(
+//                "i.icon-expand"));
+//        expandList.forEach(item -> {
+//            try {
+//                item.click();
+//            } catch (Exception ignored){}
+//        });
+        // 遍历获取内容
+        var contentList = new ArrayList<DataDao>();
+        var level3Map = new HashMap<DataDao, String>();
+        dataElement.forEach(element -> {
+            String text = element.getText();
+            if (text.trim().isEmpty()) {
+                return;
             }
-            try {
-                // 称呼
-                name = item.findElement(By.cssSelector("p > span.content-name")).getText();
-                if ("小牛医助".equals(name)) {
-                    continue;
+            // 第一层级
+            if (text.contains("level 1")) {
+                DataDao dataDao = buildTextDataDao(element);
+                if (dataDao != null) {
+                    contentList.add(dataDao);
                 }
-                // 内容
-                content = item.findElement(By.cssSelector("p > span.content-him")).getText();
-            } catch (Exception e) {
-                log.info("Exception: item:{}", item.getText());
-                continue;
+            } else if (text.contains("Continue this thread")) {
+                // 处理链接
+                List<WebElement> commentLink = element.findElements(By.tagName("a"));
+                if (commentLink.isEmpty()) {
+                    return;
+                }
+                // 先将链接存放起来，最后统一处理
+                DataDao pDao = contentList.get(contentList.size() - 1);
+                if (pDao.getComments().isEmpty()) {
+                    return;
+                }
+                DataDao curDao = pDao.getComments().get(pDao.getComments().size() - 1);
+                level3Map.put(curDao, commentLink.get(0).getAttribute("href"));
+            } else if (text.contains("level 2")) {
+                DataDao dataDao = buildTextDataDao(element);
+                DataDao firstDao = contentList.get(contentList.size() - 1);
+                if (dataDao != null) {
+                    firstDao.getComments().add(dataDao);
+                }
             }
-            conversation.add(name + ":" + content);
-        }
-        result.put("conversation", conversation);
-        // 医生信息
-        WebElement authorInfo = driver.findElement(By.cssSelector(
-                "#doctor-card > div.doctor-card-wrap > div.doctor-card-info"));
-        String authorInfoUrl = authorInfo.findElement(By.cssSelector("a")).getAttribute("href");
-        result.put("authorInfo", authorInfo.getText());
-        result.put("authorInfoUrl", authorInfoUrl);
-        List<WebElement> authorExt = driver.findElements(By.cssSelector(
-                "#doctor-card > div.doctor-card-wrap > div.doctor-card-service > div.service-item"));
-        if (!authorExt.isEmpty()) {
-            result.put("authorExt", authorExt.stream().map(WebElement::getText)
-                    .map(t -> t.replaceAll("\n", ":"))
-                    .collect(Collectors.toList()));
-        }
+        });
+        // 处理level3
+        ChromeDriver finalDriver = driver;
+        level3Map.forEach((curDao, url) -> {
+            try {
+                finalDriver.get(url);
+                Thread.sleep(5000);
+                // 总体是level 3，最多3层级
+                List<WebElement> parent = finalDriver.findElements(By.xpath(
+                        "//div[@data-scroller-first]/parent::div/div"));
+                parent.stream().filter(item -> item.getText().contains("level 2"))
+                        .forEach(item -> {
+                            DataDao dataDao = buildTextDataDao(item);
+                            if (dataDao != null) {
+                                curDao.getComments().add(dataDao);
+                            }
+                        });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        result.put("commentList", contentList);
+        System.out.println("---------------------------------------------");
+        System.out.println(new Gson().toJson(result));
+    }
 
-        System.out.println(result);
+    private static DataDao buildTextDataDao(WebElement element) {
+        List<WebElement> contentElement = element.findElements(By.cssSelector(
+                "div[data-testid='comment']"));
+        if (contentElement.isEmpty()) {
+            return null;
+        }
+        WebElement textElement = contentElement.get(0);
+        List<WebElement> thumbUpElement = textElement.findElements(By.xpath(
+                "./following-sibling::div[1]/div[1]/div[1]"));
+
+        return DataDao.builder()
+                .text(textElement.getText()
+                        .replaceAll("\u0027", "'"))
+                .comments(new ArrayList<>())
+                .thumbUp(thumbUpElement.isEmpty() ? "" : thumbUpElement.get(0).getText().trim())
+                .build();
+    }
+
+    /**
+     * data
+     */
+    @Builder
+    @Data
+    static class DataDao {
+        private String text;
+        private List<DataDao> comments;
+        private String thumbUp;
     }
 }
