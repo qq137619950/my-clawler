@@ -23,30 +23,31 @@ public class ChromeDriverBuilder {
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
         // 设置代理
         var proxy = new Proxy();
-//        var cap = new DesiredCapabilities();
-//        cap.setCapability(CapabilityType.PROXY, proxy);
-        String proxyIpAndPort = "192.168.218.26:3128";
-        String proxyIpAndPort2 = "192.168.218.37:13128";
+        var cap = new DesiredCapabilities();
+        cap.setCapability(CapabilityType.PROXY, proxy);
+        String proxyIpAndPort3 = "192.168.218.26:3128";
+        String proxyIpAndPort = "192.168.218.37:13128";
+        String proxyIpAndPort2 = "47.106.191.148:43128";
         proxy.setHttpProxy(proxyIpAndPort2).setFtpProxy(proxyIpAndPort2).setSslProxy(proxyIpAndPort2);
-//        chromeOptions.setProxy(proxy);
+        chromeOptions.setProxy(proxy);
         // 配置参数优化
         // 无头模式
         // chromeOptions.addArguments("--headless");
         // 禁用GPU和缓存
-        // chromeOptions.addArguments("--disable-gpu");
-        // chromeOptions.addArguments("--disable-gpu-program-cache");
-        // chromeOptions.addArguments("--disable-software-rasterizer");
+//         chromeOptions.addArguments("--disable-gpu");
+//         chromeOptions.addArguments("--disable-gpu-program-cache");
+//         chromeOptions.addArguments("--disable-software-rasterizer");
         // 配置不加载图片
-        // chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
+//         chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
         // 禁用插件加载
-        // chromeOptions.addArguments("--disable-extensions");
+//         chromeOptions.addArguments("--disable-extensions");
         // 设置浏览器窗口大小
         chromeOptions.addArguments("--window-size=1920,1080");
         // 不使用沙箱
-        // chromeOptions.addArguments("--no-sandbox");
-        // chromeOptions.addArguments("--ignore-certificate-errors");
-        // chromeOptions.addArguments("--allow-running-insecure-content");
-        // chromeOptions.addArguments("--disable-dev-shm-usage");
+//         chromeOptions.addArguments("--no-sandbox");
+//         chromeOptions.addArguments("--ignore-certificate-errors");
+//         chromeOptions.addArguments("--allow-running-insecure-content");
+//         chromeOptions.addArguments("--disable-dev-shm-usage");
         return new ChromeDriver(chromeOptions);
     }
 }

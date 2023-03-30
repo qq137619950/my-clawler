@@ -46,8 +46,10 @@ public class TestChrome {
         List<WebElement> dataParentElement = new ArrayList<>();
         while (dataParentElement.isEmpty()) {
             if (driver != null) {
-                driver.quit();
-                driver.close();
+                try {
+                    driver.close();
+                } catch (Exception ignored) {
+                }
             }
             driver = ChromeDriverBuilder.buildScriptChromeDriver();
             driver.get(url);
@@ -121,7 +123,7 @@ public class TestChrome {
         level3Map.forEach((curDao, level3Url) -> {
             try {
                 finalDriver.get(level3Url);
-                Thread.sleep(5000);
+                Thread.sleep(1000);
                 // 总体是level 3，最多3层级
                 List<WebElement> parent = finalDriver.findElements(By.xpath(
                         "//div[@data-scroller-first]/parent::div/div"));
@@ -143,7 +145,12 @@ public class TestChrome {
         // 落库
         var doc = new Document();
         result.forEach(doc::append);
-        COLLECTION.insertOne(doc);
+        try {
+            COLLECTION.insertOne(doc);
+            driver.close();
+        } catch (Exception ignored) {
+
+        }
     }
 
 
