@@ -26,8 +26,7 @@ public class HealthPolicyPdfCrawler {
         ChromeDriver driver = buildScriptChromeDriver();
         IntStream.rangeClosed(2008, 2023).forEach(year -> IntStream.rangeClosed(1, 12)
                 .forEach(month -> {
-                    String curUrl = MENU_SITE_PRE + year + "&quarter_id="
-                            + (month < 10 ? "0" + month : month);
+                    String curUrl = MENU_SITE_PRE + year + "&quarter_id=" + month;
                     driver.get(curUrl);
                     try {
                         Thread.sleep(2000);
