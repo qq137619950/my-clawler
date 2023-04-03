@@ -11,12 +11,12 @@ import java.util.stream.IntStream;
 import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChromeDriver;
 
 /**
- * http://www.fsxsj.net/ch/reader/issue_list.aspx?year_id=2023&quarter_id=01
+ * http://journal.healthpolicy.cn/
  * @author 86153
  */
-public class FsxsjPdfCrawler {
+public class HealthPolicyPdfCrawler {
     private static final String MENU_SITE_PRE =
-            "http://www.fsxsj.net/ch/reader/issue_list.aspx?year_id=";
+            "http://journal.healthpolicy.cn/ch/reader/issue_list.aspx?year_id=";
 
     public static void main(String[] args) {
         run();
@@ -24,13 +24,13 @@ public class FsxsjPdfCrawler {
 
     private static void run() {
         ChromeDriver driver = buildScriptChromeDriver();
-        IntStream.rangeClosed(1997, 2002).forEach(year -> IntStream.rangeClosed(1, 6)
+        IntStream.rangeClosed(2008, 2023).forEach(year -> IntStream.rangeClosed(1, 12)
                 .forEach(month -> {
                     String curUrl = MENU_SITE_PRE + year + "&quarter_id="
-                        + (month < 10 ? "0" + month : month);
+                            + (month < 10 ? "0" + month : month);
                     driver.get(curUrl);
                     try {
-                        Thread.sleep(3000);
+                        Thread.sleep(2000);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -43,6 +43,6 @@ public class FsxsjPdfCrawler {
                             Thread.sleep(3000);
                         } catch (Exception ignore) {}
                     });
-        }));
+                }));
     }
 }
