@@ -26,8 +26,8 @@ public class ChromeDriverBuilder {
         var cap = new DesiredCapabilities();
         cap.setCapability(CapabilityType.PROXY, proxy);
         String proxyIpAndPort3 = "192.168.218.26:3128";
-        String proxyIpAndPort = "192.168.218.37:13128";
-        String proxyIpAndPort2 = "47.106.191.148:43128";
+        String proxyIpAndPort2 = "192.168.218.37:13128";
+        String proxyIpAndPort = "47.106.191.148:43128";
         proxy.setHttpProxy(proxyIpAndPort2).setFtpProxy(proxyIpAndPort2).setSslProxy(proxyIpAndPort2);
         chromeOptions.setProxy(proxy);
         // 配置参数优化
