@@ -13,6 +13,9 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.bson.Document;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -20,6 +23,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChromeDriver;
 
 /**
  * https://openreview.net/
@@ -31,40 +36,74 @@ public class OpenReviewDriverCrawler {
             .getCrawlerDataCollection("net.openreview.pdf.json");
 
     public static void main(String[] args) throws InterruptedException, IOException {
+        CloseableHttpClient client = HttpClients.createDefault();
+        // 查询所有的parentGroup
+        ChromeDriver driver = buildScriptChromeDriver();
+        driver.get("https://openreview.net/");
+        Thread.sleep(5000);
+        WebElement webElement = driver.findElement(By.cssSelector(
+                "#all-venues > div > ul.list-inline"));
+        List<WebElement> list = webElement.findElements(By.cssSelector(
+                "li > h2 > a"));
+        Pattern pattern = Pattern.compile("id=[\\s\\S]*&");
+
+        List<String> groupIds = list.stream()
+                .map(item -> {
+                    String link = item.getAttribute("href");
+                    Matcher matcher = pattern.matcher(link);
+                    if (matcher.find()) {
+                        String m = matcher.group(0);
+                        return m.substring(3, m.length() - 1);
+                    }
+                    return null;
+                }).filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        driver.close();
 
         // 查询所有groupId
-        final String parentGroup = "ICLR.cc";
-        CloseableHttpClient client = HttpClients.createDefault();
-        var httpGet = new HttpGet(
-                "https://api.openreview.net/groups?parent=" + parentGroup);
-        httpGet.setHeader("Content-Type", "application/json; charset=utf-8");
-        CloseableHttpResponse response = client.execute(httpGet);
-        String res = EntityUtils.toString(response.getEntity());
-        Map<String, Object> resMap = new Gson().fromJson(res, Map.class);
-        List<Map<String, Object>> notes = (List<Map<String, Object>>) resMap.get("groups");
-        // 抽出groupId
-        var groupIdList = new ArrayList<String>();
-        notes.forEach(item -> {
-            String id = (String) item.get("id");
-            String web = (String) item.get("web");
-            if (web == null) {
-                return;
-            }
-            Pattern pattern = Pattern.compile(id + "/[a-zA-z0-9]*'");
-            Matcher matcher = pattern.matcher(web);
-            while (matcher.find()) {
-                String str = matcher.group(0);
-                groupIdList.add(str.replaceAll("'", ""));
-            }
-        });
-        groupIdList.forEach(groupId -> {
+        groupIds.forEach(groupId -> {
+            var httpGet = new HttpGet(
+                    "https://api.openreview.net/groups?parent=" + groupId);
+            httpGet.setHeader("Content-Type", "application/json; charset=utf-8");
+            CloseableHttpResponse response = null;
             try {
-                run(groupId);
-                Thread.sleep(3000);
-            } catch (IOException | InterruptedException e) {
+                response = client.execute(httpGet);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
+            String res = null;
+            try {
+                res = EntityUtils.toString(response.getEntity());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Map<String, Object> resMap = new Gson().fromJson(res, Map.class);
+            List<Map<String, Object>> notes = (List<Map<String, Object>>) resMap.get("groups");
+            // 抽出groupId
+            var groupIdList = new ArrayList<String>();
+            notes.forEach(item -> {
+                String id = (String) item.get("id");
+                String web = (String) item.get("web");
+                if (web == null) {
+                    return;
+                }
+                Pattern pattern2 = Pattern.compile(id + "/[a-zA-z0-9]*'");
+                Matcher matcher = pattern2.matcher(web);
+                while (matcher.find()) {
+                    String str = matcher.group(0);
+                    groupIdList.add(str.replaceAll("'", ""));
+                }
+            });
+            groupIdList.forEach(group -> {
+                try {
+                    run(group);
+                    Thread.sleep(3000);
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
         });
+
     }
 
     private static void run(String groupId) throws IOException {
