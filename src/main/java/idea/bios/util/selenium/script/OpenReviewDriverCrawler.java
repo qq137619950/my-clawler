@@ -63,16 +63,16 @@ public class OpenReviewDriverCrawler {
 
         // 查询所有groupId
         groupIds.forEach(rootGroupId -> {
-            if ("ICLR.cc".contains(rootGroupId)) {
-                return;
-            }
             // 找到所有具有 web 字段的groupId
             var remainGroupIdList = new ArrayList<String>();
             remainGroupIdList.add(rootGroupId);
             var finalGroupId = new ArrayList<String>();
-            IntStream.rangeClosed(0, 3).forEach(cnt -> modifyGroupIdByParentId(
+            finalGroupId.add(rootGroupId);
+            IntStream.rangeClosed(0, 4).forEach(cnt -> modifyGroupIdByParentId(
                     client, finalGroupId, remainGroupIdList));
-            finalGroupId.forEach(group -> {
+            // 过滤掉已经存在的
+            finalGroupId.stream().filter(item -> COLLECTION.find(new Document().append("signatures", item)).first() == null)
+                    .forEach(group -> {
                 try {
                     run(group);
                     Thread.sleep(3000);
