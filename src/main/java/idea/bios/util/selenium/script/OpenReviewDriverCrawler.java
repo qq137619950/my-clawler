@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChromeDriver;
 
@@ -61,9 +62,41 @@ public class OpenReviewDriverCrawler {
         driver.close();
 
         // 查询所有groupId
-        groupIds.forEach(groupId -> {
+        groupIds.forEach(rootGroupId -> {
+            // 找到所有具有 web 字段的groupId
+            var remainGroupIdList = new ArrayList<String>();
+            remainGroupIdList.add(rootGroupId);
+            var finalGroupId = new ArrayList<String>();
+            IntStream.rangeClosed(0, 3).forEach(cnt -> modifyGroupIdByParentId(
+                    client, finalGroupId, remainGroupIdList));
+            finalGroupId.forEach(group -> {
+                try {
+                    run(group);
+                    Thread.sleep(3000);
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+        });
+
+    }
+
+    private static void modifyGroupIdByParentId( CloseableHttpClient client,
+                                                 List<String> finalGroupIdList,
+                                                 List<String> remainGroupIdList) {
+        if (remainGroupIdList == null || remainGroupIdList.isEmpty()) {
+            return;
+        }
+        final List<String> parentGroupIdList = new ArrayList<>(remainGroupIdList);
+        remainGroupIdList.clear();
+        parentGroupIdList.forEach(pg -> {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             var httpGet = new HttpGet(
-                    "https://api.openreview.net/groups?parent=" + groupId);
+                    "https://api.openreview.net/groups?parent=" + pg);
             httpGet.setHeader("Content-Type", "application/json; charset=utf-8");
             CloseableHttpResponse response = null;
             try {
@@ -78,32 +111,22 @@ public class OpenReviewDriverCrawler {
                 e.printStackTrace();
             }
             Map<String, Object> resMap = new Gson().fromJson(res, Map.class);
-            List<Map<String, Object>> notes = (List<Map<String, Object>>) resMap.get("groups");
-            // 抽出groupId
-            var groupIdList = new ArrayList<String>();
-            notes.forEach(item -> {
+            List<Map<String, Object>> groups = (List<Map<String, Object>>) resMap.get("groups");
+            // 遍历parent下面的groups
+            groups.forEach(item -> {
                 String id = (String) item.get("id");
-                String web = (String) item.get("web");
-                if (web == null) {
+                if (id.contains("Authors")) {
                     return;
                 }
-                Pattern pattern2 = Pattern.compile(id + "/[a-zA-z0-9]*'");
-                Matcher matcher = pattern2.matcher(web);
-                while (matcher.find()) {
-                    String str = matcher.group(0);
-                    groupIdList.add(str.replaceAll("'", ""));
+                String web = (String) item.get("web");
+                if (web != null && !web.isEmpty()) {
+                    finalGroupIdList.add(id);
+                    finalGroupIdList.remove(pg);
                 }
-            });
-            groupIdList.forEach(group -> {
-                try {
-                    run(group);
-                    Thread.sleep(3000);
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                }
+                // 都塞进去
+                remainGroupIdList.add(id);
             });
         });
-
     }
 
     private static void run(String groupId) throws IOException {
