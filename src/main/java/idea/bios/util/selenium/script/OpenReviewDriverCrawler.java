@@ -63,6 +63,9 @@ public class OpenReviewDriverCrawler {
 
         // 查询所有groupId
         groupIds.forEach(rootGroupId -> {
+            if ("ICLR.cc".contains(rootGroupId)) {
+                return;
+            }
             // 找到所有具有 web 字段的groupId
             var remainGroupIdList = new ArrayList<String>();
             remainGroupIdList.add(rootGroupId);
