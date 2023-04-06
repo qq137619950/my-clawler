@@ -106,6 +106,9 @@ public class OpenReviewDriverCrawler {
             }
             String res = null;
             try {
+                if (response == null) {
+                    return;
+                }
                 res = EntityUtils.toString(response.getEntity());
             } catch (IOException e) {
                 e.printStackTrace();
