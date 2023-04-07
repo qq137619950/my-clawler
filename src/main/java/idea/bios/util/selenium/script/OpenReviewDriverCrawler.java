@@ -37,7 +37,12 @@ public class OpenReviewDriverCrawler {
             .getCrawlerDataCollection("net.openreview.pdf.json");
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        CloseableHttpClient client = HttpClients.createDefault();
+        HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+        var proxy = new HttpHost("192.168.218.26", 3128);
+        // var proxy = new HttpHost("192.168.218.37", 13128);
+        clientBuilder.setProxy(proxy);
+        CloseableHttpClient client = clientBuilder.build();
+
         // 查询所有的parentGroup
         ChromeDriver driver = buildScriptChromeDriver();
         driver.get("https://openreview.net/");
@@ -71,7 +76,8 @@ public class OpenReviewDriverCrawler {
             IntStream.rangeClosed(0, 4).forEach(cnt -> modifyGroupIdByParentId(
                     client, finalGroupId, remainGroupIdList));
             // 过滤掉已经存在的
-            finalGroupId.stream().filter(item -> COLLECTION.find(new Document().append("signatures", item)).first() == null)
+            finalGroupId
+                    // .stream().filter(item -> COLLECTION.find(new Document().append("signatures", item)).first() == null)
                     .forEach(group -> {
                 try {
                     run(group);
@@ -98,23 +104,28 @@ public class OpenReviewDriverCrawler {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            var httpGet = new HttpGet(
-                    "https://api.openreview.net/groups?parent=" + pg);
-            httpGet.setHeader("Content-Type", "application/json; charset=utf-8");
-            CloseableHttpResponse response = null;
-            try {
-                response = client.execute(httpGet);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            String res = null;
-            try {
-                if (response == null) {
-                    return;
+            // 不断重试
+            String res = "";
+            while (true) {
+                var httpGet = new HttpGet(
+                        "https://api.openreview.net/groups?parent=" + pg);
+                httpGet.setHeader("Content-Type", "application/json; charset=utf-8");
+                CloseableHttpResponse response = null;
+                try {
+                    response = client.execute(httpGet);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    continue;
                 }
-                res = EntityUtils.toString(response.getEntity());
-            } catch (IOException e) {
-                e.printStackTrace();
+                try {
+                    if (response == null) {
+                        continue;
+                    }
+                    res = EntityUtils.toString(response.getEntity());
+                    break;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
             Map<String, Object> resMap = new Gson().fromJson(res, Map.class);
             List<Map<String, Object>> groups = (List<Map<String, Object>>) resMap.get("groups");
@@ -140,7 +151,8 @@ public class OpenReviewDriverCrawler {
         int start = 0;
         // 调接口获取json
         HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-        var proxy = new HttpHost("192.168.218.37", 13128);
+        var proxy = new HttpHost("192.168.218.26", 3128);
+        // var proxy = new HttpHost("192.168.218.37", 13128);
         clientBuilder.setProxy(proxy);
         CloseableHttpClient client = clientBuilder.build();
         var arr = new ArrayList<Map<String, Object>>();

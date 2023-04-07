@@ -12,11 +12,12 @@ import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChro
 
 /**
  * http://www.fsxsj.net/ch/reader/issue_list.aspx?year_id=2023&quarter_id=01
+ * http://www.spinejournal.net/ch/reader/issue_list.aspx?year_id=2022&quarter_id=1
  * @author 86153
  */
 public class FsxsjPdfCrawler {
     private static final String MENU_SITE_PRE =
-            "http://www.fsxsj.net/ch/reader/issue_list.aspx?year_id=";
+            "http://www.spinejournal.net/ch/reader/issue_list.aspx?year_id=";
 
     public static void main(String[] args) {
         run();
@@ -24,7 +25,7 @@ public class FsxsjPdfCrawler {
 
     private static void run() {
         ChromeDriver driver = buildScriptChromeDriver();
-        IntStream.rangeClosed(1997, 2002).forEach(year -> IntStream.rangeClosed(1, 6)
+        IntStream.rangeClosed(2003, 2023).forEach(year -> IntStream.rangeClosed(1, 6)
                 .forEach(month -> {
                     String curUrl = MENU_SITE_PRE + year + "&quarter_id="
                         + (month < 10 ? "0" + month : month);
