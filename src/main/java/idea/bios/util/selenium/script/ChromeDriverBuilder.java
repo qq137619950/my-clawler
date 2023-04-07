@@ -38,16 +38,16 @@ public class ChromeDriverBuilder {
 //         chromeOptions.addArguments("--disable-gpu-program-cache");
 //         chromeOptions.addArguments("--disable-software-rasterizer");
         // 配置不加载图片
-//         chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
+         chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
         // 禁用插件加载
-//         chromeOptions.addArguments("--disable-extensions");
+         chromeOptions.addArguments("--disable-extensions");
         // 设置浏览器窗口大小
         chromeOptions.addArguments("--window-size=1920,1080");
         // 不使用沙箱
-//         chromeOptions.addArguments("--no-sandbox");
-//         chromeOptions.addArguments("--ignore-certificate-errors");
-//         chromeOptions.addArguments("--allow-running-insecure-content");
-//         chromeOptions.addArguments("--disable-dev-shm-usage");
+         chromeOptions.addArguments("--no-sandbox");
+         chromeOptions.addArguments("--ignore-certificate-errors");
+         chromeOptions.addArguments("--allow-running-insecure-content");
+         chromeOptions.addArguments("--disable-dev-shm-usage");
         return new ChromeDriver(chromeOptions);
     }
 }

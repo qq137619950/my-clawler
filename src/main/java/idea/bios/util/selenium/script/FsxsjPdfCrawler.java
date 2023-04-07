@@ -13,22 +13,25 @@ import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChro
 /**
  * http://www.fsxsj.net/ch/reader/issue_list.aspx?year_id=2023&quarter_id=01
  * http://www.spinejournal.net/ch/reader/issue_list.aspx?year_id=2022&quarter_id=1
+ * 医学信息学杂志 http://www.yxxxx.ac.cn/ch/reader/issue_list.aspx?year_id=1997&quarter_id=1
  * @author 86153
  */
 public class FsxsjPdfCrawler {
     private static final String MENU_SITE_PRE =
-            "http://www.spinejournal.net/ch/reader/issue_list.aspx?year_id=";
+            "http://www.yxxxx.ac.cn/ch/reader/issue_list.aspx?year_id=";
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         run();
     }
 
-    private static void run() {
+    private static void run() throws InterruptedException {
         ChromeDriver driver = buildScriptChromeDriver();
-        IntStream.rangeClosed(2003, 2023).forEach(year -> IntStream.rangeClosed(1, 6)
+        driver.get("chrome://settings/content/pdfDocuments");
+        Thread.sleep(5000);
+        IntStream.rangeClosed(2016, 2023).forEach(year -> IntStream.rangeClosed(1, 12)
                 .forEach(month -> {
-                    String curUrl = MENU_SITE_PRE + year + "&quarter_id="
-                        + (month < 10 ? "0" + month : month);
+                    String curUrl = MENU_SITE_PRE + year + "&quarter_id=" + month;
+                        // + (month < 10 ? "0" + month : month);
                     driver.get(curUrl);
                     try {
                         Thread.sleep(3000);
