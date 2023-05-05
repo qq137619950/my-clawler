@@ -27,6 +27,9 @@ import com.sleepycat.je.Environment;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * @author Yasser Ganjisaffar
@@ -40,8 +43,12 @@ public class Frontier {
     protected WorkQueues workQueues;
     protected InProcessPagesDB inProcessPages;
 
-    protected final Object mutex = new Object();
-    protected final Object waitingList = new Object();
+    // protected final Object mutex = new Object();
+    // protected final Object waitingList = new Object();
+    protected Lock mutexLock = new ReentrantLock(false);
+
+    protected Lock waitingListLock = new ReentrantLock(true);
+    protected Condition waitingLockCondition = waitingListLock.newCondition();
 
     protected boolean isFinished = false;
 
@@ -87,7 +94,8 @@ public class Frontier {
     public void scheduleAll(List<WebURL> urls) {
         // Maximum number of pages to fetch For unlimited number of pages
         int maxPagesToFetch = config.getMaxPagesToFetch();
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             int newScheduledPage = 0;
             for (WebURL url : urls) {
                 if ((maxPagesToFetch > 0) &&
@@ -106,9 +114,17 @@ public class Frontier {
                 scheduledPages += newScheduledPage;
                 counters.increment(Counters.ReservedCounterNames.SCHEDULED_PAGES, newScheduledPage);
             }
-            synchronized (waitingList) {
-                waitingList.notifyAll();
+            waitingListLock.lock();
+            try {
+                waitingLockCondition.signalAll();
+            } finally {
+                waitingListLock.unlock();
             }
+//            synchronized (waitingList) {
+//                waitingList.notifyAll();
+//            }
+        } finally {
+            mutexLock.unlock();
         }
     }
 
@@ -118,16 +134,17 @@ public class Frontier {
      */
     public void schedule(WebURL url) {
         int maxPagesToFetch = config.getMaxPagesToFetch();
-        synchronized (mutex) {
-            try {
-                if (maxPagesToFetch < 0 || scheduledPages < maxPagesToFetch) {
-                    workQueues.put(url);
-                    scheduledPages++;
-                    counters.increment(Counters.ReservedCounterNames.SCHEDULED_PAGES);
-                }
-            } catch (DatabaseException e) {
-                log.error("Error while putting the url in the work queue", e);
+        mutexLock.lock();
+        try {
+            if (maxPagesToFetch < 0 || scheduledPages < maxPagesToFetch) {
+                workQueues.put(url);
+                scheduledPages++;
+                counters.increment(Counters.ReservedCounterNames.SCHEDULED_PAGES);
             }
+        } catch (DatabaseException e) {
+            log.error("Error while putting the url in the work queue", e);
+        } finally {
+            mutexLock.unlock();
         }
     }
 
@@ -139,7 +156,8 @@ public class Frontier {
      */
     public void getNextURLs(int max, List<WebURL> result) {
         while (true) {
-            synchronized (mutex) {
+            mutexLock.lock();
+            try {
                 if (isFinished) {
                     return;
                 }
@@ -156,14 +174,18 @@ public class Frontier {
                 if (result.size() > 0) {
                     return;
                 }
+            } finally {
+                mutexLock.unlock();
             }
+            waitingListLock.lock();
             try {
                 // 等待 scheduleAll 进行完毕
-                synchronized (waitingList) {
-                    waitingList.wait();
-                }
-            } catch (InterruptedException ignored) {
-                // Do nothing
+                waitingLockCondition.signalAll();
+//                synchronized (waitingList) {
+//                    waitingList.wait();
+//                }
+            } finally {
+                waitingListLock.unlock();
             }
             if (isFinished) {
                 return;
@@ -218,8 +240,14 @@ public class Frontier {
 
     public void finish() {
         isFinished = true;
-        synchronized (waitingList) {
-            waitingList.notifyAll();
+        waitingListLock.lock();
+        try {
+            waitingLockCondition.signalAll();
+        } finally {
+            waitingListLock.unlock();
         }
+//        synchronized (waitingList) {
+//            waitingList.notifyAll();
+//        }
     }
 }

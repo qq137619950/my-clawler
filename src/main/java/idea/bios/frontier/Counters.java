@@ -19,13 +19,13 @@ package idea.bios.frontier;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import idea.bios.crawler.CrawlConfig;
 import idea.bios.util.Util;
 import lombok.extern.slf4j.Slf4j;
 import lombok.var;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
@@ -51,7 +51,8 @@ public class Counters {
     protected Environment env;
     private final CrawlConfig config;
 
-    protected final Object mutex = new Object();
+    // protected final Object mutex = new Object();
+    protected Lock lock = new ReentrantLock(true);
 
     protected Map<String, Long> counterValues;
 
@@ -93,32 +94,36 @@ public class Counters {
     }
 
     public long getValue(String name) {
-        synchronized (mutex) {
+        lock.lock();
+        try {
             Long value = counterValues.get(name);
             if (value == null) {
                 return 0;
             }
             return value;
+        } finally {
+            lock.unlock();
         }
     }
 
     public void setValue(String name, long value) {
-        synchronized (mutex) {
-            try {
-                counterValues.put(name, value);
-                if (statisticsDB != null) {
-                    Transaction txn = env.beginTransaction(null, null);
-                    statisticsDB.put(txn, new DatabaseEntry(name.getBytes()),
+        lock.lock();
+        try {
+            counterValues.put(name, value);
+            if (statisticsDB != null) {
+                Transaction txn = env.beginTransaction(null, null);
+                statisticsDB.put(txn, new DatabaseEntry(name.getBytes()),
                                      new DatabaseEntry(Util.long2ByteArray(value)));
-                    txn.commit();
-                }
-            } catch (RuntimeException e) {
-                if (config.isHaltOnError()) {
-                    throw e;
-                } else {
-                    log.error("Exception setting value", e);
-                }
+                txn.commit();
             }
+        } catch (RuntimeException e) {
+            if (config.isHaltOnError()) {
+                    throw e;
+            } else {
+                    log.error("Exception setting value", e);
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -127,9 +132,12 @@ public class Counters {
     }
 
     public void increment(String name, long addition) {
-        synchronized (mutex) {
+        lock.lock();
+        try {
             long prevValue = getValue(name);
             setValue(name, prevValue + addition);
+        } finally {
+            lock.unlock();
         }
     }
 

@@ -48,7 +48,8 @@ public class InProcessPagesDB extends WorkQueues {
     }
 
     public boolean removeURL(WebURL webUrl) {
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             DatabaseEntry key = getDatabaseEntryKey(webUrl);
             var value = new DatabaseEntry();
             Transaction txn = beginTransaction();
@@ -63,6 +64,8 @@ public class InProcessPagesDB extends WorkQueues {
             } finally {
                 commit(txn);
             }
+        } finally {
+            mutexLock.unlock();
         }
         return false;
     }

@@ -18,6 +18,9 @@
 package idea.bios.fetcher;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 
@@ -29,6 +32,9 @@ public class IdleConnectionMonitorThread extends Thread {
     private final PoolingHttpClientConnectionManager connMgr;
     private volatile boolean shutdown;
 
+    private final Lock mutexLock = new ReentrantLock(false);
+    private final Condition mutexCondition = mutexLock.newCondition();
+
     public IdleConnectionMonitorThread(PoolingHttpClientConnectionManager connMgr) {
         super("Connection Manager");
         this.connMgr = connMgr;
@@ -38,12 +44,16 @@ public class IdleConnectionMonitorThread extends Thread {
     public void run() {
         try {
             while (!shutdown) {
-                synchronized (this) {
-                    wait(5000);
+                mutexLock.lock();
+                try {
+                    // wait(5000);
+                    mutexCondition.await(5, TimeUnit.SECONDS);
                     // Close expired connections
                     connMgr.closeExpiredConnections();
                     // Optionally, close connections that have been idle longer than 30 sec
                     connMgr.closeIdleConnections(30, TimeUnit.SECONDS);
+                } finally {
+                    mutexLock.unlock();
                 }
             }
         } catch (InterruptedException ignored) {
@@ -53,8 +63,14 @@ public class IdleConnectionMonitorThread extends Thread {
 
     public void shutdown() {
         shutdown = true;
-        synchronized (this) {
-            notifyAll();
+        mutexLock.lock();
+        try {
+            mutexCondition.signalAll();
+        } finally {
+            mutexLock.unlock();
         }
+//        synchronized (this) {
+//            notifyAll();
+//        }
     }
 }

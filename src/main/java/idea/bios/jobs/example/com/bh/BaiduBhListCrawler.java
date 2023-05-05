@@ -156,13 +156,15 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
             List<String> links = searchLinks.getLinks(sUrls.get(0));
             controllerFacade.addUrlsToQueue(links);
         }, 10);
+        controllerFacade.addUrlsToQueue(seedFetcher.getSeedsPlain(
+                "https://m.baidu.com/bh/m/detail/ar_9013313132024954979"));
     }
 
     public static void main(String[] args) throws IOException {
 //        new BaiduBhListCrawler().testGetHtmlInfo(
 //                "https://m.baidu.com/bh/m/detail/ar_17806348835341762212");
         UUID uuid = UUID.nameUUIDFromBytes(
-                "https://baijiahao.baidu.com/s?id=1696989908880011257".getBytes(StandardCharsets.UTF_8));
+                "心梗时大力咳嗽能救命吗？".getBytes(StandardCharsets.UTF_8));
         System.out.println(uuid);
     }
 }

@@ -152,45 +152,45 @@ public class CommonController extends CrawlController implements ControllerFacad
             crawlersLocalData.clear();
             // 监控时钟
             Schedule.controllerScheduleAtFixedRate(()-> {
+                waitingListLock.lock();
                 try {
-                    synchronized (waitingLock) {
-                        var someoneIsWorking = new AtomicBoolean(false);
+                    var someoneIsWorking = new AtomicBoolean(false);
+                    IntStream.range(0, crawlerPool.getTHREADS().size()).forEach(i -> {
+                        // 线程不存活
+                        if (!crawlerPool.getTHREADS().get(i).isAlive()) {
+                            if (!shuttingDown) {
+                                crawlerPool.rebuildCrawler(clazz, this, i);
+                            } else if (!crawlerPool.getCRAWLERS().get(i).isWaitingForNewURLs()){
+                                someoneIsWorking.set(true);
+                            }
+                        }
+                    });
+                    // 如果没有在执行，而且所有数据已经进入队列，则关闭程序
+                    // TODO 评估是否有必要
+                    if (!someoneIsWorking.get() && isSchedulePutQueueFinish) {
+                        log.info("任务可能已经完成，等待几秒再进行第一次判断");
+                        sleep(config.getThreadShutdownDelaySeconds());
+                        // 再检测一下队列，如果还有数据，则不退出
+                        var firstCheck = new AtomicBoolean(false);
                         IntStream.range(0, crawlerPool.getTHREADS().size()).forEach(i -> {
-                            // 线程不存活
-                            if (!crawlerPool.getTHREADS().get(i).isAlive()) {
-                                if (!shuttingDown) {
-                                    crawlerPool.rebuildCrawler(clazz, this, i);
-                                } else if (!crawlerPool.getCRAWLERS().get(i).isWaitingForNewURLs()){
-                                    someoneIsWorking.set(true);
-                                }
+                            Thread thread = crawlerPool.getTHREADS().get(i);
+                            if (thread.isAlive() && !crawlerPool.getCRAWLERS().get(i).isWaitingForNewURLs()) {
+                                firstCheck.set(true);
                             }
                         });
-                        // 如果没有在执行，而且所有数据已经进入队列，则关闭程序
-                        // TODO 评估是否有必要
-                        if (!someoneIsWorking.get() && isSchedulePutQueueFinish) {
-                            log.info("任务可能已经完成，等待几秒再进行第一次判断");
-                            sleep(config.getThreadShutdownDelaySeconds());
-                            // 再检测一下队列，如果还有数据，则不退出
-                            var firstCheck = new AtomicBoolean(false);
-                            IntStream.range(0, crawlerPool.getTHREADS().size()).forEach(i -> {
-                                Thread thread = crawlerPool.getTHREADS().get(i);
-                                if (thread.isAlive() && !crawlerPool.getCRAWLERS().get(i).isWaitingForNewURLs()) {
-                                    firstCheck.set(true);
-                                }
-                            });
-                            if (firstCheck.get()) {
-                                return;
-                            }
-                            log.info("任务可能已经完成，等待几秒再进行第二次判断");
-                            sleep(config.getThreadShutdownDelaySeconds());
-                            if (frontier.getQueueLength() > 0) {
-                                return;
-                            }
-                            // 此时确定已经完毕，关闭系统
-                            autoShutdown(crawlerPool);
-                            waitingLock.notifyAll();
+                        if (firstCheck.get()) {
+                            return;
                         }
-                    }
+                        log.info("任务可能已经完成，等待几秒再进行第二次判断");
+                        sleep(config.getThreadShutdownDelaySeconds());
+                        if (frontier.getQueueLength() > 0) {
+                            return;
+                        }
+                        // 此时确定已经完毕，关闭系统
+                        autoShutdown(crawlerPool);
+                        waitingLockCondition.signalAll();
+                        // waitingLock.notifyAll();
+                        }
                 } catch (Exception e) {
                     log.error("Unexpected Error", e);
                 }

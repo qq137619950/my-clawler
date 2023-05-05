@@ -29,6 +29,9 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * 文档ID Server
  * TODO 使用roaring bitmap进行过滤，减少IO
@@ -40,7 +43,8 @@ public class DocIDServer {
     private final Database docIDsDB;
     private static final String DATABASE_NAME = "DocIDs";
 
-    private final Object mutex = new Object();
+    // private final Object mutex = new Object();
+    protected Lock mutexLock = new ReentrantLock(false);
 
     private final CrawlConfig config;
     private int lastDocId;
@@ -70,7 +74,8 @@ public class DocIDServer {
      * @return the docId of the url if it is seen before. Otherwise -1 is returned.
      */
     public int getDocId(String url) {
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             OperationStatus result;
             var value = new DatabaseEntry();
             try {
@@ -89,11 +94,14 @@ public class DocIDServer {
                 return Util.byteArray2Int(value.getData());
             }
             return -1;
+        } finally {
+            mutexLock.unlock();
         }
     }
 
     public int getNewDocId(String url) {
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             try {
                 // Make sure that we have not already assigned a docId for this URL
                 int docId = getDocId(url);
@@ -112,11 +120,14 @@ public class DocIDServer {
                     return -1;
                 }
             }
+        } finally {
+            mutexLock.unlock();
         }
     }
 
     public void addUrlAndDocId(String url, int docId) {
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             if (docId <= lastDocId) {
                 throw new IllegalArgumentException(
                     "Requested doc id: " + docId + " is not larger than: " + lastDocId);
@@ -133,6 +144,8 @@ public class DocIDServer {
             docIDsDB.put(null, new DatabaseEntry(url.getBytes()),
                          new DatabaseEntry(Util.int2ByteArray(docId)));
             lastDocId = docId;
+        } finally {
+            mutexLock.unlock();
         }
     }
 

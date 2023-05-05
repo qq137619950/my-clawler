@@ -20,6 +20,8 @@ package idea.bios.frontier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
@@ -51,7 +53,8 @@ public class WorkQueues {
     @Getter
     protected final AtomicLong queueSize = new AtomicLong(0);
 
-    protected final Object mutex = new Object();
+    // protected final Object mutex = new Object();
+    protected Lock mutexLock = new ReentrantLock(false);
 
     public WorkQueues(Environment env, String dbName, boolean resumable) {
         this.env = env;
@@ -84,7 +87,8 @@ public class WorkQueues {
      * @return          URL列表
      */
     public List<WebURL> get(int max) {
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             var results = new ArrayList<WebURL>(max);
             var key = new DatabaseEntry();
             var value = new DatabaseEntry();
@@ -102,11 +106,14 @@ public class WorkQueues {
             }
             commit(txn);
             return results;
+        } finally {
+            mutexLock.unlock();
         }
     }
 
     public void delete(int count) {
-        synchronized (mutex) {
+        mutexLock.lock();
+        try {
             var key = new DatabaseEntry();
             var value = new DatabaseEntry();
             Transaction txn = beginTransaction();
@@ -121,6 +128,8 @@ public class WorkQueues {
                 }
             }
             commit(txn);
+        } finally {
+            mutexLock.unlock();
         }
     }
 

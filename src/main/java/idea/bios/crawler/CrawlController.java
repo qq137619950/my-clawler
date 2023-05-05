@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import idea.bios.frontier.DocIDServer;
 import idea.bios.frontier.Frontier;
@@ -90,7 +93,10 @@ public class CrawlController {
     @Getter
     protected TLDList tldList;
 
-    protected final Object waitingLock = new Object();
+    // protected final Object waitingLock = new Object();
+    protected Lock waitingListLock = new ReentrantLock(true);
+    protected Condition waitingLockCondition = waitingListLock.newCondition();
+
     protected final Environment env;
 
     protected Parser parser;
@@ -300,7 +306,8 @@ public class CrawlController {
             final CrawlController controller = this;
             MONITOR_THREAD_EXECUTOR.execute(() -> {
                 try {
-                    synchronized (waitingLock) {
+                    waitingListLock.lock();
+                    try {
                         while (true) {
                             sleep(config.getThreadMonitoringDelaySeconds());
                             boolean someoneIsWorking = false;
@@ -377,23 +384,32 @@ public class CrawlController {
                                     frontier.close();
                                     docIdServer.close();
                                     finished = true;
-                                    waitingLock.notifyAll();
+                                    waitingLockCondition.signalAll();
+                                    // waitingLock.notifyAll();
                                     env.close();
                                     return;
                                 }
                             }
                         }
+                    } finally {
+                        waitingListLock.unlock();
                     }
                 } catch (Throwable e) {
                     if (config.isHaltOnError()) {
                         setError(e);
-                        synchronized (waitingLock) {
+                        waitingListLock.lock();
+                        try {
                             frontier.finish();
                             frontier.close();
                             docIdServer.close();
-                            waitingLock.notifyAll();
+                            waitingLockCondition.signalAll();
                             env.close();
+                        } finally {
+                            waitingListLock.unlock();
                         }
+//                        synchronized (waitingLock) {
+//                            waitingLock.notifyAll();
+//                        }
                     } else {
                         log.error("Unexpected Error", e);
                     }
@@ -420,7 +436,8 @@ public class CrawlController {
      */
     public void waitUntilFinish() {
         while (!finished) {
-            synchronized (waitingLock) {
+            waitingListLock.lock();
+            try {
                 if (config.isHaltOnError()) {
                     Throwable t = getError();
                     if (t != null && config.isHaltOnError()) {
@@ -437,10 +454,13 @@ public class CrawlController {
                     return;
                 }
                 try {
-                    waitingLock.wait();
+                    waitingLockCondition.await();
+                    // waitingLock.wait();
                 } catch (InterruptedException e) {
                     log.error("Error occurred", e);
                 }
+            } finally {
+                waitingListLock.unlock();
             }
         }
     }

@@ -29,6 +29,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.net.ssl.SSLContext;
 
@@ -78,7 +80,8 @@ import org.apache.http.ssl.SSLContexts;
  */
 @Slf4j
 public class PageFetcher {
-    protected final Object mutex = new Object();
+    // protected final Object mutex = new Object();
+    protected Lock mutexLock = new ReentrantLock(false);
     /**
      * This field is protected for retro compatibility. Please use the getter method: getConfig() to
      * read this field;
@@ -255,12 +258,15 @@ public class PageFetcher {
     public PageFetchResult fetchNothing(WebURL webUrl) throws InterruptedException {
         if (config.getPolitenessDelay() > 0) {
             // Applying Politeness delay
-            synchronized (mutex) {
+            mutexLock.lock();
+            try {
                 long now = (new Date()).getTime();
                 if ((now - lastFetchTime) < config.getPolitenessDelay()) {
                     Thread.sleep(config.getPolitenessDelay() - (now - lastFetchTime));
                 }
                 lastFetchTime = (new Date()).getTime();
+            } finally {
+                mutexLock.unlock();
             }
         }
         log.info("fetch web url:{}, but do not get anything", webUrl.getURL());
@@ -278,12 +284,15 @@ public class PageFetcher {
             request = newHttpUriRequest(toFetchURL);
             if (config.getPolitenessDelay() > 0) {
                 // Applying Politeness delay
-                synchronized (mutex) {
+                mutexLock.lock();
+                try {
                     long now = (new Date()).getTime();
                     if ((now - lastFetchTime) < config.getPolitenessDelay()) {
                         Thread.sleep(config.getPolitenessDelay() - (now - lastFetchTime));
                     }
                     lastFetchTime = (new Date()).getTime();
+                } finally {
+                    mutexLock.unlock();
                 }
             }
             CloseableHttpResponse response = httpClient.execute(request);

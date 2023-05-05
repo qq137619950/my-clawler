@@ -17,6 +17,9 @@
 
 package idea.bios.util;
 
+import java.util.Queue;
+import java.util.concurrent.locks.ReentrantLock;
+
 /**
  * @author Yasser Ganjisaffar
  */
@@ -85,4 +88,6 @@ public class Util {
         return typeStr.contains("css");
     }
 
+    public static void main(String[] args) {
+    }
 }

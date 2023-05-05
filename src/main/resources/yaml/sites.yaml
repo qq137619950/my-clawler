@@ -18,6 +18,7 @@ sites:
   - sourceId: com.mfk.qa
     className: com.mfk.MkfQaCrawler
     minPolitenessDelay: 200
+    run: true
 
   - sourceId: com.yixue.baike
     className: com.yixue.YixueCrawler
@@ -56,12 +57,11 @@ sites:
   - sourceId: net.miaoshou.dialog
     className: net.miaoshou.MiaoshouDialogCrawler
     minPolitenessDelay: 500
-    run: true
+
 
   - sourceId: com.reddit.comment
     className: com.reddit.RedditCommentCrawler
     minPolitenessDelay: 20000
     dynParse: true
     chromeDriver: true
-    run: true
 
