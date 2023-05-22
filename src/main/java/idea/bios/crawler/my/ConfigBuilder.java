@@ -75,6 +75,10 @@ public class ConfigBuilder {
         collections.add(new BasicHeader("Accept-Language", "zh-CN,zh;q=0.8,en;q=0.6"));
         collections.add(new BasicHeader("Content-Type","application/x-www-form-urlencoded;charset=UTF-8"));
         collections.add(new BasicHeader("Connection", "keep-alive"));
+        // temp
+        collections.add(new BasicHeader("Host", "bingli.iiyi.com"));
+        collections.add(new BasicHeader("Cookie", "__jsluid_s=3c218313081942f87adee298effb1b7c; UM_distinctid=18842507e6cd8a-0e5d693b494b9-26031a51-e1000-18842507e6daa4; CNZZDATA1281110805=296794688-1684736782-%7C1684736782; CNZZDATA30079332=cnzz_eid%3D752632641-1684737421-%26ntime%3D1684737421; CNZZDATA30080017=cnzz_eid%3D714144329-1684737258-%26ntime%3D1684737258; Hm_lvt_941d74201fa27a7df77f1985ac333ff7=1684739752; cnaday_auth_visit=6ae52165976d8f3af9ecc5984373e51a; cnaday_uuid=0c8effofQNCDGgxE7hvgbSzBwJhnbjKWxuk8nQXkzXvtv%2BliOFckT6FdXwkPl4r%2BVCxvpfqSAxQ%2BCPYyCBo2A; Hm_lpvt_941d74201fa27a7df77f1985ac333ff7=1684739792"));
+
         config.setDefaultHeaders(collections);
         config.setIncludeBinaryContentInCrawling(false);
         return config;
