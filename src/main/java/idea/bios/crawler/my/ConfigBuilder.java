@@ -77,7 +77,7 @@ public class ConfigBuilder {
         collections.add(new BasicHeader("Connection", "keep-alive"));
         // temp
         collections.add(new BasicHeader("Host", "bingli.iiyi.com"));
-        collections.add(new BasicHeader("Cookie", "__jsluid_s=3c218313081942f87adee298effb1b7c; UM_distinctid=18842507e6cd8a-0e5d693b494b9-26031a51-e1000-18842507e6daa4; CNZZDATA1281110805=296794688-1684736782-%7C1684736782; CNZZDATA30079332=cnzz_eid%3D752632641-1684737421-%26ntime%3D1684737421; CNZZDATA30080017=cnzz_eid%3D714144329-1684737258-%26ntime%3D1684737258; Hm_lvt_941d74201fa27a7df77f1985ac333ff7=1684739752; cnaday_auth_visit=6ae52165976d8f3af9ecc5984373e51a; cnaday_uuid=0c8effofQNCDGgxE7hvgbSzBwJhnbjKWxuk8nQXkzXvtv%2BliOFckT6FdXwkPl4r%2BVCxvpfqSAxQ%2BCPYyCBo2A; Hm_lpvt_941d74201fa27a7df77f1985ac333ff7=1684739792"));
+        collections.add(new BasicHeader("Cookie", "__jsluid_s=3c218313081942f87adee298effb1b7c; UM_distinctid=18842507e6cd8a-0e5d693b494b9-26031a51-e1000-18842507e6daa4; Hm_lvt_941d74201fa27a7df77f1985ac333ff7=1684739752; cnaday_auth_visit=6ae52165976d8f3af9ecc5984373e51a; CNZZDATA30080017=cnzz_eid%3D714144329-1684737258-%26ntime%3D1684744460; CNZZDATA30079332=cnzz_eid%3D752632641-1684737421-%26ntime%3D1684745093; CNZZDATA1281110805=296794688-1684736782-%7C1684745067; cnaday_uuid=3def9xOdzjVchoA0IrFDQkVre1Ym3GZrVt4mEDdPx5ntJ10LGASuD2AQ2P8lHIUGJGJna4FS4McP%2Bu5Pmo9tf; Hm_lpvt_941d74201fa27a7df77f1985ac333ff7=1684746358"));
 
         config.setDefaultHeaders(collections);
         config.setIncludeBinaryContentInCrawling(false);
