@@ -1,16 +1,13 @@
 # headless浏览器driver
 driver:
   - chrome: "C:/Program Files/Google/Chrome/Application/chromedriver.exe"
-  # - chrome: "C:/Users/19106/AppData/Local/Google/Chrome/Application/chromedriver.exe"
   - phantomJs: "C:/crawler/phantomjs-win.exe"
 
 # 发送微信机器人的key
-wxKey: "58cce18d-9306-449c-b9f9-eab09d459597"
+wxKey: ""
 
 # 结构化数据落地，当前选用mongodb
 mongodb:
-#  host: 192.168.76.151
-#  port: 27019
-  host: 192.168.76.11
-  port: 37017
+  host: 192.168.0.1
+  port: 12345
   database: CRAWLER
