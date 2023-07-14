@@ -164,7 +164,7 @@ public class BaiduBhListCrawler extends AbsCommonCrawler {
 //        new BaiduBhListCrawler().testGetHtmlInfo(
 //                "https://m.baidu.com/bh/m/detail/ar_17806348835341762212");
         UUID uuid = UUID.nameUUIDFromBytes(
-                "心梗时大力咳嗽能救命吗？".getBytes(StandardCharsets.UTF_8));
+                "心血管疾病".getBytes(StandardCharsets.UTF_8));
         System.out.println(uuid);
     }
 }

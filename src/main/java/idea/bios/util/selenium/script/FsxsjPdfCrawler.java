@@ -7,7 +7,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,12 +26,20 @@ import static idea.bios.util.selenium.script.ChromeDriverBuilder.buildScriptChro
  * 中西医结合研究 http://ritcwm.com//ch/reader/issue_list.aspx?year_id=2009&quarter_id=1
      * 中国骨伤  http://www.zggszz.com/zggszzcn/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
  * 医学研究杂志  http://www.yxyjzz.cn/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 中华医学教育探索杂志  http://yxjyts.cnjournals.com/yxjyts/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 现代药物与临床  https://www.tiprpress.com/xdywlc/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 中国脊柱脊髓杂志  http://www.cspine.org.cn/zgjzjszz/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 中国骨质疏松杂志  http://www.chinacjo.com/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 中国药师  http://zgyszz.cnjournals.org/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 浙江中西医结合杂志  http://zjzxy.alljournal.com.cn/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 中国肿瘤  http://www.chinaoncology.cn/zgzl8/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
+ * 天津中医药大学学报  http://tjzhongyiyao.ijournals.cn/tjzyydxxb/ch/reader/issue_list.aspx?year_id=2019&quarter_id=1
  *
  * @author 86153
  */
 public class FsxsjPdfCrawler {
     private static final String MENU_SITE_PRE =
-            "http://www.yxyjzz.cn/ch/reader/issue_list.aspx?year_id=";
+            "http://tjzhongyiyao.ijournals.cn/tjzyydxxb/ch/reader/issue_list.aspx?year_id=";
 
     public static void main(String[] args) throws InterruptedException {
         run();
@@ -42,7 +49,7 @@ public class FsxsjPdfCrawler {
         ChromeDriver driver = buildScriptChromeDriver();
         driver.get("chrome://settings/content/pdfDocuments");
         Thread.sleep(5000);
-        IntStream.rangeClosed(2000, 2023).forEach(year -> IntStream.rangeClosed(1, 12)
+        IntStream.rangeClosed(1990, 2023).forEach(year -> IntStream.rangeClosed(1, 12)
                 .forEach(month -> {
                     String curUrl = MENU_SITE_PRE + year + "&quarter_id=" + month;
                         // + (month < 10 ? "0" + month : month);

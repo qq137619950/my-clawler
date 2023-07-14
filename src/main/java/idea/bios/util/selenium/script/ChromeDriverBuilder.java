@@ -21,6 +21,7 @@ public class ChromeDriverBuilder {
         System.getProperties().setProperty("webdriver.chrome.driver", DESKTOP_CHROME_PATH);
         var chromeOptions = new ChromeOptions();
         chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+
         // 设置代理
         var proxy = new Proxy();
         var cap = new DesiredCapabilities();
@@ -37,17 +38,19 @@ public class ChromeDriverBuilder {
 //         chromeOptions.addArguments("--disable-gpu");
 //         chromeOptions.addArguments("--disable-gpu-program-cache");
 //         chromeOptions.addArguments("--disable-software-rasterizer");
-        // 配置不加载图片
-         chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
-        // 禁用插件加载
-         chromeOptions.addArguments("--disable-extensions");
-        // 设置浏览器窗口大小
-        chromeOptions.addArguments("--window-size=1920,1080");
-        // 不使用沙箱
-         chromeOptions.addArguments("--no-sandbox");
-         chromeOptions.addArguments("--ignore-certificate-errors");
-         chromeOptions.addArguments("--allow-running-insecure-content");
-         chromeOptions.addArguments("--disable-dev-shm-usage");
+
+        chromeOptions.addArguments("--remote-allow-origins=*");
+//        // 配置不加载图片
+//         chromeOptions.addArguments("--blink-settings=imagesEnabled=false");
+//        // 禁用插件加载
+//         chromeOptions.addArguments("--disable-extensions");
+//        // 设置浏览器窗口大小
+//        chromeOptions.addArguments("--window-size=1920,1080");
+//        // 不使用沙箱
+//         chromeOptions.addArguments("--no-sandbox");
+//         chromeOptions.addArguments("--ignore-certificate-errors");
+//         chromeOptions.addArguments("--allow-running-insecure-content");
+//         chromeOptions.addArguments("--disable-dev-shm-usage");
         return new ChromeDriver(chromeOptions);
     }
 }

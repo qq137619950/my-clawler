@@ -2,6 +2,21 @@
 <project version="4">
   <component name="RemoteRepositoriesConfiguration">
     <remote-repository>
+      <option name="id" value="nexus-releases" />
+      <option name="name" value="local private nexus releases" />
+      <option name="url" value="http://repo.team.idea.edu.cn/repository/maven-releases" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus" />
+      <option name="name" value="local private nexus public" />
+      <option name="url" value="http://repo.team.idea.edu.cn/repository/maven-public" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus-central" />
+      <option name="name" value="local private nexus central" />
+      <option name="url" value="http://repo.team.idea.edu.cn/repository/maven-central" />
+    </remote-repository>
+    <remote-repository>
       <option name="id" value="central" />
       <option name="name" value="Maven Central repository" />
       <option name="url" value="https://repo1.maven.org/maven2" />
@@ -10,6 +25,11 @@
       <option name="id" value="jboss.community" />
       <option name="name" value="JBoss Community repository" />
       <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
+    </remote-repository>
+    <remote-repository>
+      <option name="id" value="nexus-snapshots" />
+      <option name="name" value="local private nexus snapshots" />
+      <option name="url" value="http://repo.team.idea.edu.cn/repository/maven-snapshots" />
     </remote-repository>
     <remote-repository>
       <option name="id" value="central" />
