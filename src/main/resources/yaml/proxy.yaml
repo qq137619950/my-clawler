@@ -2,11 +2,8 @@ proxy:
   - host: localhost
     port: 80
 
-#  - host: 47.106.191.148
-#    port: 43128
+  - host: 192.168.1.1
+    port: 1234
 
-  - host: 192.168.218.26
-    port: 3128
-
-  - host: 192.168.218.37
-    port: 13128
+  - host: 192.168.1.2
+    port: 5678
