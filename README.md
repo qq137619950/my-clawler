@@ -1,3 +1,5 @@
-BIOS JAVA CRAWLER
+![image](https://github.com/qq137619950/my-clawler/assets/22728004/190e3f1b-3e2c-45e5-952f-9033532a3749)BIOS JAVA CRAWLER
 
-**使用说明：** https://www.tapd.cn/57562086/markdown_wikis/show/#1157562086001001639
+**架构图：** 
+![image](https://github.com/qq137619950/my-clawler/assets/22728004/785cc0d9-eb10-45f0-b41c-5476191c7b50)
+
